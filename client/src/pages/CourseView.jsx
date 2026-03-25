@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import socket from '../socket';
 
-const inputCls = 'w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500 transition-colors';
-const textareaCls = 'w-full px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm outline-none resize-y focus:border-indigo-500 transition-colors';
+const inputCls = 'w-full px-3.5 py-2.5 border border-[var(--border)] rounded-lg text-sm outline-none focus:border-[var(--accent)] transition-colors bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--muted)]/70';
+const textareaCls = 'w-full px-3.5 py-2.5 border border-[var(--border)] rounded-lg text-sm outline-none resize-y focus:border-[var(--accent)] transition-colors bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--muted)]/70';
 
 function VideoEmbed({ url }) {
   const yt = url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
@@ -16,7 +16,7 @@ function VideoEmbed({ url }) {
     );
   }
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-indigo-600 text-sm font-medium mt-2 hover:underline">
+    <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[var(--accent)] text-sm font-medium mt-2 hover:underline">
       ▶ Open Video
     </a>
   );
@@ -166,9 +166,9 @@ function CourseView({ user, onLogout }) {
     setQuizForm(p => ({ ...p, questions: p.questions.filter((_, i) => i !== qi) }));
 
   if (!course) return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navbar user={user} onLogout={onLogout} showBack />
-      <div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>
+      <div className="flex items-center justify-center h-64 text-[var(--muted)]">Loading...</div>
     </div>
   );
 
@@ -180,19 +180,19 @@ function CourseView({ user, onLogout }) {
   const modalOverlay = (onClose, children) => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-5"
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="bg-white rounded-2xl p-7 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-7 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl text-[var(--text)]">
         {children}
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navbar user={user} onLogout={onLogout} showBack />
       <div className="max-w-5xl mx-auto px-6 py-8">
 
         {/* Course header */}
-        <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-7 text-white mb-7">
+        <div className="bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/80 rounded-2xl p-7 text-[var(--accent-contrast)] mb-7">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-xl font-bold mb-1.5">{course.title}</h1>
@@ -208,15 +208,15 @@ function CourseView({ user, onLogout }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b-2 border-gray-200 mb-6">
+        <div className="flex gap-1 border-b-2 border-[var(--border)] mb-6">
           {tabs.map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-0.5 transition-colors capitalize bg-transparent border-x-0 border-t-0 cursor-pointer ${
                 tab === t
-                  ? 'text-indigo-600 border-b-indigo-600 font-semibold'
-                  : 'text-gray-500 border-b-transparent hover:text-indigo-500'
+                  ? 'text-[var(--accent)] border-b-[var(--accent)] font-semibold'
+                  : 'text-[var(--muted)] border-b-transparent hover:text-[var(--accent)]'
               }`}
             >
               {t} ({tabCount[t]})
@@ -229,31 +229,31 @@ function CourseView({ user, onLogout }) {
           <div>
             {isTeacher && (
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-base font-bold text-gray-900">Course Materials</h2>
-                <button onClick={() => setModal('material')} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
+                <h2 className="text-base font-bold text-[var(--text)]">Course Materials</h2>
+                <button onClick={() => setModal('material')} className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
                   + Upload Material
                 </button>
               </div>
             )}
             {course.materials.length === 0
-              ? <div className="text-center py-14 text-gray-400 text-sm">No materials yet{isTeacher ? '. Upload your first one!' : '.'}</div>
+              ? <div className="text-center py-14 text-[var(--muted)] text-sm">No materials yet{isTeacher ? '. Upload your first one!' : '.'}</div>
               : <div className="space-y-3">
                 {course.materials.map(m => {
                   const done = completedIds.includes(m.id);
                   const typeCls = m.type === 'video' ? 'bg-red-100 text-red-600' : m.type === 'pdf' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700';
                   const typeLabel = m.type === 'video' ? '▶ Video' : m.type === 'pdf' ? '📄 PDF' : '📝 Notes';
                   return (
-                    <div key={m.id} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+                    <div key={m.id} className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)] shadow-sm">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-semibold text-gray-900">{m.title}</span>
+                            <span className="text-sm font-semibold text-[var(--text)]">{m.title}</span>
                             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${typeCls}`}>{typeLabel}</span>
                           </div>
-                          <p className="text-xs text-gray-400 mb-1">{new Date(m.uploadedAt).toLocaleDateString()}</p>
+                          <p className="text-xs text-[var(--muted)] mb-1">{new Date(m.uploadedAt).toLocaleDateString()}</p>
                           {m.type === 'video' && m.url && <VideoEmbed url={m.url} />}
                           {m.type !== 'video' && m.url && (
-                            <a href={m.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-indigo-600 text-sm font-medium mt-1 hover:underline">
+                            <a href={m.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[var(--accent)] text-sm font-medium mt-1 hover:underline">
                               📎 Open {m.type}
                             </a>
                           )}
@@ -282,29 +282,29 @@ function CourseView({ user, onLogout }) {
           <div>
             {isTeacher && (
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-base font-bold text-gray-900">Assignments</h2>
-                <button onClick={() => setModal('assignment')} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
+                <h2 className="text-base font-bold text-[var(--text)]">Assignments</h2>
+                <button onClick={() => setModal('assignment')} className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
                   + Add Assignment
                 </button>
               </div>
             )}
             {course.assignments.length === 0
-              ? <div className="text-center py-14 text-gray-400 text-sm">No assignments yet{isTeacher ? '. Create one!' : '.'}</div>
+              ? <div className="text-center py-14 text-[var(--muted)] text-sm">No assignments yet{isTeacher ? '. Create one!' : '.'}</div>
               : <div className="space-y-3">
                 {course.assignments.map(a => {
                   const mySub = submissions[a.id];
                   return (
-                    <div key={a.id} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+                    <div key={a.id} className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)] shadow-sm">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
-                          <p className="text-sm font-semibold text-gray-900 mb-1">{a.title}</p>
-                          {a.dueDate && <p className="text-xs text-gray-400 mb-1">Due: {new Date(a.dueDate).toLocaleDateString()}</p>}
-                          {a.description && <p className="text-sm text-gray-500 leading-relaxed mt-1">{a.description}</p>}
+                          <p className="text-sm font-semibold text-[var(--text)] mb-1">{a.title}</p>
+                          {a.dueDate && <p className="text-xs text-[var(--muted)] mb-1">Due: {new Date(a.dueDate).toLocaleDateString()}</p>}
+                          {a.description && <p className="text-sm text-[var(--muted)] leading-relaxed mt-1">{a.description}</p>}
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                           {isTeacher
                             ? <>
-                              <button onClick={() => toggleSubs(a.id)} className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-semibold border-none cursor-pointer">
+                              <button onClick={() => toggleSubs(a.id)} className="px-3 py-1.5 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded-lg text-xs font-semibold border-none cursor-pointer">
                                 {expandedSubs[a.id] ? 'Hide' : 'Submissions'}
                               </button>
                               <button onClick={() => deleteAssignment(a.id)} className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-semibold border-none cursor-pointer">Delete</button>
@@ -333,9 +333,9 @@ function CourseView({ user, onLogout }) {
 
                       {/* Student submitted content */}
                       {!isTeacher && mySub && (
-                        <div className="mt-3 bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
-                          <p className="text-xs font-semibold text-gray-500 mb-1">Your submission</p>
-                          <p className="text-sm text-gray-600 leading-relaxed">{mySub.content}</p>
+                        <div className="mt-3 bg-[var(--bg)] rounded-lg px-4 py-3 border border-[var(--border)]">
+                          <p className="text-xs font-semibold text-[var(--muted)] mb-1">Your submission</p>
+                          <p className="text-sm text-[var(--text)] leading-relaxed">{mySub.content}</p>
                         </div>
                       )}
 
@@ -343,11 +343,11 @@ function CourseView({ user, onLogout }) {
                       {isTeacher && expandedSubs[a.id] && (
                         <div className="mt-4 space-y-2">
                           {expandedSubs[a.id].length === 0
-                            ? <p className="text-xs text-gray-400 italic">No submissions yet</p>
+                            ? <p className="text-xs text-[var(--muted)] italic">No submissions yet</p>
                             : expandedSubs[a.id].map(s => (
-                              <div key={s.id} className="bg-gray-50 rounded-lg px-4 py-3 border border-gray-100">
-                                <p className="text-xs font-semibold text-gray-600 mb-1">{s.student?.name} · {new Date(s.submittedAt).toLocaleString()}</p>
-                                <p className="text-sm text-gray-600 leading-relaxed">{s.content}</p>
+                              <div key={s.id} className="bg-[var(--bg)] rounded-lg px-4 py-3 border border-[var(--border)]">
+                                <p className="text-xs font-semibold text-[var(--muted)] mb-1">{s.student?.name} · {new Date(s.submittedAt).toLocaleString()}</p>
+                                <p className="text-sm text-[var(--text)] leading-relaxed">{s.content}</p>
                               </div>
                             ))}
                         </div>
@@ -365,22 +365,22 @@ function CourseView({ user, onLogout }) {
           <div>
             {isTeacher && (
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-base font-bold text-gray-900">Quizzes</h2>
-                <button onClick={() => setModal('quiz')} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
+                <h2 className="text-base font-bold text-[var(--text)]">Quizzes</h2>
+                <button onClick={() => setModal('quiz')} className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
                   + Create Quiz
                 </button>
               </div>
             )}
             {course.quizzes.length === 0
-              ? <div className="text-center py-14 text-gray-400 text-sm">No quizzes yet{isTeacher ? '. Create one!' : '.'}</div>
+              ? <div className="text-center py-14 text-[var(--muted)] text-sm">No quizzes yet{isTeacher ? '. Create one!' : '.'}</div>
               : <div className="space-y-3">
                 {course.quizzes.map(q => {
                   const result = quizResults[q.id];
                   return (
-                    <div key={q.id} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-3">
+                    <div key={q.id} className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)] shadow-sm flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 mb-1">{q.title}</p>
-                        <p className="text-xs text-gray-400">{q.questions?.length} questions · {new Date(q.createdAt).toLocaleDateString()}</p>
+                        <p className="text-sm font-semibold text-[var(--text)] mb-1">{q.title}</p>
+                        <p className="text-xs text-[var(--muted)]">{q.questions?.length} questions · {new Date(q.createdAt).toLocaleDateString()}</p>
                       </div>
                       <div className="flex-shrink-0">
                         {isTeacher
@@ -389,7 +389,7 @@ function CourseView({ user, onLogout }) {
                             ? <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${scoreCls(result.percentage)}`}>
                               {result.score}/{result.total} ({result.percentage}%)
                             </span>
-                            : <button onClick={() => navigate(`/quiz/${q.id}`)} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold border-none cursor-pointer">
+                            : <button onClick={() => navigate(`/quiz/${q.id}`)} className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-xs font-semibold border-none cursor-pointer">
                               Take Quiz
                             </button>
                         }
@@ -404,17 +404,17 @@ function CourseView({ user, onLogout }) {
 
         {/* ── STUDENTS (teacher) ── */}
         {tab === 'students' && isTeacher && (
-          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+          <div className="bg-[var(--surface)] rounded-xl p-6 border border-[var(--border)] shadow-sm">
             {course.enrolledStudents.length === 0
-              ? <div className="text-center py-10 text-gray-400 text-sm">No students enrolled yet</div>
+              ? <div className="text-center py-10 text-[var(--muted)] text-sm">No students enrolled yet</div>
               : course.enrolledStudents.map(s => (
-                <div key={s.id} className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                <div key={s.id} className="flex items-center gap-3 py-3 border-b border-[var(--border)] last:border-0">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/80 flex items-center justify-center text-[var(--accent-contrast)] text-sm font-bold flex-shrink-0">
                     {s.name?.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{s.name}</p>
-                    <p className="text-xs text-gray-400">{s.email}</p>
+                    <p className="text-sm font-semibold text-[var(--text)]">{s.name}</p>
+                    <p className="text-xs text-[var(--muted)]">{s.email}</p>
                   </div>
                 </div>
               ))
@@ -426,14 +426,14 @@ function CourseView({ user, onLogout }) {
       {/* ── MODAL: Upload Material ── */}
       {modal === 'material' && modalOverlay(() => setModal(null), (
         <>
-          <h3 className="text-lg font-bold text-gray-900 mb-5">Upload Material</h3>
+          <h3 className="text-lg font-bold text-[var(--text)] mb-5">Upload Material</h3>
           <form onSubmit={saveMaterial} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Title *</label>
+              <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Title *</label>
               <input className={inputCls} value={matForm.title} onChange={e => setMatForm({ ...matForm, title: e.target.value })} placeholder="Material title" required />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Type</label>
+              <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Type</label>
               <select className={inputCls} value={matForm.type} onChange={e => setMatForm({ ...matForm, type: e.target.value })}>
                 <option value="video">Video (YouTube URL)</option>
                 <option value="notes">Notes (File)</option>
@@ -442,17 +442,17 @@ function CourseView({ user, onLogout }) {
             </div>
             {matForm.type === 'video'
               ? <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">YouTube URL *</label>
+                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">YouTube URL *</label>
                 <input className={inputCls} value={matForm.url} onChange={e => setMatForm({ ...matForm, url: e.target.value })} placeholder="https://youtube.com/watch?v=..." required />
               </div>
               : <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Upload File *</label>
-                <input type="file" onChange={e => setMatFile(e.target.files[0])} required className="text-sm text-gray-600" />
+                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Upload File *</label>
+                <input type="file" onChange={e => setMatFile(e.target.files[0])} required className="text-sm text-[var(--muted)]" />
               </div>
             }
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setModal(null)} className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium border-none cursor-pointer">Cancel</button>
-              <button type="submit" disabled={saving} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white rounded-lg text-sm font-semibold border-none cursor-pointer">
+              <button type="button" onClick={() => setModal(null)} className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors">Cancel</button>
+              <button type="submit" disabled={saving} className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer">
                 {saving ? 'Uploading...' : 'Upload'}
               </button>
             </div>
@@ -463,23 +463,23 @@ function CourseView({ user, onLogout }) {
       {/* ── MODAL: Create Assignment ── */}
       {modal === 'assignment' && modalOverlay(() => setModal(null), (
         <>
-          <h3 className="text-lg font-bold text-gray-900 mb-5">Create Assignment</h3>
+          <h3 className="text-lg font-bold text-[var(--text)] mb-5">Create Assignment</h3>
           <form onSubmit={saveAssignment} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Title *</label>
+              <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Title *</label>
               <input className={inputCls} value={assForm.title} onChange={e => setAssForm({ ...assForm, title: e.target.value })} placeholder="Assignment title" required />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Description</label>
+              <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Description</label>
               <textarea className={`${textareaCls} min-h-[70px]`} value={assForm.description} onChange={e => setAssForm({ ...assForm, description: e.target.value })} placeholder="Instructions for students..." />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Due Date</label>
+              <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Due Date</label>
               <input type="date" className={inputCls} value={assForm.dueDate} onChange={e => setAssForm({ ...assForm, dueDate: e.target.value })} />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setModal(null)} className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium border-none cursor-pointer">Cancel</button>
-              <button type="submit" disabled={saving} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white rounded-lg text-sm font-semibold border-none cursor-pointer">
+              <button type="button" onClick={() => setModal(null)} className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors">Cancel</button>
+              <button type="submit" disabled={saving} className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer">
                 {saving ? 'Creating...' : 'Create'}
               </button>
             </div>
@@ -490,17 +490,17 @@ function CourseView({ user, onLogout }) {
       {/* ── MODAL: Create Quiz ── */}
       {modal === 'quiz' && modalOverlay(() => setModal(null), (
         <>
-          <h3 className="text-lg font-bold text-gray-900 mb-5">Create Quiz</h3>
+          <h3 className="text-lg font-bold text-[var(--text)] mb-5">Create Quiz</h3>
           <form onSubmit={saveQuiz} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1.5">Quiz Title *</label>
+              <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Quiz Title *</label>
               <input className={inputCls} value={quizForm.title} onChange={e => setQuizForm({ ...quizForm, title: e.target.value })} placeholder="Quiz title" required />
             </div>
 
             {quizForm.questions.map((q, qi) => (
-              <div key={qi} className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
+              <div key={qi} className="border border-[var(--border)] rounded-xl p-4 bg-[var(--bg)]">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold text-gray-500">Question {qi + 1}</span>
+                  <span className="text-xs font-semibold text-[var(--muted)]">Question {qi + 1}</span>
                   {quizForm.questions.length > 1 && (
                     <button type="button" onClick={() => removeQuestion(qi)} className="text-red-400 hover:text-red-600 bg-transparent border-none cursor-pointer text-lg leading-none">×</button>
                   )}
@@ -519,11 +519,11 @@ function CourseView({ user, onLogout }) {
                       name={`q${qi}`}
                       checked={q.answer === oi}
                       onChange={() => updateQ(qi, 'answer', oi)}
-                      className="cursor-pointer accent-indigo-600"
+                      className="cursor-pointer accent-[var(--accent)]"
                       title="Mark as correct answer"
                     />
                     <input
-                      className={`flex-1 px-3 py-2 border rounded-lg text-sm outline-none focus:border-indigo-500 transition-colors ${q.answer === oi ? 'border-emerald-400 bg-emerald-50' : 'border-gray-200'}`}
+                      className={`flex-1 px-3 py-2 border rounded-lg text-sm outline-none focus:border-[var(--accent)] transition-colors bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--muted)]/70 ${q.answer === oi ? 'border-emerald-400 bg-emerald-50' : 'border-[var(--border)]'}`}
                       placeholder={`Option ${String.fromCharCode(65 + oi)}`}
                       value={opt}
                       onChange={e => updateOpt(qi, oi, e.target.value)}
@@ -531,21 +531,21 @@ function CourseView({ user, onLogout }) {
                     />
                   </div>
                 ))}
-                <p className="text-xs text-gray-400 mt-1">Click the radio button to mark the correct answer</p>
+                <p className="text-xs text-[var(--muted)] mt-1">Click the radio button to mark the correct answer</p>
               </div>
             ))}
 
             <button
               type="button"
               onClick={addQuestion}
-              className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 border border-dashed border-gray-300 rounded-xl text-sm text-gray-500 font-medium cursor-pointer transition-colors"
+              className="w-full py-2.5 bg-[var(--bg)] hover:bg-[var(--border)]/40 border border-dashed border-[var(--border)] rounded-xl text-sm text-[var(--muted)] font-medium cursor-pointer transition-colors"
             >
               + Add Question
             </button>
 
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setModal(null)} className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium border-none cursor-pointer">Cancel</button>
-              <button type="submit" disabled={saving} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white rounded-lg text-sm font-semibold border-none cursor-pointer">
+              <button type="button" onClick={() => setModal(null)} className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors">Cancel</button>
+              <button type="submit" disabled={saving} className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer">
                 {saving ? 'Creating...' : 'Create Quiz'}
               </button>
             </div>
