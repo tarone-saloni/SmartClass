@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-function QuizView({ user, onLogout }) {
+function QuizView() {
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState(null);
@@ -50,7 +52,7 @@ function QuizView({ user, onLogout }) {
   if (!quiz)
     return (
       <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-        <Navbar user={user} onLogout={onLogout} showBack />
+        <Navbar showBack />
       </div>
     );
 

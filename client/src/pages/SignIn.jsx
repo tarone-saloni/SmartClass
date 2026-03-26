@@ -1,36 +1,9 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-
-function GoogleIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-        fill="#4285F4"
-      />
-      <path
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-        fill="#34A853"
-      />
-      <path
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-        fill="#FBBC05"
-      />
-      <path
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-        fill="#EA4335"
-      />
-    </svg>
-  );
-}
 
 const FEATURES = [
   "Manage courses, assignments, and quizzes seamlessly",
@@ -45,15 +18,22 @@ const STATS = [
   { value: "98%", label: "Satisfaction" },
 ];
 
-function SignIn({ onLogin }) {
+function SignIn() {
   const navigate = useNavigate();
   const themeContext = useContext(ThemeContext);
+  const { login } = useAuth();
   const themeName = themeContext?.themeName || "light";
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const field =
+    "w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] text-sm " +
+    "text-[var(--text)] placeholder:text-[var(--muted)] outline-none transition-all duration-200 " +
+    "focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/12 hover:border-[var(--accent)]/40";
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,24 +43,18 @@ function SignIn({ onLogin }) {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email: form.email, password: form.password }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
-      onLogin(data);
+      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      login(data);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
-  const field =
-    "w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] text-sm " +
-    "text-[var(--text)] placeholder:text-[var(--muted)] outline-none transition-all duration-200 " +
-    "focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/12 hover:border-[var(--accent)]/40";
-
-  const mockUser = { id: "guest", name: "Guest", role: "guest" };
 
   return (
     <div
@@ -99,8 +73,6 @@ function SignIn({ onLogin }) {
         .sc-btn-ghost:hover { background: color-mix(in srgb, var(--surface) 78%, var(--accent) 8%); border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); transform: translateY(-1px); }
         .sc-input-wrap { transition: transform .16s ease, box-shadow .16s ease; border-radius: .85rem; }
         .sc-input-wrap:focus-within { transform: translateY(-1px); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent); }
-        .sc-feature-item { transition: background .15s ease; }
-        .sc-feature-item:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
         .sc-spinner { width: 14px; height: 14px; border-radius: 9999px; border: 2px solid rgba(255,255,255,.45); border-top-color: #fff; animation: spin .8s linear infinite; }
       `}</style>
 
@@ -109,34 +81,26 @@ function SignIn({ onLogin }) {
         <div className="absolute right-[-5rem] bottom-[-7rem] w-96 h-96 rounded-full bg-[var(--accent)]/10 blur-3xl animate-pulse" />
       </div>
 
-      <Navbar user={mockUser} onLogout={() => {}} />
+      <Navbar />
 
       <div className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
         <div className="w-full max-w-5xl grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center animate-in fade-in duration-500">
+
           {/* Left side - Features */}
           <div className="hidden lg:flex flex-col gap-6 animate-in fade-in slide-in-from-left-8 duration-700">
-            <div className="flex items-center gap-3.5 animate-in fade-in slide-in-from-left-12 duration-700">
+            <div className="flex items-center gap-3.5">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[0_10px_30px_-10px_var(--accent)] animate-bounce">
                 🎓
               </div>
               <div>
-                <h1 className="sc-title text-3xl font-bold text-[var(--text)]">
-                  SmartClass
-                </h1>
-                <p className="text-xs text-[var(--muted)] mt-0.5">
-                  Modern learning management
-                </p>
+                <h1 className="sc-title text-3xl font-bold text-[var(--text)]">SmartClass</h1>
+                <p className="text-xs text-[var(--muted)] mt-0.5">Modern learning management</p>
               </div>
             </div>
 
-            <div
-              className="rounded-2xl bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] border border-[var(--border)] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] animate-in fade-in slide-in-from-left-12 duration-700"
-              style={{ animationDelay: "100ms" }}
-            >
+            <div className="rounded-2xl bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] border border-[var(--border)] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
               <div className="px-5 py-4 border-b border-[var(--border)]">
-                <p className="text-sm font-semibold text-[var(--text)]">
-                  Why SmartClass?
-                </p>
+                <p className="text-sm font-semibold text-[var(--text)]">Why SmartClass?</p>
               </div>
               {FEATURES.map((f, i) => (
                 <div
@@ -150,19 +114,14 @@ function SignIn({ onLogin }) {
               ))}
             </div>
 
-            <div
-              className="grid grid-cols-3 gap-3 animate-in fade-in slide-in-from-left-12 duration-700"
-              style={{ animationDelay: "200ms" }}
-            >
+            <div className="grid grid-cols-3 gap-3">
               {STATS.map(({ value, label }, i) => (
                 <div
                   key={label}
                   className="rounded-xl bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] border border-[var(--border)] px-4 py-3.5 shadow-[0_1px_8px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all animate-in fade-in slide-in-from-left-8 duration-500"
                   style={{ animationDelay: `${240 + i * 80}ms` }}
                 >
-                  <p className="sc-title text-2xl font-bold text-[var(--accent)]">
-                    {value}
-                  </p>
+                  <p className="sc-title text-2xl font-bold text-[var(--accent)]">{value}</p>
                   <p className="text-xs text-[var(--muted)] mt-0.5">{label}</p>
                 </div>
               ))}
@@ -174,47 +133,26 @@ function SignIn({ onLogin }) {
             className="rounded-2xl bg-[color-mix(in_srgb,var(--surface)_84%,transparent)] border border-[var(--border)] overflow-hidden shadow-[0_12px_44px_rgba(0,0,0,0.14)] sc-card p-8 animate-in fade-in slide-in-from-right-8 duration-700"
             style={{ animationDelay: "200ms" }}
           >
-            <div className="flex items-center gap-3 lg:hidden mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center text-lg bg-[var(--accent)] text-[var(--accent-contrast)]">
-                🎓
-              </div>
+            <div className="flex items-center gap-3 lg:hidden mb-6">
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center text-lg bg-[var(--accent)] text-[var(--accent-contrast)]">🎓</div>
               <div>
-                <p className="sc-title text-xl font-bold text-[var(--text)]">
-                  SmartClass
-                </p>
-                <p className="text-xs text-[var(--muted)]">
-                  Sign in to your account
-                </p>
+                <p className="sc-title text-xl font-bold text-[var(--text)]">SmartClass</p>
+                <p className="text-xs text-[var(--muted)]">Sign in to your account</p>
               </div>
             </div>
 
-            <h2
-              className="text-2xl font-bold text-[var(--text)] mb-1 sc-title animate-in fade-in slide-in-from-top-4 duration-500"
-              style={{ animationDelay: "100ms" }}
-            >
-              Welcome back
-            </h2>
-            <p
-              className="text-sm text-[var(--muted)] mb-6 animate-in fade-in slide-in-from-top-4 duration-500"
-              style={{ animationDelay: "120ms" }}
-            >
-              Sign in to continue learning
-            </p>
+            <h2 className="text-2xl font-bold text-[var(--text)] mb-1 sc-title">Welcome back</h2>
+            <p className="text-sm text-[var(--muted)] mb-6">Sign in to continue learning</p>
 
             {error && (
-              <div className="text-sm text-red-600 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900 px-3 py-2.5 rounded-lg mb-4 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="text-sm text-red-600 bg-red-50 border border-red-100 px-3 py-2.5 rounded-lg mb-4 animate-in fade-in duration-300">
                 {error}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div
-                className="space-y-1.5 sc-input-wrap animate-in fade-in slide-in-from-bottom-4 duration-500"
-                style={{ animationDelay: "140ms" }}
-              >
-                <label className="block text-xs font-semibold text-[var(--muted)]">
-                  Email
-                </label>
+              <div className="space-y-1.5 sc-input-wrap">
+                <label className="block text-xs font-semibold text-[var(--muted)]">Email</label>
                 <input
                   className={field}
                   type="email"
@@ -225,14 +163,9 @@ function SignIn({ onLogin }) {
                 />
               </div>
 
-              <div
-                className="space-y-1.5 sc-input-wrap animate-in fade-in slide-in-from-bottom-4 duration-500"
-                style={{ animationDelay: "160ms" }}
-              >
+              <div className="space-y-1.5 sc-input-wrap">
                 <div className="flex items-center justify-between">
-                  <label className="block text-xs font-semibold text-[var(--muted)]">
-                    Password
-                  </label>
+                  <label className="block text-xs font-semibold text-[var(--muted)]">Password</label>
                   <button
                     type="button"
                     onClick={() => navigate("/forgot-password")}
@@ -247,9 +180,7 @@ function SignIn({ onLogin }) {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={form.password}
-                    onChange={(e) =>
-                      setForm({ ...form, password: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
                     required
                   />
                   <button
@@ -265,37 +196,15 @@ function SignIn({ onLogin }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="sc-btn-primary w-full py-3 rounded-xl text-sm font-semibold border-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
-                style={{ animationDelay: "180ms" }}
+                className="sc-btn-primary w-full py-3 rounded-xl text-sm font-semibold border-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-6"
               >
                 {loading && <span className="sc-spinner" />}
                 <span>{loading ? "Signing in…" : "Sign in"}</span>
               </button>
             </form>
 
-            <div
-              className="flex items-center gap-3 text-xs text-[var(--muted)] my-5 animate-in fade-in slide-in-from-bottom-4 duration-500"
-              style={{ animationDelay: "200ms" }}
-            >
-              <span className="flex-1 h-px bg-[var(--border)]" />
-              or
-              <span className="flex-1 h-px bg-[var(--border)]" />
-            </div>
-
-            <button
-              type="button"
-              className="sc-btn-ghost w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer active:scale-95 animate-in fade-in slide-in-from-bottom-4 duration-500"
-              style={{ animationDelay: "220ms" }}
-            >
-              <GoogleIcon />
-              Continue with Google
-            </button>
-
-            <p
-              className="text-center text-xs text-[var(--muted)] mt-6 animate-in fade-in duration-500"
-              style={{ animationDelay: "240ms" }}
-            >
-              Don't have an account?{" "}
+            <p className="text-center text-xs text-[var(--muted)] mt-6">
+              Don&apos;t have an account?{" "}
               <button
                 onClick={() => navigate("/signup")}
                 className="text-[var(--accent)] font-semibold hover:underline bg-transparent border-none cursor-pointer active:opacity-70"

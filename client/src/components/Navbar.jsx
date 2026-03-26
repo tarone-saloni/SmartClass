@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import socket from "../socket";
+import { useNavigate } from "react-router-dom";
 import { ThemeContext, themes as themeMap } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
+import { getSocket } from "../socket";
 
 function timeAgo(date) {
   const s = Math.floor((Date.now() - new Date(date)) / 1000);
@@ -17,9 +18,10 @@ const THEME_META = {
   [themeMap.custom]: { label: "Custom", icon: "✨" },
 };
 
-function Navbar({ user, onLogout, showBack }) {
+function Navbar({ showBack }) {
   const navigate = useNavigate();
   const { themeName, setThemeName } = useContext(ThemeContext);
+  const { user, logout } = useAuth();
   const [notifs, setNotifs] = useState([]);
   const [open, setOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -33,16 +35,24 @@ function Navbar({ user, onLogout, showBack }) {
   const isAuthenticated = user && user.role !== "guest";
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetch(`/api/notifications/${user.id}`)
-        .then((r) => r.json())
-        .then((d) => Array.isArray(d) && setNotifs(d));
+    if (!isAuthenticated) return;
 
-      const onNotif = (n) => setNotifs((prev) => [n, ...prev]);
-      socket.on("notification", onNotif);
-      return () => socket.off("notification", onNotif);
-    }
-  }, [user.id, isAuthenticated]);
+    fetch(`/api/notifications/${user.id}`)
+      .then((r) => r.json())
+      .then((d) => Array.isArray(d) && setNotifs(d));
+
+    const socket = getSocket(user.id);
+    socket.on("new-course", (notif) => {
+      setNotifs((prev) => [
+        { id: notif.id || Date.now(), message: notif.message, createdAt: notif.createdAt, read: false },
+        ...prev,
+      ]);
+    });
+
+    return () => {
+      socket.off("new-course");
+    };
+  }, [user?.id, isAuthenticated]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -66,7 +76,7 @@ function Navbar({ user, onLogout, showBack }) {
   };
 
   const handleLogout = () => {
-    onLogout();
+    logout();
     navigate("/signin");
   };
 
