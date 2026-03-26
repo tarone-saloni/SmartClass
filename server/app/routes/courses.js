@@ -11,6 +11,8 @@ import {
 } from '../controllers/courseController.js';
 import materialRoutes from './materials.js';
 import { courseAssignmentRouter } from './assignments.js';
+import { courseQuizRouter } from './quizzes.js';
+import { courseLiveClassRouter } from './liveClass.js';
 
 const router = Router();
 
@@ -28,5 +30,7 @@ router.get('/:id/students', getCourseStudents);
 // Nested resources
 router.use('/:courseId/materials', materialRoutes);
 router.use('/:courseId/assignments', courseAssignmentRouter);
+router.use('/:courseId/quizzes', courseQuizRouter);
+router.use('/:courseId/live-classes', courseLiveClassRouter);
 
 export default router;

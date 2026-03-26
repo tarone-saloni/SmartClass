@@ -1,6 +1,8 @@
 import Material from '../models/Material.js';
 import Course from '../models/Course.js';
 import User from '../models/User.js';
+import CompletedMaterial from '../models/CompletedMaterial.js';
+import Enrollment from '../models/Enrollment.js';
 
 // ─── POST /api/courses/:courseId/materials ────────────────────────────────────
 export async function addMaterial(req, res) {
@@ -102,7 +104,98 @@ export async function deleteMaterial(req, res) {
   }
 }
 
+// ─── POST /api/courses/:courseId/materials/:materialId/complete ───────────────
+export async function markComplete(req, res) {
+  try {
+    const { courseId, materialId } = req.params;
+    const { studentId } = req.body;
+    if (!studentId) return res.status(400).json({ error: 'studentId is required.' });
+
+    const material = await Material.findOne({ _id: materialId, course: courseId });
+    if (!material) return res.status(404).json({ error: 'Material not found.' });
+
+    await CompletedMaterial.findOneAndUpdate(
+      { student: studentId, material: materialId },
+      { student: studentId, material: materialId, course: courseId, completedAt: new Date() },
+      { upsert: true }
+    );
+
+    // Recalculate and sync enrollment progress
+    await syncProgress(studentId, courseId);
+
+    res.json({ message: 'Material marked as completed.' });
+  } catch (err) {
+    console.error('markComplete error:', err);
+    res.status(500).json({ error: 'Failed to mark material as completed.' });
+  }
+}
+
+// ─── DELETE /api/courses/:courseId/materials/:materialId/complete ─────────────
+export async function unmarkComplete(req, res) {
+  try {
+    const { courseId, materialId } = req.params;
+    const { studentId } = req.body;
+    if (!studentId) return res.status(400).json({ error: 'studentId is required.' });
+
+    await CompletedMaterial.findOneAndDelete({ student: studentId, material: materialId });
+    await syncProgress(studentId, courseId);
+
+    res.json({ message: 'Material marked as incomplete.' });
+  } catch (err) {
+    console.error('unmarkComplete error:', err);
+    res.status(500).json({ error: 'Failed to unmark material.' });
+  }
+}
+
+// ─── GET /api/courses/:courseId/materials/progress?studentId= ────────────────
+// Returns all materials with completion status for a given student
+export async function getMaterialProgress(req, res) {
+  try {
+    const { courseId } = req.params;
+    const { studentId } = req.query;
+    if (!studentId) return res.status(400).json({ error: 'studentId is required.' });
+
+    const [materials, completed] = await Promise.all([
+      Material.find({ course: courseId }).sort({ order: 1, createdAt: 1 }),
+      CompletedMaterial.find({ student: studentId, course: courseId }).select('material'),
+    ]);
+
+    const completedSet = new Set(completed.map((c) => c.material.toString()));
+
+    res.json({
+      courseId,
+      studentId,
+      total: materials.length,
+      completedCount: completedSet.size,
+      progress: materials.length > 0 ? Math.round((completedSet.size / materials.length) * 100) : 0,
+      materials: materials.map((m) => ({
+        ...formatMaterial(m),
+        isCompleted: completedSet.has(m._id.toString()),
+      })),
+    });
+  } catch (err) {
+    console.error('getMaterialProgress error:', err);
+    res.status(500).json({ error: 'Failed to fetch progress.' });
+  }
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+async function syncProgress(studentId, courseId) {
+  try {
+    const [total, completed] = await Promise.all([
+      Material.countDocuments({ course: courseId }),
+      CompletedMaterial.countDocuments({ student: studentId, course: courseId }),
+    ]);
+    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const update = { progress };
+    if (progress === 100) { update.status = 'completed'; update.completedAt = new Date(); }
+    else { update.status = 'active'; update.completedAt = null; }
+    await Enrollment.findOneAndUpdate({ student: studentId, course: courseId }, update);
+  } catch (_) {
+    // non-critical — don't fail the request
+  }
+}
+
 function formatMaterial(m) {
   return {
     id: m._id,

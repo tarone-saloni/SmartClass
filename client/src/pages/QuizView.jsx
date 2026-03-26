@@ -16,11 +16,12 @@ function QuizView() {
   useEffect(() => {
     fetch(`/api/quizzes/${id}`)
       .then((r) => r.json())
-      .then(setQuiz);
-    fetch(`/api/quizzes/${id}/result/${user.id}`)
+      .then((d) => !d.error && setQuiz(d));
+
+    fetch(`/api/quizzes/${id}/my-result?studentId=${user.id}`)
       .then((r) => r.json())
       .then((r) => {
-        if (r) {
+        if (r && !r.error) {
           setResult(r);
           setSubmitted(true);
         }
@@ -34,15 +35,20 @@ function QuizView() {
 
   const handleSubmit = async () => {
     if (!quiz) return;
-    const answersArray = quiz.questions.map((_, i) => answers[i] ?? -1);
+    const answersArray = quiz.questions.map((_, i) => ({
+      questionIndex: i,
+      selectedOption: answers[i] ?? -1,
+    }));
     const res = await fetch(`/api/quizzes/${id}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ studentId: user.id, answers: answersArray }),
     });
     const data = await res.json();
-    setResult(data);
-    setSubmitted(true);
+    if (!data.error) {
+      setResult(data);
+      setSubmitted(true);
+    }
   };
 
   const answered = Object.keys(answers).length;
@@ -53,46 +59,37 @@ function QuizView() {
     return (
       <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
         <Navbar showBack />
+        <div className="flex items-center justify-center h-40 text-[var(--muted)] text-sm">
+          Loading quiz...
+        </div>
       </div>
     );
 
-  const scoreCls = result
-    ? result.percentage >= 70
-      ? "text-emerald-600"
-      : result.percentage >= 40
-        ? "text-amber-500"
-        : "text-red-500"
-    : "";
-
-  const resultEmoji = result
-    ? result.percentage >= 70
-      ? "🎉"
-      : result.percentage >= 40
-        ? "👍"
-        : "💪"
-    : "";
+  const scorePct = result?.percentage ?? 0;
+  const scoreCls = scorePct >= 70 ? "text-emerald-600" : scorePct >= 40 ? "text-amber-500" : "text-red-500";
+  const resultEmoji = scorePct >= 70 ? "🎉" : scorePct >= 40 ? "👍" : "💪";
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
-      <Navbar user={user} onLogout={onLogout} showBack />
+      <Navbar showBack />
       <div className="flex-1 max-w-2xl mx-auto w-full px-6 py-8">
         {!submitted ? (
           <>
             <div className="mb-7">
-              <h1 className="text-2xl font-bold text-[var(--text)] mb-1">
-                {quiz.title}
-              </h1>
+              <h1 className="text-2xl font-bold text-[var(--text)] mb-1">{quiz.title}</h1>
+              {quiz.description && (
+                <p className="text-sm text-[var(--muted)] mb-1">{quiz.description}</p>
+              )}
               <p className="text-sm text-[var(--muted)]">
                 {total} questions · {answered} answered
+                {quiz.timeLimit > 0 && ` · ${quiz.timeLimit} min`}
               </p>
             </div>
 
             <div className="h-1.5 bg-[var(--border)] rounded-full mb-7 overflow-hidden">
               <div
                 className="h-full bg-[var(--accent)] rounded-full transition-all"
-                style={{
-                  width: `${total > 0 ? (answered / total) * 100 : 0}%`,
-                }}
+                style={{ width: `${total > 0 ? (answered / total) * 100 : 0}%` }}
               />
             </div>
 
@@ -103,6 +100,11 @@ function QuizView() {
               >
                 <p className="text-xs font-semibold text-[var(--muted)] uppercase tracking-wide mb-2">
                   Question {qi + 1} of {total}
+                  {q.points > 1 && (
+                    <span className="ml-2 px-2 py-0.5 bg-[var(--accent)]/10 text-[var(--accent)] rounded-full normal-case">
+                      {q.points} pts
+                    </span>
+                  )}
                 </p>
                 <p className="text-base font-semibold text-[var(--text)] mb-5 leading-relaxed">
                   {q.question}
@@ -129,9 +131,7 @@ function QuizView() {
                         >
                           {String.fromCharCode(65 + oi)}
                         </span>
-                        <span className="text-sm text-[var(--text)]">
-                          {opt}
-                        </span>
+                        <span className="text-sm text-[var(--text)]">{opt}</span>
                       </div>
                     );
                   })}
@@ -144,32 +144,25 @@ function QuizView() {
               disabled={!allAnswered}
               className="w-full py-3.5 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-xl text-base font-semibold border-none cursor-pointer disabled:cursor-not-allowed transition-colors mt-2"
             >
-              {allAnswered
-                ? "Submit Quiz"
-                : `Answer all questions to submit (${answered}/${total})`}
+              {allAnswered ? "Submit Quiz" : `Answer all questions to submit (${answered}/${total})`}
             </button>
           </>
         ) : (
           <>
             <div className="bg-[var(--surface)] rounded-xl p-10 text-center border border-[var(--border)] shadow-sm mb-6">
               <div className="text-5xl mb-4">{resultEmoji}</div>
-              <h2 className="text-xl font-bold text-[var(--text)] mb-4">
-                Quiz Complete!
-              </h2>
-              <div className={`text-5xl font-extrabold mb-2 ${scoreCls}`}>
-                {result.percentage}%
-              </div>
+              <h2 className="text-xl font-bold text-[var(--text)] mb-4">Quiz Complete!</h2>
+              <div className={`text-5xl font-extrabold mb-2 ${scoreCls}`}>{scorePct}%</div>
               <p className="text-sm text-[var(--muted)]">
-                {result.score} out of {result.total} correct
+                {result.score} / {result.totalPoints} pts
               </p>
             </div>
 
-            <h3 className="text-base font-bold text-[var(--text)] mb-4">
-              Review Answers
-            </h3>
+            <h3 className="text-base font-bold text-[var(--text)] mb-4">Review Answers</h3>
             {quiz.questions.map((q, qi) => {
-              const selected = result.answers[qi];
-              const correct = q.answer;
+              const ans = result.answers?.find((a) => a.questionIndex === qi);
+              const selected = ans?.selectedOption;
+              const correct = q.correctOption;
               const isCorrect = selected === correct;
               return (
                 <div
@@ -208,16 +201,12 @@ function QuizView() {
                           >
                             {String.fromCharCode(65 + oi)}
                           </span>
-                          <span className="text-sm text-[var(--text)]">
-                            {opt}
-                          </span>
+                          <span className="text-sm text-[var(--text)]">{opt}</span>
                         </div>
                       );
                     })}
                   </div>
-                  <p
-                    className={`text-xs font-semibold mt-3 ${isCorrect ? "text-emerald-600" : "text-red-500"}`}
-                  >
+                  <p className={`text-xs font-semibold mt-3 ${isCorrect ? "text-emerald-600" : "text-red-500"}`}>
                     {isCorrect
                       ? "✓ Correct"
                       : `✗ Wrong — Correct answer: ${q.options[correct]}`}

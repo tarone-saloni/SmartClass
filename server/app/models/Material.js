@@ -12,6 +12,7 @@ const materialSchema = new mongoose.Schema(
     fileUrl: { type: String, trim: true, default: '' },
     course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    order: { type: Number, default: 0 }, // for sequencing within a course
   },
   { timestamps: true }
 );

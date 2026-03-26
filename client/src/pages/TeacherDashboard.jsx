@@ -10,10 +10,16 @@ const inputCls =
 function TeacherDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [data, setData] = useState({ courses: [], totalStudents: 0, totalCourses: 0 });
+  const [data, setData] = useState({
+    courses: [],
+    totalStudents: 0,
+    totalCourses: 0,
+    pendingSubmissions: 0,
+    upcomingClasses: [],
+  });
   const [showModal, setShowModal] = useState(false);
-  const [editCourse, setEditCourse] = useState(null); // null = create, object = edit
-  const [confirmDelete, setConfirmDelete] = useState(null); // course to delete
+  const [editCourse, setEditCourse] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [form, setForm] = useState({ title: "", description: "", subject: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -85,8 +91,17 @@ function TeacherDashboard() {
     }
   };
 
-  const totalMaterials = data.courses.reduce((s, c) => s + c.materialCount, 0);
-  const totalAssignments = data.courses.reduce((s, c) => s + c.assignmentCount, 0);
+  const totalMaterials = data.courses.reduce((s, c) => s + (c.materialCount || 0), 0);
+  const totalQuizzes = data.courses.reduce((s, c) => s + (c.quizCount || 0), 0);
+
+  const stats = [
+    { icon: "📚", val: data.totalCourses, label: "Total Courses" },
+    { icon: "👨‍🎓", val: data.totalStudents, label: "Total Students" },
+    { icon: "📄", val: totalMaterials, label: "Materials" },
+    { icon: "🧠", val: totalQuizzes, label: "Quizzes" },
+    { icon: "📬", val: data.pendingSubmissions ?? 0, label: "Pending Reviews" },
+    { icon: "📹", val: data.upcomingClasses?.length ?? 0, label: "Upcoming Classes" },
+  ];
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
@@ -102,16 +117,11 @@ function TeacherDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          {[
-            { icon: "📚", val: data.totalCourses, label: "Total Courses" },
-            { icon: "👨‍🎓", val: data.totalStudents, label: "Total Students" },
-            { icon: "📄", val: totalMaterials, label: "Materials" },
-            { icon: "📋", val: totalAssignments, label: "Assignments" },
-          ].map((s) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          {stats.map((s) => (
             <div
               key={s.label}
-              className="bg-[var(--surface)] rounded-xl px-5 py-4 border border-[var(--border)] shadow-sm"
+              className="bg-[var(--surface)] rounded-xl px-4 py-4 border border-[var(--border)] shadow-sm"
             >
               <div className="text-2xl mb-1">{s.icon}</div>
               <div className="text-2xl font-bold text-[var(--text)]">{s.val}</div>
@@ -119,6 +129,41 @@ function TeacherDashboard() {
             </div>
           ))}
         </div>
+
+        {/* Upcoming Live Classes */}
+        {data.upcomingClasses?.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-base font-bold text-[var(--text)] mb-4 flex items-center gap-2">
+              📹 Upcoming Live Classes
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.upcomingClasses.map((lc) => (
+                <div
+                  key={lc.id}
+                  className="bg-[var(--surface)] rounded-xl p-4 border border-[var(--border)] shadow-sm flex flex-col gap-1.5 cursor-pointer hover:border-[var(--accent)]/40 transition-colors"
+                  onClick={() => navigate(`/course/${lc.course?.id || lc.course}`)}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                      lc.status === "live"
+                        ? "bg-red-100 text-red-600 animate-pulse"
+                        : "bg-blue-100 text-blue-600"
+                    }`}>
+                      {lc.status === "live" ? "🔴 LIVE NOW" : "🗓 Scheduled"}
+                    </span>
+                    <span className="text-xs text-[var(--muted)]">
+                      {new Date(lc.scheduledAt).toLocaleDateString()} · {new Date(lc.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-[var(--text)]">{lc.title}</p>
+                  {lc.course?.title && (
+                    <p className="text-xs text-[var(--muted)]">📚 {lc.course.title}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Course list header */}
         <div className="flex items-center justify-between mb-5">
@@ -157,10 +202,12 @@ function TeacherDashboard() {
                 <p className="text-sm text-[var(--muted)] mb-4 leading-relaxed flex-1">
                   {c.description || "No description"}
                 </p>
-                <div className="flex flex-wrap gap-3 mb-4 text-xs text-[var(--muted)]">
-                  <span>👨‍🎓 {c.enrollmentCount} students</span>
-                  <span>📄 {c.materialCount} materials</span>
-                  <span>📋 {c.assignmentCount} assignments</span>
+                <div className="flex flex-wrap gap-2 mb-4 text-xs text-[var(--muted)]">
+                  <span>👨‍🎓 {c.enrollmentCount}</span>
+                  <span>📄 {c.materialCount}</span>
+                  <span>📋 {c.assignmentCount}</span>
+                  <span>🧠 {c.quizCount || 0}</span>
+                  <span>📹 {c.liveClassCount || 0}</span>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -204,9 +251,7 @@ function TeacherDashboard() {
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">
-                  Course Title *
-                </label>
+                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Course Title *</label>
                 <input
                   className={inputCls}
                   placeholder="e.g. Introduction to Physics"
@@ -216,9 +261,7 @@ function TeacherDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">
-                  Subject
-                </label>
+                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Subject</label>
                 <input
                   className={inputCls}
                   placeholder="e.g. Science, Math, History"
@@ -227,9 +270,7 @@ function TeacherDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">
-                  Description
-                </label>
+                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Description</label>
                 <textarea
                   className="w-full px-3.5 py-2.5 border border-[var(--border)] rounded-lg text-sm outline-none resize-y min-h-[80px] focus:border-[var(--accent)] transition-colors bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--muted)]/70"
                   placeholder="Brief course overview..."
@@ -274,7 +315,7 @@ function TeacherDashboard() {
             <h3 className="text-lg font-bold text-[var(--text)] mb-2">Delete Course?</h3>
             <p className="text-sm text-[var(--muted)] mb-1">
               <strong className="text-[var(--text)]">"{confirmDelete.title}"</strong> will be permanently deleted
-              along with all its materials and assignments.
+              along with all its materials, assignments, quizzes, and live classes.
             </p>
             <p className="text-xs text-red-500 mb-6">This action cannot be undone.</p>
             <div className="flex gap-3 justify-center">
