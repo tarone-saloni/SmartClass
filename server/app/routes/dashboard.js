@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getTeacherDashboard, getStudentDashboard } from '../controllers/courseController.js';
+import { getTeacherDashboard, getStudentDashboard } from '../controllers/dashboardController.js';
 
 const router = Router();
 

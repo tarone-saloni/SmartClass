@@ -11,6 +11,9 @@ import courseRoutes from './app/routes/courses.js';
 import notificationRoutes from './app/routes/notifications.js';
 import dashboardRoutes from './app/routes/dashboard.js';
 import assignmentRoutes from './app/routes/assignments.js';
+import quizRoutes from './app/routes/quizzes.js';
+import liveClassRoutes from './app/routes/liveClass.js';
+import enrollmentRoutes from './app/routes/enrollments.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -43,6 +46,9 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', dashboardRoutes); // /api/teachers/:id/dashboard  /api/students/:id/dashboard
 app.use('/api/assignments', assignmentRoutes);
+app.use('/api/quizzes', quizRoutes);
+app.use('/api/live-classes', liveClassRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
 
 app.get('/', (_req, res) => res.json({ message: 'SmartClass API is running.' }));
 

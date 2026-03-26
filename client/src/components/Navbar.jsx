@@ -48,9 +48,47 @@ function Navbar({ showBack }) {
         ...prev,
       ]);
     });
+    socket.on("live-class-scheduled", (data) => {
+      setNotifs((prev) => [
+        {
+          id: `lc_${Date.now()}`,
+          message: `📹 Live class scheduled: "${data.title}"`,
+          createdAt: new Date().toISOString(),
+          read: false,
+        },
+        ...prev,
+      ]);
+    });
+    socket.on("live-class-status", (data) => {
+      if (data.status === "live") {
+        setNotifs((prev) => [
+          {
+            id: `lcs_${Date.now()}`,
+            message: `🔴 A live class just started!`,
+            createdAt: new Date().toISOString(),
+            read: false,
+          },
+          ...prev,
+        ]);
+      }
+    });
+    socket.on("student-enrolled", (data) => {
+      setNotifs((prev) => [
+        {
+          id: `enroll_${Date.now()}`,
+          message: data.message || "A student enrolled in your course",
+          createdAt: new Date().toISOString(),
+          read: false,
+        },
+        ...prev,
+      ]);
+    });
 
     return () => {
       socket.off("new-course");
+      socket.off("live-class-scheduled");
+      socket.off("live-class-status");
+      socket.off("student-enrolled");
     };
   }, [user?.id, isAuthenticated]);
 

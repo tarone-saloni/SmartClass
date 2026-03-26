@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -14,24 +14,14 @@ function VideoEmbed({ url }) {
   if (yt) {
     return (
       <div className="mt-3 rounded-lg overflow-hidden">
-        <iframe
-          width="100%"
-          height="200"
-          src={`https://www.youtube.com/embed/${yt[1]}`}
-          style={{ border: 0 }}
-          allowFullScreen
-          className="block rounded-lg"
-        />
+        <iframe width="100%" height="200" src={`https://www.youtube.com/embed/${yt[1]}`}
+          style={{ border: 0 }} allowFullScreen className="block rounded-lg" />
       </div>
     );
   }
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 text-[var(--accent)] text-sm font-medium mt-2 hover:underline"
-    >
+    <a href={url} target="_blank" rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 text-[var(--accent)] text-sm font-medium mt-2 hover:underline">
       ▶ Open Link
     </a>
   );
@@ -64,79 +54,116 @@ function typeCls(type) {
   }
 }
 
+function statusBadge(status) {
+  switch (status) {
+    case "live": return "bg-red-100 text-red-600";
+    case "ended": return "bg-gray-100 text-gray-500";
+    default: return "bg-blue-100 text-blue-600";
+  }
+}
+
 function CourseView() {
   const { user } = useAuth();
   const { id } = useParams();
-const isTeacher = user.role === "teacher";
+  const navigate = useNavigate();
+  const isTeacher = user.role === "teacher";
 
+  // Core data
   const [course, setCourse] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
+  const [liveClasses, setLiveClasses] = useState([]);
   const [students, setStudents] = useState([]);
 
+  // Student-specific: completed materials set + progress
+  const [completedMats, setCompletedMats] = useState(new Set());
+  const [matProgress, setMatProgress] = useState(0);
+
   const [tab, setTab] = useState("materials");
-  const [modal, setModal] = useState(null);
+  const [modal, setModal] = useState(null); // "material" | "assignment" | "quiz" | "live-class"
   const [saving, setSaving] = useState(false);
 
-  // Student: my submissions per assignment  { [assignmentId]: submission }
+  // Student: my submissions per assignment
   const [mySubmissions, setMySubmissions] = useState({});
-  // Teacher: expanded submissions list per assignment  { [assignmentId]: submissions[] | null }
+  // Teacher: expanded submissions list per assignment
   const [expandedSubs, setExpandedSubs] = useState({});
   const [submissionText, setSubmissionText] = useState({});
-  // Grading state
+  // Grading
   const [gradeForm, setGradeForm] = useState({ score: "", feedback: "" });
   const [gradingSubId, setGradingSubId] = useState(null);
 
+  // Forms
   const [matForm, setMatForm] = useState({ title: "", description: "", type: "video", fileUrl: "" });
   const [assForm, setAssForm] = useState({ title: "", description: "", dueDate: "", maxScore: 100 });
   const [quizForm, setQuizForm] = useState({
     title: "",
+    description: "",
+    timeLimit: 0,
     questions: [{ question: "", options: ["", "", "", ""], answer: 0 }],
   });
+  const [lcForm, setLcForm] = useState({ title: "", description: "", scheduledAt: "", meetingLink: "" });
 
-  // ── Loaders ───────────────────────────────────────────────────────────────
+  // ── Loaders ─────────────────────────────────────────────────────────────
   const loadCourse = useCallback(() =>
-    fetch(`/api/courses/${id}`)
-      .then((r) => r.json())
-      .then((d) => !d.error && setCourse(d)), [id]);
+    fetch(`/api/courses/${id}`).then(r => r.json()).then(d => !d.error && setCourse(d)), [id]);
 
   const loadMaterials = useCallback(() =>
-    fetch(`/api/courses/${id}/materials`)
-      .then((r) => r.json())
-      .then((d) => Array.isArray(d) && setMaterials(d)), [id]);
+    fetch(`/api/courses/${id}/materials`).then(r => r.json())
+      .then(d => Array.isArray(d) && setMaterials(d)), [id]);
 
   const loadAssignments = useCallback(() =>
-    fetch(`/api/courses/${id}/assignments`)
-      .then((r) => r.json())
-      .then((d) => Array.isArray(d) && setAssignments(d)), [id]);
+    fetch(`/api/courses/${id}/assignments`).then(r => r.json())
+      .then(d => Array.isArray(d) && setAssignments(d)), [id]);
+
+  const loadQuizzes = useCallback(() =>
+    fetch(`/api/courses/${id}/quizzes`).then(r => r.json())
+      .then(d => Array.isArray(d) && setQuizzes(d)), [id]);
+
+  const loadLiveClasses = useCallback(() =>
+    fetch(`/api/courses/${id}/live-classes`).then(r => r.json())
+      .then(d => Array.isArray(d) && setLiveClasses(d)), [id]);
 
   const loadStudents = useCallback(() => {
     const qs = isTeacher ? `?teacherId=${user.id}` : "";
-    fetch(`/api/courses/${id}/students${qs}`)
-      .then((r) => r.json())
-      .then((d) => d.students && setStudents(d.students));
+    fetch(`/api/courses/${id}/students${qs}`).then(r => r.json())
+      .then(d => d.students && setStudents(d.students));
+  }, [id, isTeacher, user.id]);
+
+  const loadProgress = useCallback(() => {
+    if (isTeacher) return;
+    fetch(`/api/courses/${id}/materials/progress?studentId=${user.id}`).then(r => r.json())
+      .then(d => {
+        if (!d.error) {
+          setMatProgress(d.progress ?? 0);
+          setCompletedMats(new Set(
+            (d.materials || []).filter(m => m.isCompleted).map(m => m.id)
+          ));
+        }
+      });
   }, [id, isTeacher, user.id]);
 
   useEffect(() => {
     loadCourse();
     loadMaterials();
     loadAssignments();
+    loadQuizzes();
+    loadLiveClasses();
     loadStudents();
+    loadProgress();
   }, [id]);
 
   // Student: load own submissions after assignments load
   useEffect(() => {
     if (isTeacher || assignments.length === 0) return;
-    assignments.forEach((a) => {
+    assignments.forEach(a => {
       fetch(`/api/assignments/${a.id}/my-submission?studentId=${user.id}`)
-        .then((r) => r.json())
-        .then((s) => {
-          if (!s.error) setMySubmissions((p) => ({ ...p, [a.id]: s }));
-        });
+        .then(r => r.json())
+        .then(s => { if (!s.error) setMySubmissions(p => ({ ...p, [a.id]: s })); });
     });
   }, [assignments, isTeacher, user.id]);
 
-  // ── Material actions ──────────────────────────────────────────────────────
+  // ── Material actions ─────────────────────────────────────────────────────
   const saveMaterial = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -159,10 +186,28 @@ const isTeacher = user.role === "teacher";
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
     });
-    setMaterials((p) => p.filter((m) => m.id !== mid));
+    setMaterials(p => p.filter(m => m.id !== mid));
   };
 
-  // ── Assignment actions ────────────────────────────────────────────────────
+  const toggleComplete = async (mid) => {
+    const isDone = completedMats.has(mid);
+    await fetch(`/api/courses/${id}/materials/${mid}/complete`, {
+      method: isDone ? "DELETE" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId: user.id }),
+    });
+    setCompletedMats(prev => {
+      const next = new Set(prev);
+      isDone ? next.delete(mid) : next.add(mid);
+      return next;
+    });
+    // Recalculate progress
+    const total = materials.length;
+    const newDone = isDone ? completedMats.size - 1 : completedMats.size + 1;
+    setMatProgress(total > 0 ? Math.round((newDone / total) * 100) : 0);
+  };
+
+  // ── Assignment actions ───────────────────────────────────────────────────
   const saveAssignment = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -185,8 +230,8 @@ const isTeacher = user.role === "teacher";
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
     });
-    setAssignments((p) => p.filter((a) => a.id !== aid));
-    setExpandedSubs((p) => { const n = { ...p }; delete n[aid]; return n; });
+    setAssignments(p => p.filter(a => a.id !== aid));
+    setExpandedSubs(p => { const n = { ...p }; delete n[aid]; return n; });
   };
 
   const submitAssignment = async (aid) => {
@@ -198,17 +243,17 @@ const isTeacher = user.role === "teacher";
       body: JSON.stringify({ studentId: user.id, content }),
     });
     const data = await res.json();
-    if (!data.error) setMySubmissions((p) => ({ ...p, [aid]: data }));
+    if (!data.error) setMySubmissions(p => ({ ...p, [aid]: data }));
   };
 
   const toggleSubs = async (aid) => {
     if (expandedSubs[aid] !== undefined && expandedSubs[aid] !== null) {
-      setExpandedSubs((p) => { const n = { ...p }; delete n[aid]; return n; });
+      setExpandedSubs(p => { const n = { ...p }; delete n[aid]; return n; });
       return;
     }
     const data = await fetch(`/api/assignments/${aid}/submissions?teacherId=${user.id}`)
-      .then((r) => r.json());
-    setExpandedSubs((p) => ({ ...p, [aid]: Array.isArray(data) ? data : [] }));
+      .then(r => r.json());
+    setExpandedSubs(p => ({ ...p, [aid]: Array.isArray(data) ? data : [] }));
   };
 
   const gradeSubmission = async (e) => {
@@ -216,101 +261,146 @@ const isTeacher = user.role === "teacher";
     const res = await fetch(`/api/assignments/submissions/${gradingSubId}/grade`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        score: Number(gradeForm.score),
-        feedback: gradeForm.feedback,
-        teacherId: user.id,
-      }),
+      body: JSON.stringify({ score: Number(gradeForm.score), feedback: gradeForm.feedback, teacherId: user.id }),
     });
     const updated = await res.json();
     if (!updated.error) {
-      // Update the submission in expanded list
-      setExpandedSubs((p) => {
-        const newSubs = { ...p };
-        for (const aid in newSubs) {
-          if (Array.isArray(newSubs[aid])) {
-            newSubs[aid] = newSubs[aid].map((s) =>
-              s.id === gradingSubId ? { ...s, ...updated } : s
-            );
-          }
+      setExpandedSubs(p => {
+        const n = { ...p };
+        for (const aid in n) {
+          if (Array.isArray(n[aid]))
+            n[aid] = n[aid].map(s => s.id === gradingSubId ? { ...s, ...updated } : s);
         }
-        return newSubs;
+        return n;
       });
       setGradingSubId(null);
       setGradeForm({ score: "", feedback: "" });
     }
   };
 
-  // ── Quiz actions (placeholder — quiz backend not yet implemented) ──────────
+  // ── Quiz actions ─────────────────────────────────────────────────────────
   const saveQuiz = async (e) => {
     e.preventDefault();
-    if (quizForm.questions.some((q) => !q.question || q.options.some((o) => !o))) return;
+    if (quizForm.questions.some(q => !q.question || q.options.some(o => !o))) return;
     setSaving(true);
-    await fetch(`/api/courses/${id}/quizzes`, {
+    const payload = {
+      title: quizForm.title,
+      description: quizForm.description,
+      timeLimit: Number(quizForm.timeLimit) || 0,
+      teacherId: user.id,
+      questions: quizForm.questions.map(q => ({
+        question: q.question,
+        options: q.options,
+        correctOption: q.answer, // map UI field → backend field
+        points: 1,
+      })),
+    };
+    const res = await fetch(`/api/courses/${id}/quizzes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(quizForm),
+      body: JSON.stringify(payload),
     });
+    if (res.ok) {
+      setModal(null);
+      setQuizForm({ title: "", description: "", timeLimit: 0, questions: [{ question: "", options: ["", "", "", ""], answer: 0 }] });
+      loadQuizzes();
+    }
     setSaving(false);
-    setModal(null);
-    setQuizForm({ title: "", questions: [{ question: "", options: ["", "", "", ""], answer: 0 }] });
+  };
+
+  const deleteQuiz = async (qid) => {
+    await fetch(`/api/quizzes/${qid}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teacherId: user.id }),
+    });
+    setQuizzes(p => p.filter(q => q.id !== qid));
   };
 
   const updateQ = (qi, field, val) =>
-    setQuizForm((p) => ({
-      ...p,
-      questions: p.questions.map((q, i) => (i === qi ? { ...q, [field]: val } : q)),
-    }));
+    setQuizForm(p => ({ ...p, questions: p.questions.map((q, i) => i === qi ? { ...q, [field]: val } : q) }));
   const updateOpt = (qi, oi, val) =>
-    setQuizForm((p) => ({
-      ...p,
-      questions: p.questions.map((q, i) =>
-        i === qi ? { ...q, options: q.options.map((o, j) => (j === oi ? val : o)) } : q
-      ),
-    }));
+    setQuizForm(p => ({ ...p, questions: p.questions.map((q, i) => i === qi ? { ...q, options: q.options.map((o, j) => j === oi ? val : o) } : q) }));
   const addQuestion = () =>
-    setQuizForm((p) => ({
-      ...p,
-      questions: [...p.questions, { question: "", options: ["", "", "", ""], answer: 0 }],
-    }));
+    setQuizForm(p => ({ ...p, questions: [...p.questions, { question: "", options: ["", "", "", ""], answer: 0 }] }));
   const removeQuestion = (qi) =>
-    setQuizForm((p) => ({ ...p, questions: p.questions.filter((_, i) => i !== qi) }));
+    setQuizForm(p => ({ ...p, questions: p.questions.filter((_, i) => i !== qi) }));
 
-  // ── Loading state ─────────────────────────────────────────────────────────
+  // ── Live Class actions ───────────────────────────────────────────────────
+  const saveLiveClass = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    const res = await fetch(`/api/courses/${id}/live-classes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...lcForm, teacherId: user.id }),
+    });
+    if (res.ok) {
+      setModal(null);
+      setLcForm({ title: "", description: "", scheduledAt: "", meetingLink: "" });
+      loadLiveClasses();
+    }
+    setSaving(false);
+  };
+
+  const deleteLiveClass = async (lcId) => {
+    await fetch(`/api/live-classes/${lcId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teacherId: user.id }),
+    });
+    setLiveClasses(p => p.filter(lc => lc.id !== lcId));
+  };
+
+  const setClassStatus = async (lcId, status) => {
+    const res = await fetch(`/api/live-classes/${lcId}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, teacherId: user.id }),
+    });
+    const updated = await res.json();
+    if (!updated.error)
+      setLiveClasses(p => p.map(lc => lc.id === lcId ? { ...lc, status: updated.status } : lc));
+  };
+
+  const joinClass = async (lcId) => {
+    await fetch(`/api/live-classes/${lcId}/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id }),
+    });
+  };
+
+  // ── Loading state ────────────────────────────────────────────────────────
   if (!course)
     return (
       <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
         <Navbar showBack />
-        <div className="flex-1 flex items-center justify-center text-[var(--muted)]">
-          Loading...
-        </div>
+        <div className="flex-1 flex items-center justify-center text-[var(--muted)]">Loading...</div>
         <Footer />
       </div>
     );
 
   const tabs = isTeacher
-    ? ["materials", "assignments", "quizzes", "students"]
-    : ["materials", "assignments", "quizzes"];
+    ? ["materials", "assignments", "quizzes", "live-classes", "students"]
+    : ["materials", "assignments", "quizzes", "live-classes"];
 
   const tabCount = {
     materials: materials.length,
     assignments: assignments.length,
-    quizzes: 0,
+    quizzes: quizzes.length,
+    "live-classes": liveClasses.length,
     students: students.length,
   };
 
+  const tabLabel = { "live-classes": "Live Classes" };
+
   const scoreCls = (pct) =>
-    pct >= 70
-      ? "bg-emerald-100 text-emerald-700"
-      : pct >= 40
-        ? "bg-amber-100 text-amber-700"
-        : "bg-red-100 text-red-600";
+    pct >= 70 ? "bg-emerald-100 text-emerald-700" : pct >= 40 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-600";
 
   const modalOverlay = (onClose, children) => (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-5"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-5"
+      onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-7 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl text-[var(--text)]">
         {children}
       </div>
@@ -338,26 +428,40 @@ const isTeacher = user.role === "teacher";
               </span>
             )}
           </div>
-          <div className="flex gap-4 mt-5 text-xs font-medium opacity-80">
+          <div className="flex flex-wrap gap-4 mt-5 text-xs font-medium opacity-80">
             <span>📄 {materials.length} materials</span>
             <span>📋 {assignments.length} assignments</span>
+            <span>🧠 {quizzes.length} quizzes</span>
+            <span>📹 {liveClasses.length} live classes</span>
             <span>👨‍🎓 {course.enrollmentCount} students</span>
           </div>
+          {/* Student progress bar */}
+          {!isTeacher && materials.length > 0 && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-xs opacity-80 mb-1.5">
+                <span>Course Progress</span>
+                <span>{matProgress}%</span>
+              </div>
+              <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-white rounded-full transition-all duration-500"
+                  style={{ width: `${matProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Tabs ── */}
-        <div className="flex gap-1 border-b-2 border-[var(--border)] mb-6">
-          {tabs.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-0.5 transition-colors capitalize bg-transparent border-x-0 border-t-0 cursor-pointer ${
+        <div className="flex gap-1 border-b-2 border-[var(--border)] mb-6 overflow-x-auto">
+          {tabs.map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-0.5 transition-colors capitalize bg-transparent border-x-0 border-t-0 cursor-pointer whitespace-nowrap ${
                 tab === t
                   ? "text-[var(--accent)] border-b-[var(--accent)] font-semibold"
                   : "text-[var(--muted)] border-b-transparent hover:text-[var(--accent)]"
-              }`}
-            >
-              {t} ({tabCount[t]})
+              }`}>
+              {tabLabel[t] || t} ({tabCount[t]})
             </button>
           ))}
         </div>
@@ -365,65 +469,76 @@ const isTeacher = user.role === "teacher";
         {/* ── MATERIALS ── */}
         {tab === "materials" && (
           <div>
-            {isTeacher && (
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-base font-bold text-[var(--text)]">Course Materials</h2>
-                <button
-                  onClick={() => setModal("material")}
-                  className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors"
-                >
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-[var(--text)]">Course Materials</h2>
+              {isTeacher && (
+                <button onClick={() => setModal("material")}
+                  className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
                   + Add Material
                 </button>
-              </div>
-            )}
+              )}
+            </div>
             {materials.length === 0 ? (
               <div className="text-center py-14 text-[var(--muted)] text-sm">
                 No materials yet{isTeacher ? ". Add your first one!" : "."}
               </div>
             ) : (
               <div className="space-y-3">
-                {materials.map((m) => (
-                  <div
-                    key={m.id}
-                    className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)] shadow-sm"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-[var(--text)]">{m.title}</span>
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${typeCls(m.type)}`}>
-                            {typeLabel(m.type)}
-                          </span>
+                {materials.map(m => {
+                  const done = completedMats.has(m.id);
+                  return (
+                    <div key={m.id}
+                      className={`bg-[var(--surface)] rounded-xl p-5 border transition-colors ${
+                        done ? "border-emerald-300/60" : "border-[var(--border)]"
+                      } shadow-sm`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-semibold text-[var(--text)]">{m.title}</span>
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${typeCls(m.type)}`}>
+                              {typeLabel(m.type)}
+                            </span>
+                            {done && (
+                              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                ✓ Done
+                              </span>
+                            )}
+                          </div>
+                          {m.description && <p className="text-xs text-[var(--muted)] mb-1">{m.description}</p>}
+                          <p className="text-xs text-[var(--muted)] mb-1">
+                            {new Date(m.createdAt).toLocaleDateString()}
+                          </p>
+                          {m.fileUrl && m.type === "video" && <VideoEmbed url={m.fileUrl} />}
+                          {m.fileUrl && m.type !== "video" && (
+                            <a href={m.fileUrl} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[var(--accent)] text-sm font-medium mt-1 hover:underline">
+                              📎 Open {m.type}
+                            </a>
+                          )}
                         </div>
-                        {m.description && (
-                          <p className="text-xs text-[var(--muted)] mb-1">{m.description}</p>
-                        )}
-                        <p className="text-xs text-[var(--muted)] mb-1">
-                          {new Date(m.createdAt).toLocaleDateString()}
-                        </p>
-                        {m.fileUrl && m.type === "video" && <VideoEmbed url={m.fileUrl} />}
-                        {m.fileUrl && m.type !== "video" && (
-                          <a
-                            href={m.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[var(--accent)] text-sm font-medium mt-1 hover:underline"
-                          >
-                            📎 Open {m.type}
-                          </a>
-                        )}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {!isTeacher && (
+                            <button
+                              onClick={() => toggleComplete(m.id)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border-none cursor-pointer transition-colors ${
+                                done
+                                  ? "bg-emerald-100 hover:bg-emerald-200 text-emerald-700"
+                                  : "bg-[var(--bg)] hover:bg-emerald-50 text-[var(--muted)] hover:text-emerald-600 border border-[var(--border)]"
+                              }`}>
+                              {done ? "✓ Done" : "Mark Done"}
+                            </button>
+                          )}
+                          {isTeacher && (
+                            <button onClick={() => deleteMaterial(m.id)}
+                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-semibold border-none cursor-pointer">
+                              Delete
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      {isTeacher && (
-                        <button
-                          onClick={() => deleteMaterial(m.id)}
-                          className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-semibold border-none cursor-pointer flex-shrink-0"
-                        >
-                          Delete
-                        </button>
-                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -435,10 +550,8 @@ const isTeacher = user.role === "teacher";
             {isTeacher && (
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-base font-bold text-[var(--text)]">Assignments</h2>
-                <button
-                  onClick={() => setModal("assignment")}
-                  className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors"
-                >
+                <button onClick={() => setModal("assignment")}
+                  className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
                   + Add Assignment
                 </button>
               </div>
@@ -449,15 +562,13 @@ const isTeacher = user.role === "teacher";
               </div>
             ) : (
               <div className="space-y-3">
-                {assignments.map((a) => {
+                {assignments.map(a => {
                   const mySub = mySubmissions[a.id];
                   const subs = expandedSubs[a.id];
                   const isOverdue = a.dueDate && new Date(a.dueDate) < new Date();
                   return (
-                    <div
-                      key={a.id}
-                      className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)] shadow-sm"
-                    >
+                    <div key={a.id}
+                      className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)] shadow-sm">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-[var(--text)] mb-1">{a.title}</p>
@@ -471,67 +582,51 @@ const isTeacher = user.role === "teacher";
                             <span>Max: {a.maxScore} pts</span>
                           </div>
                           {a.description && (
-                            <p className="text-sm text-[var(--muted)] leading-relaxed mt-1">
-                              {a.description}
-                            </p>
+                            <p className="text-sm text-[var(--muted)] leading-relaxed mt-1">{a.description}</p>
                           )}
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                           {isTeacher ? (
                             <>
-                              <button
-                                onClick={() => toggleSubs(a.id)}
-                                className="px-3 py-1.5 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded-lg text-xs font-semibold border-none cursor-pointer"
-                              >
+                              <button onClick={() => toggleSubs(a.id)}
+                                className="px-3 py-1.5 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded-lg text-xs font-semibold border-none cursor-pointer">
                                 {subs !== undefined ? "Hide" : "Submissions"}
                               </button>
-                              <button
-                                onClick={() => deleteAssignment(a.id)}
-                                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-semibold border-none cursor-pointer"
-                              >
+                              <button onClick={() => deleteAssignment(a.id)}
+                                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-semibold border-none cursor-pointer">
                                 Delete
                               </button>
                             </>
                           ) : mySub ? (
-                            <div className="text-right">
-                              <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                                mySub.status === "graded"
-                                  ? scoreCls((mySub.score / a.maxScore) * 100)
-                                  : "bg-emerald-100 text-emerald-700"
-                              }`}>
-                                {mySub.status === "graded"
-                                  ? `${mySub.score}/${a.maxScore}`
-                                  : mySub.status === "late" ? "⏰ Late" : "✓ Submitted"}
-                              </span>
-                            </div>
+                            <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                              mySub.status === "graded"
+                                ? scoreCls((mySub.score / a.maxScore) * 100)
+                                : "bg-emerald-100 text-emerald-700"
+                            }`}>
+                              {mySub.status === "graded"
+                                ? `${mySub.score}/${a.maxScore}`
+                                : mySub.status === "late" ? "⏰ Late" : "✓ Submitted"}
+                            </span>
                           ) : null}
                         </div>
                       </div>
 
-                      {/* Student — submission form */}
                       {!isTeacher && !mySub && (
                         <div className="mt-4 space-y-2">
-                          <textarea
-                            className={`${textareaCls} min-h-[80px]`}
+                          <textarea className={`${textareaCls} min-h-[80px]`}
                             placeholder="Write your answer here..."
                             value={submissionText[a.id] || ""}
-                            onChange={(e) =>
-                              setSubmissionText((p) => ({ ...p, [a.id]: e.target.value }))
-                            }
-                          />
+                            onChange={e => setSubmissionText(p => ({ ...p, [a.id]: e.target.value }))} />
                           <div className="flex justify-end">
-                            <button
-                              onClick={() => submitAssignment(a.id)}
+                            <button onClick={() => submitAssignment(a.id)}
                               disabled={!submissionText[a.id]?.trim()}
-                              className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 text-emerald-600 rounded-lg text-xs font-semibold border-none cursor-pointer disabled:cursor-not-allowed"
-                            >
+                              className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 text-emerald-600 rounded-lg text-xs font-semibold border-none cursor-pointer disabled:cursor-not-allowed">
                               Submit
                             </button>
                           </div>
                         </div>
                       )}
 
-                      {/* Student — submitted content + feedback */}
                       {!isTeacher && mySub && (
                         <div className="mt-3 bg-[var(--bg)] rounded-lg px-4 py-3 border border-[var(--border)] space-y-2">
                           <p className="text-xs font-semibold text-[var(--muted)]">Your submission</p>
@@ -545,24 +640,18 @@ const isTeacher = user.role === "teacher";
                         </div>
                       )}
 
-                      {/* Teacher — submissions list */}
                       {isTeacher && subs !== undefined && (
                         <div className="mt-4 space-y-2">
                           {subs.length === 0 ? (
                             <p className="text-xs text-[var(--muted)] italic">No submissions yet</p>
                           ) : (
-                            subs.map((s) => (
-                              <div
-                                key={s.id}
-                                className="bg-[var(--bg)] rounded-lg px-4 py-3 border border-[var(--border)]"
-                              >
+                            subs.map(s => (
+                              <div key={s.id}
+                                className="bg-[var(--bg)] rounded-lg px-4 py-3 border border-[var(--border)]">
                                 <div className="flex items-center justify-between mb-1">
                                   <p className="text-xs font-semibold text-[var(--muted)]">
-                                    {s.student?.name} ·{" "}
-                                    {new Date(s.submittedAt).toLocaleString()}
-                                    {s.status === "late" && (
-                                      <span className="ml-2 text-red-500">⏰ Late</span>
-                                    )}
+                                    {s.student?.name} · {new Date(s.submittedAt).toLocaleString()}
+                                    {s.status === "late" && <span className="ml-2 text-red-500">⏰ Late</span>}
                                     {s.status === "graded" && (
                                       <span className={`ml-2 px-2 py-0.5 rounded text-xs font-bold ${scoreCls((s.score / a.maxScore) * 100)}`}>
                                         {s.score}/{a.maxScore}
@@ -570,19 +659,13 @@ const isTeacher = user.role === "teacher";
                                     )}
                                   </p>
                                   <button
-                                    onClick={() => {
-                                      setGradingSubId(s.id);
-                                      setGradeForm({ score: s.score ?? "", feedback: s.feedback ?? "" });
-                                    }}
-                                    className="px-2 py-1 text-xs bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded border-none cursor-pointer font-semibold"
-                                  >
+                                    onClick={() => { setGradingSubId(s.id); setGradeForm({ score: s.score ?? "", feedback: s.feedback ?? "" }); }}
+                                    className="px-2 py-1 text-xs bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded border-none cursor-pointer font-semibold">
                                     Grade
                                   </button>
                                 </div>
                                 <p className="text-sm text-[var(--text)] leading-relaxed">{s.content}</p>
-                                {s.feedback && (
-                                  <p className="text-xs text-[var(--muted)] mt-1 italic">"{s.feedback}"</p>
-                                )}
+                                {s.feedback && <p className="text-xs text-[var(--muted)] mt-1 italic">"{s.feedback}"</p>}
                               </div>
                             ))
                           )}
@@ -599,20 +682,150 @@ const isTeacher = user.role === "teacher";
         {/* ── QUIZZES ── */}
         {tab === "quizzes" && (
           <div>
-            {isTeacher && (
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-base font-bold text-[var(--text)]">Quizzes</h2>
-                <button
-                  onClick={() => setModal("quiz")}
-                  className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors"
-                >
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-[var(--text)]">Quizzes</h2>
+              {isTeacher && (
+                <button onClick={() => setModal("quiz")}
+                  className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
                   + Create Quiz
                 </button>
+              )}
+            </div>
+            {quizzes.length === 0 ? (
+              <div className="text-center py-14 text-[var(--muted)] text-sm">
+                No quizzes yet{isTeacher ? ". Create one!" : "."}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {quizzes.map(q => (
+                  <div key={q.id}
+                    className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)] shadow-sm flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-[var(--text)] mb-1">{q.title}</p>
+                      <div className="flex flex-wrap gap-3 text-xs text-[var(--muted)]">
+                        <span>❓ {q.questionCount} questions</span>
+                        <span>⭐ {q.totalPoints} pts</span>
+                        {q.timeLimit > 0 && <span>⏱ {q.timeLimit} min</span>}
+                        {q.dueDate && <span>📅 Due {new Date(q.dueDate).toLocaleDateString()}</span>}
+                        {!q.isActive && <span className="text-red-500">Inactive</span>}
+                      </div>
+                      {q.description && (
+                        <p className="text-xs text-[var(--muted)] mt-1 leading-relaxed">{q.description}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      {!isTeacher && (
+                        <button
+                          onClick={() => navigate(`/quiz/${q.id}`)}
+                          className="px-4 py-1.5 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded-lg text-xs font-semibold border-none cursor-pointer">
+                          Take Quiz →
+                        </button>
+                      )}
+                      {isTeacher && (
+                        <>
+                          <button
+                            onClick={() => navigate(`/quiz/${q.id}/results`)}
+                            className="px-3 py-1.5 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded-lg text-xs font-semibold border-none cursor-pointer">
+                            Results
+                          </button>
+                          <button onClick={() => deleteQuiz(q.id)}
+                            className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-semibold border-none cursor-pointer">
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-            <div className="text-center py-14 text-[var(--muted)] text-sm">
-              No quizzes yet{isTeacher ? ". Create one!" : "."}
+          </div>
+        )}
+
+        {/* ── LIVE CLASSES ── */}
+        {tab === "live-classes" && (
+          <div>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-[var(--text)]">Live Classes</h2>
+              {isTeacher && (
+                <button onClick={() => setModal("live-class")}
+                  className="px-4 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors">
+                  + Schedule Class
+                </button>
+              )}
             </div>
+            {liveClasses.length === 0 ? (
+              <div className="text-center py-14 text-[var(--muted)] text-sm">
+                No live classes yet{isTeacher ? ". Schedule one!" : "."}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {liveClasses.map(lc => (
+                  <div key={lc.id}
+                    className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)] shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm font-semibold text-[var(--text)]">{lc.title}</p>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusBadge(lc.status)}`}>
+                            {lc.status === "live" ? "🔴 LIVE" : lc.status === "ended" ? "⬛ Ended" : "🗓 Scheduled"}
+                          </span>
+                        </div>
+                        {lc.description && (
+                          <p className="text-xs text-[var(--muted)] mb-1">{lc.description}</p>
+                        )}
+                        <p className="text-xs text-[var(--muted)]">
+                          📅 {new Date(lc.scheduledAt).toLocaleString()}
+                          {lc.attendeeCount > 0 && ` · 👥 ${lc.attendeeCount} attended`}
+                        </p>
+                        {lc.meetingLink && lc.status !== "ended" && (
+                          <a href={lc.meetingLink} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[var(--accent)] text-xs font-semibold mt-1.5 hover:underline">
+                            🔗 Join Meeting
+                          </a>
+                        )}
+                        {lc.recordingUrl && (
+                          <a href={lc.recordingUrl} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-purple-600 text-xs font-semibold mt-1.5 ml-3 hover:underline">
+                            ▶ Recording
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        {isTeacher ? (
+                          <>
+                            {lc.status === "scheduled" && (
+                              <button onClick={() => setClassStatus(lc.id, "live")}
+                                className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-xs font-semibold border-none cursor-pointer">
+                                Start
+                              </button>
+                            )}
+                            {lc.status === "live" && (
+                              <button onClick={() => setClassStatus(lc.id, "ended")}
+                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-semibold border-none cursor-pointer">
+                                End
+                              </button>
+                            )}
+                            <button onClick={() => deleteLiveClass(lc.id)}
+                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-semibold border-none cursor-pointer">
+                              Delete
+                            </button>
+                          </>
+                        ) : (
+                          lc.status === "live" && (
+                            <button
+                              onClick={() => { joinClass(lc.id); lc.meetingLink && window.open(lc.meetingLink, "_blank"); }}
+                              className="px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-semibold border-none cursor-pointer">
+                              🔴 Join Now
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -627,15 +840,11 @@ const isTeacher = user.role === "teacher";
             </div>
             <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
               {students.length === 0 ? (
-                <div className="text-center py-10 text-[var(--muted)] text-sm">
-                  No students enrolled yet
-                </div>
+                <div className="text-center py-10 text-[var(--muted)] text-sm">No students enrolled yet</div>
               ) : (
                 students.map((s, i) => (
-                  <div
-                    key={s.id}
-                    className={`flex items-center gap-3 px-5 py-3.5 ${i < students.length - 1 ? "border-b border-[var(--border)]" : ""}`}
-                  >
+                  <div key={s.id}
+                    className={`flex items-center gap-3 px-5 py-3.5 ${i < students.length - 1 ? "border-b border-[var(--border)]" : ""}`}>
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent)]/80 flex items-center justify-center text-[var(--accent-contrast)] text-sm font-bold flex-shrink-0">
                       {s.name?.charAt(0).toUpperCase()}
                     </div>
@@ -661,36 +870,24 @@ const isTeacher = user.role === "teacher";
           <form onSubmit={gradeSubmission} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Score</label>
-              <input
-                type="number"
-                className={inputCls}
-                value={gradeForm.score}
-                onChange={(e) => setGradeForm({ ...gradeForm, score: e.target.value })}
-                placeholder="e.g. 85"
-                required
-              />
+              <input type="number" className={inputCls} value={gradeForm.score}
+                onChange={e => setGradeForm({ ...gradeForm, score: e.target.value })}
+                placeholder="e.g. 85" required />
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Feedback</label>
-              <textarea
-                className={`${textareaCls} min-h-[70px]`}
-                value={gradeForm.feedback}
-                onChange={(e) => setGradeForm({ ...gradeForm, feedback: e.target.value })}
-                placeholder="Optional feedback for the student..."
-              />
+              <textarea className={`${textareaCls} min-h-[70px]`} value={gradeForm.feedback}
+                onChange={e => setGradeForm({ ...gradeForm, feedback: e.target.value })}
+                placeholder="Optional feedback..." />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
+              <button type="button"
                 onClick={() => { setGradingSubId(null); setGradeForm({ score: "", feedback: "" }); }}
-                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors"
-              >
+                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors">
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer"
-              >
+              <button type="submit"
+                className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer">
                 Save Grade
               </button>
             </div>
@@ -699,71 +896,45 @@ const isTeacher = user.role === "teacher";
       )}
 
       {/* ── MODAL: Add Material ── */}
-      {modal === "material" && modalOverlay(
-        () => setModal(null),
+      {modal === "material" && modalOverlay(() => setModal(null),
         <>
           <h3 className="text-lg font-bold text-[var(--text)] mb-5">Add Material</h3>
           <form onSubmit={saveMaterial} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Title *</label>
-              <input
-                className={inputCls}
-                value={matForm.title}
-                onChange={(e) => setMatForm({ ...matForm, title: e.target.value })}
-                placeholder="Material title"
-                required
-              />
+              <input className={inputCls} value={matForm.title}
+                onChange={e => setMatForm({ ...matForm, title: e.target.value })}
+                placeholder="Material title" required />
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Description</label>
-              <input
-                className={inputCls}
-                value={matForm.description}
-                onChange={(e) => setMatForm({ ...matForm, description: e.target.value })}
-                placeholder="Brief description (optional)"
-              />
+              <input className={inputCls} value={matForm.description}
+                onChange={e => setMatForm({ ...matForm, description: e.target.value })}
+                placeholder="Brief description (optional)" />
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Type</label>
-              <select
-                className={inputCls}
-                value={matForm.type}
-                onChange={(e) => setMatForm({ ...matForm, type: e.target.value })}
-              >
-                {MATERIAL_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
+              <select className={inputCls} value={matForm.type}
+                onChange={e => setMatForm({ ...matForm, type: e.target.value })}>
+                {MATERIAL_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">
                 {matForm.type === "video" ? "YouTube URL *" : "URL / Link"}
               </label>
-              <input
-                className={inputCls}
-                value={matForm.fileUrl}
-                onChange={(e) => setMatForm({ ...matForm, fileUrl: e.target.value })}
-                placeholder={
-                  matForm.type === "video"
-                    ? "https://youtube.com/watch?v=..."
-                    : "https://..."
-                }
-                required={matForm.type === "video"}
-              />
+              <input className={inputCls} value={matForm.fileUrl}
+                onChange={e => setMatForm({ ...matForm, fileUrl: e.target.value })}
+                placeholder={matForm.type === "video" ? "https://youtube.com/watch?v=..." : "https://..."}
+                required={matForm.type === "video"} />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setModal(null)}
-                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors"
-              >
+              <button type="button" onClick={() => setModal(null)}
+                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors">
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer"
-              >
+              <button type="submit" disabled={saving}
+                className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer">
                 {saving ? "Adding..." : "Add Material"}
               </button>
             </div>
@@ -772,64 +943,41 @@ const isTeacher = user.role === "teacher";
       )}
 
       {/* ── MODAL: Create Assignment ── */}
-      {modal === "assignment" && modalOverlay(
-        () => setModal(null),
+      {modal === "assignment" && modalOverlay(() => setModal(null),
         <>
           <h3 className="text-lg font-bold text-[var(--text)] mb-5">Create Assignment</h3>
           <form onSubmit={saveAssignment} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Title *</label>
-              <input
-                className={inputCls}
-                value={assForm.title}
-                onChange={(e) => setAssForm({ ...assForm, title: e.target.value })}
-                placeholder="Assignment title"
-                required
-              />
+              <input className={inputCls} value={assForm.title}
+                onChange={e => setAssForm({ ...assForm, title: e.target.value })}
+                placeholder="Assignment title" required />
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Description</label>
-              <textarea
-                className={`${textareaCls} min-h-[70px]`}
-                value={assForm.description}
-                onChange={(e) => setAssForm({ ...assForm, description: e.target.value })}
-                placeholder="Instructions for students..."
-              />
+              <textarea className={`${textareaCls} min-h-[70px]`} value={assForm.description}
+                onChange={e => setAssForm({ ...assForm, description: e.target.value })}
+                placeholder="Instructions for students..." />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Due Date</label>
-                <input
-                  type="date"
-                  className={inputCls}
-                  value={assForm.dueDate}
-                  onChange={(e) => setAssForm({ ...assForm, dueDate: e.target.value })}
-                />
+                <input type="date" className={inputCls} value={assForm.dueDate}
+                  onChange={e => setAssForm({ ...assForm, dueDate: e.target.value })} />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Max Score</label>
-                <input
-                  type="number"
-                  className={inputCls}
-                  value={assForm.maxScore}
-                  onChange={(e) => setAssForm({ ...assForm, maxScore: e.target.value })}
-                  min={1}
-                />
+                <input type="number" className={inputCls} value={assForm.maxScore}
+                  onChange={e => setAssForm({ ...assForm, maxScore: e.target.value })} min={1} />
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setModal(null)}
-                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors"
-              >
+              <button type="button" onClick={() => setModal(null)}
+                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors">
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer"
-              >
+              <button type="submit" disabled={saving}
+                className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer">
                 {saving ? "Creating..." : "Create"}
               </button>
             </div>
@@ -838,87 +986,112 @@ const isTeacher = user.role === "teacher";
       )}
 
       {/* ── MODAL: Create Quiz ── */}
-      {modal === "quiz" && modalOverlay(
-        () => setModal(null),
+      {modal === "quiz" && modalOverlay(() => setModal(null),
         <>
           <h3 className="text-lg font-bold text-[var(--text)] mb-5">Create Quiz</h3>
           <form onSubmit={saveQuiz} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Quiz Title *</label>
-              <input
-                className={inputCls}
-                value={quizForm.title}
-                onChange={(e) => setQuizForm({ ...quizForm, title: e.target.value })}
-                placeholder="Quiz title"
-                required
-              />
+              <input className={inputCls} value={quizForm.title}
+                onChange={e => setQuizForm({ ...quizForm, title: e.target.value })}
+                placeholder="Quiz title" required />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Description</label>
+                <input className={inputCls} value={quizForm.description}
+                  onChange={e => setQuizForm({ ...quizForm, description: e.target.value })}
+                  placeholder="Optional" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Time Limit (min, 0=none)</label>
+                <input type="number" min={0} className={inputCls} value={quizForm.timeLimit}
+                  onChange={e => setQuizForm({ ...quizForm, timeLimit: e.target.value })} />
+              </div>
             </div>
             {quizForm.questions.map((q, qi) => (
               <div key={qi} className="border border-[var(--border)] rounded-xl p-4 bg-[var(--bg)]">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-semibold text-[var(--muted)]">Question {qi + 1}</span>
                   {quizForm.questions.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeQuestion(qi)}
-                      className="text-red-400 hover:text-red-600 bg-transparent border-none cursor-pointer text-lg leading-none"
-                    >
-                      ×
-                    </button>
+                    <button type="button" onClick={() => removeQuestion(qi)}
+                      className="text-red-400 hover:text-red-600 bg-transparent border-none cursor-pointer text-lg leading-none">×</button>
                   )}
                 </div>
-                <input
-                  className={`${inputCls} mb-3`}
-                  placeholder="Question text..."
-                  value={q.question}
-                  onChange={(e) => updateQ(qi, "question", e.target.value)}
-                  required
-                />
+                <input className={`${inputCls} mb-3`} placeholder="Question text..."
+                  value={q.question} onChange={e => updateQ(qi, "question", e.target.value)} required />
                 {q.options.map((opt, oi) => (
                   <div key={oi} className="flex items-center gap-2 mb-2">
-                    <input
-                      type="radio"
-                      name={`q${qi}`}
-                      checked={q.answer === oi}
+                    <input type="radio" name={`q${qi}`} checked={q.answer === oi}
                       onChange={() => updateQ(qi, "answer", oi)}
-                      className="cursor-pointer accent-[var(--accent)]"
-                      title="Mark as correct answer"
-                    />
+                      className="cursor-pointer accent-[var(--accent)]" title="Mark as correct answer" />
                     <input
                       className={`flex-1 px-3 py-2 border rounded-lg text-sm outline-none focus:border-[var(--accent)] transition-colors bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--muted)]/70 ${
                         q.answer === oi ? "border-emerald-400 bg-emerald-50" : "border-[var(--border)]"
                       }`}
                       placeholder={`Option ${String.fromCharCode(65 + oi)}`}
-                      value={opt}
-                      onChange={(e) => updateOpt(qi, oi, e.target.value)}
-                      required
-                    />
+                      value={opt} onChange={e => updateOpt(qi, oi, e.target.value)} required />
                   </div>
                 ))}
-                <p className="text-xs text-[var(--muted)] mt-1">Click the radio button to mark the correct answer</p>
+                <p className="text-xs text-[var(--muted)] mt-1">Click the radio to mark the correct answer</p>
               </div>
             ))}
-            <button
-              type="button"
-              onClick={addQuestion}
-              className="w-full py-2.5 bg-[var(--bg)] hover:bg-[var(--border)]/40 border border-dashed border-[var(--border)] rounded-xl text-sm text-[var(--muted)] font-medium cursor-pointer transition-colors"
-            >
+            <button type="button" onClick={addQuestion}
+              className="w-full py-2 border-2 border-dashed border-[var(--border)] rounded-xl text-sm text-[var(--muted)] hover:border-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors bg-transparent">
               + Add Question
             </button>
             <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setModal(null)}
-                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors"
-              >
+              <button type="button" onClick={() => setModal(null)}
+                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors">
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer"
-              >
+              <button type="submit" disabled={saving}
+                className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer">
                 {saving ? "Creating..." : "Create Quiz"}
+              </button>
+            </div>
+          </form>
+        </>
+      )}
+
+      {/* ── MODAL: Schedule Live Class ── */}
+      {modal === "live-class" && modalOverlay(() => setModal(null),
+        <>
+          <h3 className="text-lg font-bold text-[var(--text)] mb-5">Schedule Live Class</h3>
+          <form onSubmit={saveLiveClass} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Title *</label>
+              <input className={inputCls} value={lcForm.title}
+                onChange={e => setLcForm({ ...lcForm, title: e.target.value })}
+                placeholder="e.g. Chapter 3 Discussion" required />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Description</label>
+              <textarea className={`${textareaCls} min-h-[60px]`} value={lcForm.description}
+                onChange={e => setLcForm({ ...lcForm, description: e.target.value })}
+                placeholder="What will be covered..." />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Date & Time *</label>
+                <input type="datetime-local" className={inputCls} value={lcForm.scheduledAt}
+                  onChange={e => setLcForm({ ...lcForm, scheduledAt: e.target.value })} required />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Meeting Link</label>
+                <input className={inputCls} value={lcForm.meetingLink}
+                  onChange={e => setLcForm({ ...lcForm, meetingLink: e.target.value })}
+                  placeholder="https://meet.google.com/..." />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setModal(null)}
+                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors">
+                Cancel
+              </button>
+              <button type="submit" disabled={saving}
+                className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer">
+                {saving ? "Scheduling..." : "Schedule"}
               </button>
             </div>
           </form>

@@ -8,7 +8,13 @@ import Footer from "../components/Footer";
 function StudentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [enrolled, setEnrolled] = useState([]);
+  const [dashData, setDashData] = useState({
+    enrolledCourses: [],
+    pendingAssignments: 0,
+    completedQuizzes: 0,
+    totalEnrolled: 0,
+    upcomingClasses: [],
+  });
   const [allCourses, setAllCourses] = useState([]);
   const [enrollingId, setEnrollingId] = useState(null);
   const [unenrollingId, setUnenrollingId] = useState(null);
@@ -17,7 +23,7 @@ function StudentDashboard() {
   const load = () => {
     fetch(`/api/students/${user.id}/dashboard`)
       .then((r) => r.json())
-      .then((d) => setEnrolled(d.enrolledCourses || []));
+      .then((d) => !d.error && setDashData(d));
     fetch("/api/courses")
       .then((r) => r.json())
       .then((d) => Array.isArray(d) && setAllCourses(d));
@@ -25,19 +31,21 @@ function StudentDashboard() {
 
   useEffect(() => {
     load();
-
     const socket = getSocket(user.id);
     socket.on("new-course", () => load());
-
-    return () => { socket.off("new-course"); };
+    socket.on("live-class-scheduled", () => load());
+    return () => {
+      socket.off("new-course");
+      socket.off("live-class-scheduled");
+    };
   }, [user.id]);
 
   const enroll = async (courseId) => {
     setEnrollingId(courseId);
-    await fetch(`/api/courses/${courseId}/enroll`, {
+    await fetch("/api/enrollments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studentId: user.id }),
+      body: JSON.stringify({ studentId: user.id, courseId }),
     });
     setEnrollingId(null);
     load();
@@ -46,20 +54,26 @@ function StudentDashboard() {
   const unenroll = async () => {
     if (!confirmUnenroll) return;
     setUnenrollingId(confirmUnenroll.id);
-    await fetch(`/api/courses/${confirmUnenroll.id}/enroll`, {
+    await fetch("/api/enrollments", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studentId: user.id }),
+      body: JSON.stringify({ studentId: user.id, courseId: confirmUnenroll.id }),
     });
     setUnenrollingId(null);
     setConfirmUnenroll(null);
     load();
   };
 
+  const enrolled = dashData.enrolledCourses || [];
   const enrolledIds = enrolled.map((c) => c.id);
   const available = allCourses.filter((c) => !enrolledIds.includes(c.id));
-  const totalMaterials = enrolled.reduce((s, c) => s + (c.materialCount || 0), 0);
-  const totalAssignments = enrolled.reduce((s, c) => s + (c.assignmentCount || 0), 0);
+
+  const stats = [
+    { icon: "📚", val: dashData.totalEnrolled ?? enrolled.length, label: "Enrolled Courses", color: "from-blue-500/20 to-blue-600/10" },
+    { icon: "📋", val: dashData.pendingAssignments ?? 0, label: "Pending Assignments", color: "from-amber-500/20 to-amber-600/10" },
+    { icon: "🧠", val: dashData.completedQuizzes ?? 0, label: "Quizzes Completed", color: "from-purple-500/20 to-purple-600/10" },
+    { icon: "📹", val: dashData.upcomingClasses?.length ?? 0, label: "Upcoming Classes", color: "from-emerald-500/20 to-emerald-600/10" },
+  ];
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col relative overflow-hidden">
@@ -85,29 +99,69 @@ function StudentDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-          {[
-            { icon: "📚", val: enrolled.length, label: "Enrolled Courses", color: "from-blue-500/20 to-blue-600/10" },
-            { icon: "📄", val: totalMaterials, label: "Total Materials", color: "from-emerald-500/20 to-emerald-600/10" },
-            { icon: "📋", val: totalAssignments, label: "Total Assignments", color: "from-amber-500/20 to-amber-600/10" },
-          ].map((s, i) => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          {stats.map((s, i) => (
             <div
               key={s.label}
-              className={`group rounded-2xl border border-[var(--border)] bg-gradient-to-br ${s.color} p-6
+              className={`group rounded-2xl border border-[var(--border)] bg-gradient-to-br ${s.color} p-5
                          shadow-[0_8px_32px_-12px_rgba(0,0,0,0.15)] transition-all duration-300
                          hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.25)] hover:-translate-y-1
                          animate-in fade-in slide-in-from-bottom-4 duration-500`}
               style={{ animationDelay: `${i * 100}ms` }}
             >
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3
                               group-hover:scale-110 transition-transform duration-300 bg-white/10 backdrop-blur-sm">
                 {s.icon}
               </div>
-              <div className="text-4xl font-bold text-[var(--text)] mb-1 font-mono">{s.val}</div>
-              <p className="text-sm font-medium text-[var(--muted)]">{s.label}</p>
+              <div className="text-3xl font-bold text-[var(--text)] mb-1 font-mono">{s.val}</div>
+              <p className="text-xs font-medium text-[var(--muted)]">{s.label}</p>
             </div>
           ))}
         </div>
+
+        {/* Upcoming Live Classes */}
+        {dashData.upcomingClasses?.length > 0 && (
+          <div className="mb-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <h2 className="text-xl font-bold text-[var(--text)] mb-4 flex items-center gap-2">
+              📹 Upcoming Live Classes
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {dashData.upcomingClasses.map((lc) => (
+                <div
+                  key={lc.id}
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                      lc.status === "live"
+                        ? "bg-red-100 text-red-600 animate-pulse"
+                        : "bg-blue-100 text-blue-600"
+                    }`}>
+                      {lc.status === "live" ? "🔴 LIVE" : "🗓 Scheduled"}
+                    </span>
+                    <span className="text-xs text-[var(--muted)]">
+                      {new Date(lc.scheduledAt).toLocaleDateString()} · {new Date(lc.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-[var(--text)]">{lc.title}</p>
+                  {lc.course?.title && (
+                    <p className="text-xs text-[var(--muted)]">📚 {lc.course.title}</p>
+                  )}
+                  {lc.meetingLink && (
+                    <a
+                      href={lc.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 text-xs font-semibold text-[var(--accent)] hover:underline"
+                    >
+                      Join Meeting →
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* My Courses */}
         {enrolled.length > 0 && (
@@ -154,15 +208,19 @@ function StudentDashboard() {
                       👨‍🏫 <span className="font-medium">{c.teacher?.name || "Unknown"}</span>
                     </p>
 
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-2 mb-5 text-xs text-[var(--muted)]">
-                      <div className="p-2.5 rounded-lg bg-[var(--accent)]/6 border border-[var(--border)]/50">
+                    {/* Stats grid */}
+                    <div className="grid grid-cols-3 gap-2 mb-4 text-xs text-[var(--muted)]">
+                      <div className="p-2 rounded-lg bg-[var(--accent)]/6 border border-[var(--border)]/50 text-center">
                         <p className="font-semibold text-[var(--text)]">{c.materialCount || 0}</p>
-                        <p className="text-[11px]">Materials</p>
+                        <p className="text-[10px]">Materials</p>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-[var(--accent)]/6 border border-[var(--border)]/50">
+                      <div className="p-2 rounded-lg bg-[var(--accent)]/6 border border-[var(--border)]/50 text-center">
                         <p className="font-semibold text-[var(--text)]">{c.assignmentCount || 0}</p>
-                        <p className="text-[11px]">Assignments</p>
+                        <p className="text-[10px]">Assignments</p>
+                      </div>
+                      <div className="p-2 rounded-lg bg-[var(--accent)]/6 border border-[var(--border)]/50 text-center">
+                        <p className="font-semibold text-[var(--text)]">{c.quizCount || 0}</p>
+                        <p className="text-[10px]">Quizzes</p>
                       </div>
                     </div>
 
@@ -219,8 +277,6 @@ function StudentDashboard() {
                            animate-in fade-in slide-in-from-bottom-8 duration-700"
                   style={{ animationDelay: `${(enrolled.length + i) * 80}ms` }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/0
-                                 group-hover:from-emerald-500/5 group-hover:to-emerald-500/0 transition-all duration-300" />
                   <div className="relative">
                     <div className="flex items-start justify-between mb-3">
                       <h3 className="text-lg font-bold text-[var(--text)] flex-1 leading-tight group-hover:text-emerald-600 transition-colors">
