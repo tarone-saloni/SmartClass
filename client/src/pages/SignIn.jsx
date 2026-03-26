@@ -40,7 +40,6 @@ function SignIn() {
     <div
       data-theme={themeName}
       className="min-h-screen flex flex-col bg-[var(--bg)] text-[var(--text)] relative overflow-hidden"
-      style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <GlobalStyles />
       <BackgroundBlur />

@@ -1,24 +1,34 @@
 const FEATURES = [
-  "Manage courses, assignments, and quizzes seamlessly",
-  "Real-time feedback and progress tracking",
-  "Stay informed with alerts and reminders",
-  "Built for teachers and students alike",
+  { icon: "📚", text: "Manage courses, assignments, and quizzes seamlessly" },
+  { icon: "📊", text: "Real-time feedback and progress tracking" },
+  { icon: "🔔", text: "Stay informed with alerts and reminders" },
+  { icon: "🤝", text: "Built for teachers and students alike" },
 ];
 
 function FeatureList() {
   return (
-    <div className="rounded-2xl bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] border border-[var(--border)] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
-      <div className="px-5 py-4 border-b border-[var(--border)]">
-        <p className="text-sm font-semibold text-[var(--text)]">Why SmartClass?</p>
+    <div className="sc-card-premium glass p-1 overflow-hidden">
+      <div className="px-5 py-4 border-b border-[var(--border)]/30">
+        <p className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
+          <span className="w-6 h-6 rounded-lg bg-[var(--accent)]/15 flex items-center justify-center text-xs">💡</span>
+          Why SmartClass?
+        </p>
       </div>
       {FEATURES.map((f, i) => (
         <div
-          key={f}
-          className="flex items-start gap-3 px-5 py-3.5 border-b border-[var(--border)]/50 last:border-0 hover:bg-[var(--accent)]/6 transition-colors animate-in fade-in slide-in-from-left-8 duration-500"
-          style={{ animationDelay: `${120 + i * 60}ms` }}
+          key={f.text}
+          className="flex items-center gap-3.5 px-5 py-3.5 border-b border-[var(--border)]/20 last:border-0 
+                     hover:bg-[var(--accent)]/6 transition-all duration-300 group cursor-default
+                     animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+          style={{ animationDelay: `${200 + i * 80}ms` }}
         >
-          <span className="mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0 bg-[var(--accent)]" />
-          <span className="text-sm text-[var(--muted)]">{f}</span>
+          <span className="w-8 h-8 rounded-lg bg-[var(--accent)]/10 flex items-center justify-center text-sm
+                         group-hover:bg-[var(--accent)]/20 group-hover:scale-110 transition-all duration-300 flex-shrink-0">
+            {f.icon}
+          </span>
+          <span className="text-sm text-[var(--muted)] group-hover:text-[var(--text)] transition-colors duration-300 font-medium">
+            {f.text}
+          </span>
         </div>
       ))}
     </div>

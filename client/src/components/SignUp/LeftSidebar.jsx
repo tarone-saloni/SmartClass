@@ -4,7 +4,7 @@ import StatsGrid from "./StatsGrid";
 
 function LeftSidebar() {
   return (
-    <div className="hidden lg:flex flex-col gap-6 animate-in fade-in slide-in-from-left-8 duration-700">
+    <div className="hidden lg:flex flex-col gap-8 animate-[slide-up_0.7s_cubic-bezier(0.16,1,0.3,1)_both]">
       <BrandHeader />
       <FeatureList />
       <StatsGrid />

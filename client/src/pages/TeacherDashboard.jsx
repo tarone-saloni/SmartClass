@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 const inputCls =
-  "w-full px-3.5 py-2.5 border border-[var(--border)] rounded-lg text-sm outline-none focus:border-[var(--accent)] transition-colors bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--muted)]/70";
+  "w-full px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 focus:shadow-[0_4px_16px_-4px_var(--accent)] transition-all duration-300 glass text-[var(--text)] placeholder:text-[var(--muted)]/50 hover:border-[var(--accent)]/30";
 
 function TeacherDashboard() {
   const { user } = useAuth();
@@ -95,69 +95,91 @@ function TeacherDashboard() {
   const totalQuizzes = data.courses.reduce((s, c) => s + (c.quizCount || 0), 0);
 
   const stats = [
-    { icon: "📚", val: data.totalCourses, label: "Total Courses" },
-    { icon: "👨‍🎓", val: data.totalStudents, label: "Total Students" },
-    { icon: "📄", val: totalMaterials, label: "Materials" },
-    { icon: "🧠", val: totalQuizzes, label: "Quizzes" },
-    { icon: "📬", val: data.pendingSubmissions ?? 0, label: "Pending Reviews" },
-    { icon: "📹", val: data.upcomingClasses?.length ?? 0, label: "Upcoming Classes" },
+    { icon: "📚", val: data.totalCourses, label: "Courses", bg: "from-blue-500/15 to-blue-600/5", color: "from-blue-500 to-blue-600" },
+    { icon: "👨‍🎓", val: data.totalStudents, label: "Students", bg: "from-purple-500/15 to-purple-600/5", color: "from-purple-500 to-purple-600" },
+    { icon: "📄", val: totalMaterials, label: "Materials", bg: "from-amber-500/15 to-amber-600/5", color: "from-amber-500 to-amber-600" },
+    { icon: "🧠", val: totalQuizzes, label: "Quizzes", bg: "from-pink-500/15 to-pink-600/5", color: "from-pink-500 to-pink-600" },
+    { icon: "📬", val: data.pendingSubmissions ?? 0, label: "Reviews", bg: "from-emerald-500/15 to-emerald-600/5", color: "from-emerald-500 to-emerald-600" },
+    { icon: "📹", val: data.upcomingClasses?.length ?? 0, label: "Live", bg: "from-indigo-500/15 to-indigo-600/5", color: "from-indigo-500 to-indigo-600" },
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col relative overflow-hidden">
       <Navbar />
-      <div className="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[var(--text)] mb-1">
-            Welcome, {user.name}! 👋
-          </h1>
-          <p className="text-sm text-[var(--muted)]">
-            Manage your courses and track student progress
-          </p>
+
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 z-10">
+        {/* Header */}
+        <div className="mb-12 animate-[slide-down_0.6s_cubic-bezier(0.16,1,0.3,1)_both]">
+          <div className="flex items-center gap-5 mb-2">
+            <div className="text-5xl sm:text-6xl drop-shadow-lg animate-float">👋</div>
+            <div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--text)] sc-title">
+                Welcome back, <span className="gradient-text">{user.name.split(" ")[0]}</span>!
+              </h1>
+              <p className="text-sm font-medium text-[var(--muted)] mt-2 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Manage your courses, track student progress, and inspire the future.
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          {stats.map((s) => (
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+          {stats.map((s, i) => (
             <div
               key={s.label}
-              className="bg-[var(--surface)] rounded-xl px-4 py-4 border border-[var(--border)] shadow-sm"
+              className={`group sc-card-premium glass rounded-2xl p-5 bg-gradient-to-br ${s.bg}
+                         animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]`}
+              style={{ animationDelay: `${i * 60}ms` }}
             >
-              <div className="text-2xl mb-1">{s.icon}</div>
-              <div className="text-2xl font-bold text-[var(--text)]">{s.val}</div>
-              <p className="text-xs text-[var(--muted)] mt-0.5">{s.label}</p>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3
+                              bg-gradient-to-br ${s.color} shadow-lg
+                              group-hover:scale-110 group-hover:rotate-[-5deg] transition-all duration-500`}>
+                <span className="brightness-0 invert text-sm">{s.icon}</span>
+              </div>
+              <div className="text-3xl font-extrabold text-[var(--text)] mb-1 tracking-tighter
+                              animate-[count-up_0.8s_cubic-bezier(0.16,1,0.3,1)_both]"
+                style={{ animationDelay: `${200 + i * 80}ms` }}>
+                {s.val}
+              </div>
+              <p className="text-[9px] font-bold text-[var(--muted)] uppercase tracking-wider">{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* Upcoming Live Classes */}
         {data.upcomingClasses?.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-base font-bold text-[var(--text)] mb-4 flex items-center gap-2">
-              📹 Upcoming Live Classes
+          <div className="mb-12 animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]" style={{ animationDelay: "200ms" }}>
+            <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
+              <span className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center text-xl">📹</span>
+              Upcoming Live Classes
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.upcomingClasses.map((lc) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {data.upcomingClasses.map((lc, i) => (
                 <div
                   key={lc.id}
-                  className="bg-[var(--surface)] rounded-xl p-4 border border-[var(--border)] shadow-sm flex flex-col gap-1.5 cursor-pointer hover:border-[var(--accent)]/40 transition-colors"
+                  className="group sc-card-premium glass rounded-2xl p-6 cursor-pointer hover-lift
+                             animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+                  style={{ animationDelay: `${i * 80}ms` }}
                   onClick={() => navigate(`/course/${lc.course?.id || lc.course}`)}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                      lc.status === "live"
-                        ? "bg-red-100 text-red-600 animate-pulse"
-                        : "bg-blue-100 text-blue-600"
-                    }`}>
-                      {lc.status === "live" ? "🔴 LIVE NOW" : "🗓 Scheduled"}
+                  <div className="flex items-center justify-between mb-4">
+                    <span className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider ${lc.status === "live"
+                      ? "bg-red-500/15 text-red-500 animate-pulse border border-red-500/30 shadow-[0_0_12px_rgba(239,68,68,0.2)]"
+                      : "bg-[var(--accent)]/12 text-[var(--accent)] border border-[var(--accent)]/25"
+                      }`}>
+                      {lc.status === "live" ? "🔴 Live Now" : "🗓 Scheduled"}
                     </span>
-                    <span className="text-xs text-[var(--muted)]">
+                    <span className="text-[10px] font-semibold text-[var(--muted)]">
                       {new Date(lc.scheduledAt).toLocaleDateString()} · {new Date(lc.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
-                  <p className="text-sm font-semibold text-[var(--text)]">{lc.title}</p>
+                  <p className="text-lg font-bold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors duration-300 line-clamp-2">
+                    {lc.title}
+                  </p>
                   {lc.course?.title && (
-                    <p className="text-xs text-[var(--muted)]">📚 {lc.course.title}</p>
+                    <p className="text-xs font-semibold text-[var(--muted)] mt-2">📚 {lc.course.title}</p>
                   )}
                 </div>
               ))}
@@ -166,70 +188,108 @@ function TeacherDashboard() {
         )}
 
         {/* Course list header */}
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-[var(--text)]">My Courses</h2>
+        <div className="flex items-center justify-between mb-8 animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]" style={{ animationDelay: "300ms" }}>
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text)] flex items-center gap-3 sc-title">
+              <span className="w-10 h-10 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center text-xl">🎯</span>
+              My Courses
+            </h2>
+            <p className="text-sm font-medium text-[var(--muted)] mt-1 ml-[52px]">Manage and edit your entire curriculum</p>
+          </div>
           <button
             onClick={openCreate}
-            className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors"
+            className="flex items-center gap-2 px-6 py-3 sc-btn-glow
+                       rounded-xl text-sm font-bold cursor-pointer active:scale-95"
           >
-            + Create Course
+            <span className="text-lg font-light leading-none">+</span> Create Course
           </button>
         </div>
 
         {data.courses.length === 0 ? (
-          <div className="text-center py-16 text-[var(--muted)]">
-            <div className="text-5xl mb-3">📖</div>
-            <div className="text-base font-medium mb-1">No courses yet</div>
-            <div className="text-sm">Create your first course to get started</div>
+          <div className="text-center py-24 sc-card-premium glass rounded-3xl animate-[scale-in_0.5s_cubic-bezier(0.16,1,0.3,1)_both]">
+            <div className="text-8xl mb-6 drop-shadow-2xl animate-float">📖</div>
+            <div className="text-2xl font-extrabold mb-3 text-[var(--text)] sc-title">No courses yet</div>
+            <div className="text-base text-[var(--muted)] max-w-sm mx-auto font-medium leading-relaxed">
+              Create your first course to begin sharing your knowledge with the world.
+            </div>
+            <button
+              onClick={openCreate}
+              className="mt-8 px-8 py-3 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
+            >
+              Start Creating
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {data.courses.map((c) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]" style={{ animationDelay: "400ms" }}>
+            {data.courses.map((c, i) => (
               <div
                 key={c.id}
-                className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)] shadow-sm hover:shadow-md transition-shadow flex flex-col"
+                className="group sc-card-premium glass rounded-2xl p-6 flex flex-col overflow-hidden
+                           animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+                style={{ animationDelay: `${i * 80}ms` }}
               >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-base font-bold text-[var(--text)] flex-1 mr-2 leading-snug">
-                    {c.title}
-                  </h3>
-                  {c.subject && (
-                    <span className="px-2.5 py-0.5 bg-[var(--accent)]/10 text-[var(--accent)] rounded-full text-xs font-semibold whitespace-nowrap">
-                      {c.subject}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-[var(--muted)] mb-4 leading-relaxed flex-1">
-                  {c.description || "No description"}
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4 text-xs text-[var(--muted)]">
-                  <span>👨‍🎓 {c.enrollmentCount}</span>
-                  <span>📄 {c.materialCount}</span>
-                  <span>📋 {c.assignmentCount}</span>
-                  <span>🧠 {c.quizCount || 0}</span>
-                  <span>📹 {c.liveClassCount || 0}</span>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => navigate(`/course/${c.id}`)}
-                    className="flex-1 py-2 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 text-[var(--accent)] rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors"
-                  >
-                    Manage →
-                  </button>
-                  <button
-                    onClick={() => openEdit(c)}
-                    className="px-3 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--muted)] rounded-lg text-sm border border-[var(--border)] cursor-pointer transition-colors"
-                    title="Edit course"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => setConfirmDelete(c)}
-                    className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-sm border border-red-100 cursor-pointer transition-colors"
-                    title="Delete course"
-                  >
-                    🗑
-                  </button>
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/0 to-transparent 
+                               opacity-0 group-hover:opacity-100 group-hover:from-[var(--accent)]/5 transition-all duration-500 pointer-events-none" />
+
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="flex items-start justify-between mb-4 gap-3">
+                    <h3 className="text-xl font-extrabold text-[var(--text)] flex-1 leading-snug group-hover:text-[var(--accent)] transition-colors duration-300">
+                      {c.title}
+                    </h3>
+                    {c.subject && (
+                      <span className="px-3 py-1 bg-[var(--accent)]/12 text-[var(--accent)] rounded-lg text-[9px] uppercase font-bold tracking-wider whitespace-nowrap
+                                       border border-[var(--accent)]/15">
+                        {c.subject}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-sm font-medium text-[var(--muted)] mb-6 flex-1 line-clamp-3 leading-relaxed">
+                    {c.description || "No description provided."}
+                  </p>
+
+                  <div className="grid grid-cols-4 gap-2 mb-6">
+                    {[
+                      { label: "Students", val: c.enrollmentCount || 0 },
+                      { label: "Mats", val: c.materialCount || 0 },
+                      { label: "Tasks", val: c.assignmentCount || 0 },
+                      { label: "Live", val: c.liveClassCount || 0 },
+                    ].map((s) => (
+                      <div key={s.label} className="glass border border-[var(--border)]/30 rounded-xl p-2 text-center 
+                                    group-hover:border-[var(--accent)]/20 transition-all duration-300">
+                        <div className="text-[9px] font-bold text-[var(--muted)] uppercase tracking-wider mb-0.5">{s.label}</div>
+                        <div className="text-sm font-extrabold text-[var(--text)]">{s.val}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => navigate(`/course/${c.id}`)}
+                      className="flex-1 py-3 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
+                    >
+                      Manage →
+                    </button>
+                    <button
+                      onClick={() => openEdit(c)}
+                      className="px-3.5 py-3 glass hover:bg-[var(--accent)]/10 text-[var(--text)] rounded-xl text-sm 
+                                 border border-[var(--border)]/40 cursor-pointer transition-all duration-300 
+                                 hover:border-[var(--accent)]/40 active:scale-95"
+                      title="Edit course"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(c)}
+                      className="px-3.5 py-3 bg-red-500/8 hover:bg-red-500/15 text-red-500 rounded-xl text-sm 
+                                 border border-red-500/20 cursor-pointer transition-all duration-300 
+                                 hover:border-red-500/40 active:scale-95"
+                      title="Delete course"
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -239,62 +299,70 @@ function TeacherDashboard() {
 
       <Footer />
 
-      {/* ── Create / Edit Modal ── */}
+      {/* Create / Edit Modal */}
       {showModal && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-5"
+          className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4"
           onClick={(e) => { if (e.target === e.currentTarget) { setShowModal(false); setError(""); } }}
         >
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-8 w-full max-w-md shadow-2xl">
-            <h3 className="text-xl font-bold text-[var(--text)] mb-6">
+          <div className="glass-heavy border border-[var(--border)]/50 rounded-2xl p-8 w-full max-w-lg 
+                          shadow-[0_32px_80px_-16px_rgba(0,0,0,0.4)]
+                          animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]">
+            <h3 className="text-2xl font-extrabold text-[var(--text)] mb-8 flex items-center gap-3 sc-title">
+              <span className="w-10 h-10 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center text-xl">📝</span>
               {editCourse ? "Edit Course" : "Create New Course"}
             </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Course Title *</label>
+                <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1">
+                  Course Title <span className="text-red-500">*</span>
+                </label>
                 <input
                   className={inputCls}
-                  placeholder="e.g. Introduction to Physics"
+                  placeholder="e.g. Advanced Quantum Mechanics"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Subject</label>
+                <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1">Subject</label>
                 <input
                   className={inputCls}
-                  placeholder="e.g. Science, Math, History"
+                  placeholder="e.g. Physics"
                   value={form.subject}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">Description</label>
+                <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1">Description</label>
                 <textarea
-                  className="w-full px-3.5 py-2.5 border border-[var(--border)] rounded-lg text-sm outline-none resize-y min-h-[80px] focus:border-[var(--accent)] transition-colors bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--muted)]/70"
-                  placeholder="Brief course overview..."
+                  className={`${inputCls} resize-y min-h-[120px]`}
+                  placeholder="Describe what students will learn..."
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                 />
               </div>
               {error && (
-                <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                  {error}
-                </p>
+                <div className="flex items-center gap-2 text-sm text-red-500 bg-red-500/8 border border-red-500/20 rounded-xl px-4 py-3 font-medium
+                                animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]">
+                  <span>⚠️</span> {error}
+                </div>
               )}
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex justify-end gap-3 pt-6 border-t border-[var(--border)]/30">
                 <button
                   type="button"
                   onClick={() => { setShowModal(false); setError(""); }}
-                  className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors"
+                  className="px-6 py-3 glass hover:bg-[var(--border)]/30 text-[var(--text)] rounded-xl text-sm font-bold 
+                             border border-[var(--border)]/50 cursor-pointer transition-all duration-300 active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-5 py-2 bg-[var(--accent)] hover:opacity-90 disabled:opacity-60 text-[var(--accent-contrast)] rounded-lg text-sm font-semibold border-none cursor-pointer"
+                  className="px-8 py-3 sc-btn-glow disabled:opacity-60 rounded-xl text-sm font-bold 
+                             cursor-pointer transition-all duration-300 active:scale-95"
                 >
                   {loading ? "Saving..." : editCourse ? "Save Changes" : "Create Course"}
                 </button>
@@ -304,30 +372,38 @@ function TeacherDashboard() {
         </div>
       )}
 
-      {/* ── Delete Confirmation Modal ── */}
+      {/* Delete Confirmation Modal */}
       {confirmDelete && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-5"
+          className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4"
           onClick={(e) => e.target === e.currentTarget && setConfirmDelete(null)}
         >
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-7 w-full max-w-sm shadow-2xl text-center">
-            <div className="text-4xl mb-3">⚠️</div>
-            <h3 className="text-lg font-bold text-[var(--text)] mb-2">Delete Course?</h3>
-            <p className="text-sm text-[var(--muted)] mb-1">
-              <strong className="text-[var(--text)]">"{confirmDelete.title}"</strong> will be permanently deleted
-              along with all its materials, assignments, quizzes, and live classes.
+          <div className="glass-heavy border border-[var(--border)]/50 rounded-2xl p-8 w-full max-w-sm 
+                          shadow-[0_32px_80px_-16px_rgba(0,0,0,0.4)] text-center
+                          animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]">
+            <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-5">
+              <span className="text-3xl">⚠️</span>
+            </div>
+            <h3 className="text-xl font-extrabold text-[var(--text)] mb-3 sc-title">Delete Course?</h3>
+            <p className="text-sm font-medium text-[var(--muted)] mb-6 leading-relaxed">
+              <strong className="text-[var(--text)] font-bold">"{confirmDelete.title}"</strong> will be permanently deleted
+              along with all materials and student records.
             </p>
-            <p className="text-xs text-red-500 mb-6">This action cannot be undone.</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-red-500 mb-7 bg-red-500/8 py-2 rounded-lg border border-red-500/15">
+              This action is irreversible.
+            </p>
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-5 py-2 bg-[var(--bg)] hover:bg-[var(--border)]/40 text-[var(--text)] rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer transition-colors"
+                className="flex-1 py-3 glass hover:bg-[var(--border)]/30 text-[var(--text)] rounded-xl text-sm font-bold 
+                           border border-[var(--border)]/50 cursor-pointer transition-all duration-300 active:scale-95"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="px-5 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold border-none cursor-pointer transition-colors"
+                className="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:shadow-[0_8px_24px_-4px_rgba(239,68,68,0.4)]
+                           text-white rounded-xl text-sm font-bold border-none cursor-pointer transition-all duration-300 active:scale-95"
               >
                 Delete
               </button>

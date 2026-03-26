@@ -316,7 +316,7 @@ function CourseView() {
 
   if (!course)
     return (
-      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+      <div className="min-h-screen bg-transparent text-[var(--text)] flex flex-col relative overflow-hidden">
         <Navbar showBack />
         <div className="flex-1 flex items-center justify-center text-[var(--muted)]">Loading...</div>
         <Footer />
@@ -338,7 +338,7 @@ function CourseView() {
   const tabLabel = { "live-classes": "Live Classes" };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+    <div className="min-h-screen bg-transparent text-[var(--text)] flex flex-col relative overflow-hidden">
       <Navbar showBack />
       <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
 

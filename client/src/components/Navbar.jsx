@@ -13,9 +13,9 @@ function timeAgo(date) {
 }
 
 const THEME_META = {
-  [themeMap.light]: { label: "Light", icon: "☀️" },
-  [themeMap.dark]: { label: "Dark", icon: "🌙" },
-  [themeMap.custom]: { label: "Custom", icon: "✨" },
+  [themeMap.light]: { label: "Light", icon: "☀️", color: "from-amber-400 to-orange-400" },
+  [themeMap.dark]: { label: "Dark", icon: "🌙", color: "from-indigo-500 to-purple-600" },
+  [themeMap.custom]: { label: "Cosmic", icon: "✨", color: "from-violet-500 to-fuchsia-500" },
 };
 
 function Navbar({ showBack }) {
@@ -25,14 +25,20 @@ function Navbar({ showBack }) {
   const [notifs, setNotifs] = useState([]);
   const [open, setOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const ref = useRef(null);
   const mobileMenuRef = useRef(null);
 
   const themeKeys = Object.keys(themeMap || {});
   const unread = notifs.filter((n) => !n.read).length;
-
-  // Check if user is authenticated (not guest)
   const isAuthenticated = user && user.role !== "guest";
+
+  // Track scroll position
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -121,19 +127,13 @@ function Navbar({ showBack }) {
   return (
     <nav
       data-theme={themeName}
-      className="sticky top-0 z-50 h-auto sm:h-16 px-4 sm:px-6 py-3 sm:py-0 flex items-center justify-between
-                 bg-[color-mix(in_srgb,var(--surface)_92%,transparent)] backdrop-blur-md
-                 border-b border-[var(--border)]/60 text-[var(--text)]
-                 shadow-[0_4px_20px_-8px_rgba(0,0,0,0.35)]"
+      className={`sticky top-0 z-50 h-auto sm:h-16 px-4 sm:px-6 py-3 sm:py-0 flex items-center justify-between
+                 text-[var(--text)] transition-all duration-500 ease-out
+                 ${scrolled
+          ? "glass-heavy border-b border-[var(--border)]/60 shadow-[0_4px_30px_-8px_rgba(0,0,0,0.25)]"
+          : "bg-transparent border-b border-transparent"
+        }`}
     >
-      <style>{`
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .notify-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-      `}</style>
-
       {/* Left Section - Logo & Brand */}
       <div className="flex items-center gap-2 sm:gap-5 min-w-0 flex-1">
         <button
@@ -147,26 +147,27 @@ function Navbar({ showBack }) {
             )
           }
           className="flex items-center gap-2 sm:gap-3 no-underline min-w-0 group bg-transparent border-none cursor-pointer 
-                     p-1 rounded-lg hover:bg-[var(--accent)]/8 transition-all active:scale-95"
+                     p-1.5 rounded-xl hover:bg-[var(--accent)]/8 transition-all duration-300 active:scale-95"
         >
           <div
-            className="w-9 sm:w-10 h-9 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0
-                       bg-gradient-to-br from-[var(--accent)] to-[color-mix(in_srgb,var(--accent)_72%,#7c3aed)]
+            className="w-9 sm:w-10 h-9 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0
+                       bg-gradient-to-br from-[var(--accent)] to-[color-mix(in_srgb,var(--accent)_65%,#7c3aed)]
                        text-[var(--accent-contrast)]
-                       shadow-[0_8px_20px_-10px_var(--accent)]
-                       group-hover:scale-110 group-hover:shadow-[0_12px_24px_-10px_var(--accent)]
-                       transition-all duration-300"
+                       shadow-[0_8px_24px_-8px_var(--accent)]
+                       group-hover:scale-110 group-hover:shadow-[0_12px_32px_-8px_var(--accent)]
+                       group-hover:rotate-[-5deg]
+                       transition-all duration-500 ease-out"
           >
             🎓
           </div>
           <div className="leading-tight min-w-0 hidden xs:block">
             <span
-              className="block text-base sm:text-lg font-bold tracking-tight text-[var(--text)] truncate
+              className="block text-base sm:text-lg font-extrabold tracking-tight text-[var(--text)] truncate
                            group-hover:text-[var(--accent)] transition-colors duration-300"
             >
               SmartClass
             </span>
-            <span className="hidden sm:block text-xs text-[var(--muted)] font-medium">
+            <span className="hidden sm:block text-[10px] text-[var(--muted)] font-semibold tracking-wider uppercase">
               Learn · Manage · Grow
             </span>
           </div>
@@ -176,22 +177,22 @@ function Navbar({ showBack }) {
           <button
             onClick={() => navigate(-1)}
             className="text-xs sm:text-sm font-semibold text-[var(--muted)] hover:text-[var(--accent)]
-                       bg-transparent border-none cursor-pointer transition-colors ml-2 sm:ml-4 pl-2 sm:pl-4 
-                       border-l border-[var(--border)]/50 active:opacity-70"
+                       bg-transparent border-none cursor-pointer transition-all duration-300 ml-2 sm:ml-4 pl-2 sm:pl-4 
+                       border-l border-[var(--border)]/50 active:opacity-70 hover:-translate-x-0.5
+                       flex items-center gap-1"
             title="Go back"
           >
-            ← Back
+            <span className="transition-transform group-hover:-translate-x-1">←</span> Back
           </button>
         )}
       </div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-1 sm:gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-2.5">
         {/* Desktop theme switch */}
         <div
-          className="hidden lg:flex items-center gap-1 p-1.5 rounded-xl border border-[var(--border)]/70
-                     bg-[color-mix(in_srgb,var(--surface)_92%,transparent)]
-                     shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+          className="hidden lg:flex items-center gap-0.5 p-1 rounded-xl border border-[var(--border)]/50
+                     glass shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
         >
           {themeKeys.map((key) => {
             const active = themeName === key;
@@ -201,11 +202,10 @@ function Navbar({ showBack }) {
                 type="button"
                 onClick={() => setThemeName(key)}
                 title={THEME_META[key]?.label || key}
-                className={`px-2 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                  active
-                    ? "bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[0_4px_12px_-4px_var(--accent)]"
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 ${active
+                    ? "bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[0_4px_16px_-4px_var(--accent)] scale-105"
                     : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--accent)]/8"
-                } active:scale-95`}
+                  } active:scale-95`}
               >
                 <span className="mr-1">{THEME_META[key]?.icon || "🎨"}</span>
                 <span className="hidden xl:inline">
@@ -220,10 +220,10 @@ function Navbar({ showBack }) {
         <button
           type="button"
           onClick={cycleTheme}
-          className="lg:hidden h-9 w-9 rounded-lg border border-[var(--border)]/60
-                     bg-[var(--surface)] text-sm cursor-pointer hover:bg-[var(--accent)]/12 
-                     transition-all active:scale-95 flex items-center justify-center
-                     hover:border-[var(--accent)]/40"
+          className="lg:hidden h-9 w-9 rounded-xl border border-[var(--border)]/50
+                     glass text-sm cursor-pointer hover:bg-[var(--accent)]/12 
+                     transition-all duration-300 active:scale-90 flex items-center justify-center
+                     hover:border-[var(--accent)]/40 hover:shadow-[0_4px_16px_-4px_var(--accent)]"
           title="Change theme"
           aria-label="Change theme"
         >
@@ -235,18 +235,20 @@ function Navbar({ showBack }) {
           <>
             {/* User Info - Desktop Only */}
             <div
-              className="hidden lg:flex items-center gap-3 px-3 py-1 rounded-lg 
-                           border border-[var(--border)]/50 bg-[var(--accent)]/6"
+              className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-xl
+                           border border-[var(--accent)]/20 bg-[var(--accent)]/6
+                           hover:bg-[var(--accent)]/10 transition-all duration-300"
             >
               <div className="text-right">
-                <p className="text-sm font-semibold text-[var(--text)] leading-tight">
+                <p className="text-sm font-bold text-[var(--text)] leading-tight">
                   {user.name}
                 </p>
-                <p className="text-xs text-[var(--muted)]">{user.email}</p>
+                <p className="text-[10px] text-[var(--muted)] font-medium">{user.email}</p>
               </div>
               <div
-                className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center 
-                             text-[var(--accent-contrast)] text-xs font-bold"
+                className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[color-mix(in_srgb,var(--accent)_60%,#ec4899)] 
+                             flex items-center justify-center text-[var(--accent-contrast)] text-xs font-bold
+                             shadow-[0_4px_12px_-4px_var(--accent)] ring-2 ring-[var(--accent)]/20"
               >
                 {user.name?.charAt(0).toUpperCase()}
               </div>
@@ -256,18 +258,19 @@ function Navbar({ showBack }) {
             <div className="relative" ref={ref}>
               <button
                 onClick={() => setOpen((o) => !o)}
-                className="relative h-9 w-9 rounded-lg text-lg leading-none flex items-center justify-center
+                className="relative h-9 w-9 rounded-xl text-lg leading-none flex items-center justify-center
                            hover:bg-[var(--accent)]/12 border border-transparent hover:border-[var(--border)]/60
-                           bg-transparent cursor-pointer transition-all active:scale-95"
+                           bg-transparent cursor-pointer transition-all duration-300 active:scale-90"
                 aria-label="Notifications"
               >
                 🔔
                 {unread > 0 && (
                   <span
-                    className="absolute -top-2 -right-2 min-w-[20px] h-[20px] rounded-full
-                               bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] font-bold
-                               flex items-center justify-center px-0.5 notify-pulse
-                               shadow-[0_4px_12px_-4px_rgba(239,68,68,0.4)]"
+                    className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] rounded-full
+                               bg-gradient-to-br from-red-500 to-rose-600 text-white text-[10px] font-bold
+                               flex items-center justify-center px-1 notify-pulse
+                               shadow-[0_4px_12px_-2px_rgba(239,68,68,0.5)]
+                               ring-2 ring-[var(--bg)]"
                   >
                     {unread > 9 ? "9+" : unread}
                   </span>
@@ -277,26 +280,28 @@ function Navbar({ showBack }) {
               {/* Notifications Dropdown */}
               {open && (
                 <div
-                  className="absolute right-0 top-12 w-96 rounded-xl border border-[var(--border)]/60
-                             bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] backdrop-blur-xl
-                             shadow-[0_12px_40px_-8px_rgba(0,0,0,0.2)] overflow-hidden z-[200] 
-                             animate-in fade-in slide-in-from-top-2 duration-300"
+                  className="absolute right-0 top-12 w-[360px] sm:w-96 rounded-2xl border border-[var(--border)]/60
+                             glass-heavy shadow-[0_20px_60px_-12px_rgba(0,0,0,0.3)] overflow-hidden z-[200] 
+                             animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]
+                             origin-top-right"
                 >
-                  <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--border)]/50 bg-[var(--accent)]/4">
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]/40
+                                  bg-gradient-to-r from-[var(--accent)]/8 to-transparent">
                     <div>
                       <span className="text-sm font-bold text-[var(--text)]">
                         Notifications
                       </span>
                       {unread > 0 && (
-                        <span className="ml-2 text-xs text-[var(--accent)] font-semibold">
-                          ({unread} new)
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--accent)]/15 text-[var(--accent)]">
+                          {unread} new
                         </span>
                       )}
                     </div>
                     {unread > 0 && (
                       <button
                         onClick={markAll}
-                        className="text-xs text-[var(--accent)] font-semibold hover:underline bg-transparent border-none cursor-pointer active:opacity-70"
+                        className="text-xs text-[var(--accent)] font-semibold hover:underline bg-transparent border-none cursor-pointer active:opacity-70
+                                   hover:bg-[var(--accent)]/8 px-2 py-1 rounded-lg transition-colors"
                       >
                         Mark all read
                       </button>
@@ -306,26 +311,28 @@ function Navbar({ showBack }) {
                   <div className="max-h-80 overflow-y-auto">
                     {notifs.length === 0 ? (
                       <div className="px-4 py-12 text-center text-sm text-[var(--muted)]">
-                        <div className="text-4xl mb-2">🔔</div>
-                        No notifications yet
+                        <div className="text-4xl mb-3 opacity-40">🔔</div>
+                        <p className="font-medium">No notifications yet</p>
+                        <p className="text-xs mt-1 opacity-70">You're all caught up!</p>
                       </div>
                     ) : (
-                      notifs.map((n) => (
+                      notifs.map((n, i) => (
                         <div
                           key={n.id}
-                          className={`flex gap-3 px-4 py-3.5 border-b border-[var(--border)]/30 last:border-0 
-                                     transition-all hover:bg-[var(--accent)]/6 cursor-pointer group ${
-                                       !n.read ? "bg-[var(--accent)]/8" : ""
-                                     }`}
+                          className={`flex gap-3 px-5 py-3.5 border-b border-[var(--border)]/20 last:border-0 
+                                     transition-all duration-300 hover:bg-[var(--accent)]/6 cursor-pointer group ${!n.read ? "bg-[var(--accent)]/6" : ""
+                            }`}
+                          style={{ animationDelay: `${i * 30}ms` }}
                         >
                           {!n.read && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-[var(--accent)] mt-1.5 flex-shrink-0 group-hover:scale-125 transition-transform" />
+                            <div className="w-2 h-2 rounded-full bg-[var(--accent)] mt-2 flex-shrink-0 
+                                          group-hover:scale-125 transition-transform shadow-[0_0_8px_var(--accent)]" />
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm text-[var(--text)] leading-snug font-medium">
                               {n.message}
                             </p>
-                            <p className="text-xs text-[var(--muted)] mt-1">
+                            <p className="text-[11px] text-[var(--muted)] mt-1 font-medium">
                               {timeAgo(n.createdAt)}
                             </p>
                           </div>
@@ -340,20 +347,25 @@ function Navbar({ showBack }) {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden h-9 w-9 rounded-lg border border-[var(--border)]/60 
-                         bg-[var(--surface)] flex items-center justify-center text-lg
-                         hover:bg-[var(--accent)]/12 transition-all active:scale-95"
+              className="lg:hidden h-9 w-9 rounded-xl border border-[var(--border)]/50 
+                         glass flex items-center justify-center text-lg
+                         hover:bg-[var(--accent)]/12 transition-all duration-300 active:scale-90"
               aria-label="Menu"
             >
-              ⋮
+              <div className="flex flex-col gap-1 items-center">
+                <span className={`block w-4 h-0.5 bg-[var(--text)] rounded-full transition-all duration-300 ${mobileMenuOpen ? "rotate-45 translate-y-1.5" : ""}`} />
+                <span className={`block w-4 h-0.5 bg-[var(--text)] rounded-full transition-all duration-300 ${mobileMenuOpen ? "opacity-0 scale-0" : ""}`} />
+                <span className={`block w-4 h-0.5 bg-[var(--text)] rounded-full transition-all duration-300 ${mobileMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`} />
+              </div>
             </button>
 
             {/* Logout Button - Desktop */}
             <button
               onClick={handleLogout}
-              className="hidden lg:flex px-4 py-2 rounded-lg text-sm font-semibold border border-[var(--border)]/70
-                         text-[var(--accent)] bg-[var(--accent)]/10 hover:bg-[var(--accent)]/18
-                         transition-all cursor-pointer active:scale-95 items-center gap-2"
+              className="hidden lg:flex px-4 py-2 rounded-xl text-sm font-semibold border border-[var(--border)]/50
+                         text-[var(--accent)] glass hover:bg-[var(--accent)]/12
+                         hover:border-[var(--accent)]/40 hover:shadow-[0_4px_16px_-4px_var(--accent)]
+                         transition-all duration-300 cursor-pointer active:scale-95 items-center gap-2"
             >
               <span>Logout</span>
             </button>
@@ -362,21 +374,21 @@ function Navbar({ showBack }) {
             {mobileMenuOpen && (
               <div
                 ref={mobileMenuRef}
-                className="absolute right-4 top-16 w-56 rounded-lg border border-[var(--border)]/60
-                           bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] backdrop-blur-xl
-                           shadow-[0_12px_40px_-8px_rgba(0,0,0,0.2)] overflow-hidden z-[200]
-                           animate-in fade-in slide-in-from-top-2 duration-300 lg:hidden"
+                className="absolute right-4 top-16 w-60 rounded-2xl border border-[var(--border)]/50
+                           glass-heavy shadow-[0_20px_60px_-12px_rgba(0,0,0,0.3)] overflow-hidden z-[200]
+                           animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]
+                           origin-top-right lg:hidden"
               >
-                <div className="p-3 border-b border-[var(--border)]/50 bg-[var(--accent)]/4">
-                  <p className="text-xs font-bold text-[var(--muted)] uppercase tracking-wide">
+                <div className="p-4 border-b border-[var(--border)]/40 bg-gradient-to-r from-[var(--accent)]/8 to-transparent">
+                  <p className="text-xs font-bold text-[var(--muted)] uppercase tracking-wider mb-1">
                     Account
                   </p>
-                  <p className="text-sm font-semibold text-[var(--text)] mt-1">
+                  <p className="text-sm font-bold text-[var(--text)]">
                     {user.name}
                   </p>
                   <div
-                    className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold 
-                                bg-[var(--accent)]/14 text-[var(--accent)] capitalize"
+                    className="inline-block mt-2 px-2.5 py-0.5 rounded-lg text-[10px] font-bold 
+                                bg-[var(--accent)]/14 text-[var(--accent)] capitalize tracking-wide"
                   >
                     {user.role}
                   </div>
@@ -384,11 +396,12 @@ function Navbar({ showBack }) {
                 <div className="p-2">
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold 
-                               text-[var(--accent)] hover:bg-[var(--accent)]/12 
-                               transition-all active:scale-95 border border-[var(--border)]/50"
+                    className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold 
+                               text-red-500 hover:bg-red-500/10 
+                               transition-all duration-300 active:scale-95 border-none bg-transparent cursor-pointer
+                               flex items-center gap-2"
                   >
-                    Logout
+                    <span>🚪</span> Logout
                   </button>
                 </div>
               </div>
@@ -397,24 +410,22 @@ function Navbar({ showBack }) {
         ) : (
           /* GUEST / NOT AUTHENTICATED SECTION */
           <>
-            {/* Guest Sign In Button - Mobile hidden */}
             <button
               onClick={() => navigate("/signin")}
-              className="hidden sm:flex px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold 
-                         border border-[var(--border)]/70 text-[var(--text)] bg-[var(--surface)]
+              className="hidden sm:flex px-4 py-2 rounded-xl text-sm font-semibold 
+                         border border-[var(--border)]/50 text-[var(--text)] glass
                          hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/8
-                         transition-all cursor-pointer active:scale-95"
+                         hover:shadow-[0_4px_16px_-4px_var(--accent)]
+                         transition-all duration-300 cursor-pointer active:scale-95"
             >
               Sign In
             </button>
 
-            {/* Guest Sign Up Button */}
             <button
               onClick={() => navigate("/signup")}
-              className="px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold border-none
-                         text-[var(--accent-contrast)] bg-gradient-to-r from-[var(--accent)] to-[color-mix(in_srgb,var(--accent)_72%,#7c3aed)]
-                         hover:opacity-90 transition-all shadow-[0_8px_16px_-6px_var(--accent)]
-                         cursor-pointer active:scale-95 font-bold"
+              className="px-4 py-2 rounded-xl text-sm font-bold border-none
+                         text-[var(--accent-contrast)] sc-btn-glow
+                         cursor-pointer active:scale-95"
             >
               <span className="hidden xs:inline">Sign Up</span>
               <span className="xs:hidden">Join</span>
