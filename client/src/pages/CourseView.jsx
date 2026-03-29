@@ -86,6 +86,7 @@ function CourseView() {
     title: "",
     description: "",
     scheduledAt: "",
+    type: "platform",
     meetingLink: "",
   });
 
@@ -369,6 +370,7 @@ function CourseView() {
         title: "",
         description: "",
         scheduledAt: "",
+        type: "platform",
         meetingLink: "",
       });
       loadLiveClasses();
@@ -406,7 +408,13 @@ function CourseView() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user.id }),
     });
-    if (meetingLink) window.open(meetingLink, "_blank");
+    if (meetingLink) {
+      // External link (Google Meet, Zoom, etc.)
+      window.open(meetingLink, "_blank");
+    } else {
+      // Platform class → navigate to the live room
+      navigate(`/live-class/${lcId}`);
+    }
   };
 
   if (!course)

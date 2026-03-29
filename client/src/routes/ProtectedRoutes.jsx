@@ -4,6 +4,7 @@ import TeacherDashboard from "../pages/TeacherDashboard";
 import StudentDashboard from "../pages/StudentDashboard";
 import CourseView from "../pages/CourseView";
 import QuizView from "../pages/QuizView";
+import LiveClassRoom from "../pages/LiveClassRoom";
 
 function ProtectedRoutes() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ function ProtectedRoutes() {
       />
       <Route path="/course/:id" element={<CourseView />} />
       <Route path="/quiz/:id" element={<QuizView />} />
+      <Route path="/live-class/:id" element={<LiveClassRoom />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
