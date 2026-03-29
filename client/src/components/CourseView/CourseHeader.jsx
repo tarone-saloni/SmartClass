@@ -12,107 +12,129 @@ function CourseHeader({
       icon: "📄",
       val: materials.length,
       label: "Materials",
-      color: "from-blue-400 to-indigo-500",
+      gradient: "from-blue-500 to-indigo-600",
+      bgGlow: "bg-blue-500/10",
     },
     {
       icon: "📋",
       val: assignments.length,
       label: "Assignments",
-      color: "from-amber-400 to-orange-500",
+      gradient: "from-amber-500 to-orange-600",
+      bgGlow: "bg-amber-500/10",
     },
     {
       icon: "🧠",
       val: quizzes.length,
       label: "Quizzes",
-      color: "from-pink-400 to-rose-500",
+      gradient: "from-pink-500 to-rose-600",
+      bgGlow: "bg-pink-500/10",
     },
     {
       icon: "📹",
       val: liveClasses.length,
       label: "Live",
-      color: "from-red-400 to-red-600",
+      gradient: "from-red-500 to-red-700",
+      bgGlow: "bg-red-500/10",
     },
     {
       icon: "👨‍🎓",
       val: course.enrollmentCount ?? 0,
       label: "Students",
-      color: "from-emerald-400 to-teal-500",
+      gradient: "from-emerald-500 to-teal-600",
+      bgGlow: "bg-emerald-500/10",
     },
   ];
 
   return (
-    <div className="relative rounded-3xl overflow-hidden mb-6 animate-[slide-down_0.6s_cubic-bezier(0.16,1,0.3,1)_both] shadow-[0_24px_60px_-12px_rgba(0,0,0,0.4)]">
-      {/* Main gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)] via-violet-600 to-pink-600" />
+    <div className="relative rounded-[2rem] overflow-hidden mb-8 animate-[slide-down_0.6s_cubic-bezier(0.16,1,0.3,1)_both] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.5)]">
+      {/* Main gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)] via-violet-600 to-fuchsia-600" />
 
-      {/* Animated orbs */}
-      <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/10 blur-2xl animate-float pointer-events-none" />
+      {/* Animated mesh overlay */}
       <div
-        className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-pink-400/20 blur-2xl animate-float pointer-events-none"
-        style={{ animationDelay: "2s" }}
-      />
-      <div
-        className="absolute top-1/2 right-1/4 w-24 h-24 rounded-full bg-violet-300/15 blur-xl animate-float pointer-events-none"
-        style={{ animationDelay: "4s" }}
-      />
-
-      {/* Dot grid */}
-      <div
-        className="absolute inset-0 opacity-[0.07] pointer-events-none"
+        className="absolute inset-0 opacity-30"
         style={{
-          backgroundImage:
-            "radial-gradient(circle, white 1px, transparent 1px)",
-          backgroundSize: "20px 20px",
+          backgroundImage: `
+            radial-gradient(circle at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(236,72,153,0.2) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(139,92,246,0.15) 0%, transparent 60%)
+          `,
         }}
       />
 
-      <div className="relative p-7 sm:p-8">
-        {/* Top row: subject badge */}
-        <div className="flex items-start justify-between gap-4 mb-5">
+      {/* Floating orbs */}
+      <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/8 blur-3xl animate-float pointer-events-none" />
+      <div
+        className="absolute -bottom-12 -left-12 w-44 h-44 rounded-full bg-pink-400/15 blur-3xl animate-float pointer-events-none"
+        style={{ animationDelay: "2s" }}
+      />
+      <div
+        className="absolute top-1/3 right-1/3 w-32 h-32 rounded-full bg-violet-300/10 blur-2xl animate-float pointer-events-none"
+        style={{ animationDelay: "4s" }}
+      />
+
+      {/* Subtle grid pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.04] pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      <div className="relative px-8 py-9 sm:px-10 sm:py-10">
+        {/* Top: breadcrumb + subject badge */}
+        <div className="flex items-start justify-between gap-6 mb-6">
           <div className="flex-1 min-w-0">
-            {/* Breadcrumb-like label */}
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-sm backdrop-blur-sm">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center text-base ring-1 ring-white/10">
                 📚
               </div>
-              <span className="text-white/70 text-xs font-bold uppercase tracking-widest">
+              <span className="text-white/60 text-[11px] font-bold uppercase tracking-[0.15em]">
                 Course
               </span>
               {course.subject && (
                 <>
-                  <span className="text-white/30 text-xs">›</span>
-                  <span className="text-white/70 text-xs font-bold uppercase tracking-widest">
+                  <span className="text-white/25 text-xs">›</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-white/10 text-white/80 text-[11px] font-bold uppercase tracking-[0.12em] backdrop-blur-sm ring-1 ring-white/10">
                     {course.subject}
                   </span>
                 </>
               )}
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-black text-white mb-2 tracking-tight leading-tight drop-shadow-sm">
+            {/* Title */}
+            <h1 className="text-3xl sm:text-[2.5rem] font-black text-white mb-3 tracking-[-0.03em] leading-[1.1] drop-shadow-lg">
               {course.title}
             </h1>
 
-            <p className="text-sm text-white/80 font-semibold flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs backdrop-blur-sm">
+            {/* Teacher name */}
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-7 h-7 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-xs ring-1 ring-white/10">
                 👨‍🏫
+              </div>
+              <span className="text-white/75 text-sm font-semibold">
+                {course.teacher?.name}
               </span>
-              {course.teacher?.name}
-            </p>
+            </div>
 
             {course.description && (
-              <p className="text-sm text-white/60 leading-relaxed mt-3 max-w-2xl line-clamp-2">
+              <p className="text-sm text-white/50 leading-relaxed mt-3.5 max-w-2xl line-clamp-2 font-medium">
                 {course.description}
               </p>
             )}
           </div>
 
+          {/* Subject badge (desktop) */}
           {course.subject && (
-            <div className="shrink-0 hidden sm:block">
-              <div className="px-4 py-2.5 bg-white/15 rounded-2xl border border-white/20 backdrop-blur-sm text-center">
-                <p className="text-white font-black text-sm tracking-wide">
+            <div className="shrink-0 hidden lg:block">
+              <div className="px-6 py-4 bg-white/10 rounded-2xl border border-white/15 backdrop-blur-md text-center ring-1 ring-white/5">
+                <p className="text-white font-black text-lg tracking-wide mb-0.5">
                   {course.subject}
                 </p>
-                <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wider mt-0.5">
+                <p className="text-white/50 text-[10px] font-bold uppercase tracking-[0.15em]">
                   Subject
                 </p>
               </div>
@@ -121,24 +143,25 @@ function CourseHeader({
         </div>
 
         {/* Stats row */}
-        <div className="flex flex-wrap gap-2 mb-5">
+        <div className="flex flex-wrap gap-2.5 mb-6">
           {stats.map((s) => (
             <div
               key={s.label}
-              className="flex items-center gap-2.5 px-4 py-2.5 bg-white/10 hover:bg-white/18 rounded-2xl
-                         border border-white/12 backdrop-blur-sm transition-all duration-300 cursor-default group"
+              className="group flex items-center gap-3 px-4 py-3 bg-white/8 hover:bg-white/14 rounded-2xl
+                         border border-white/10 hover:border-white/20 backdrop-blur-sm transition-all duration-300 cursor-default
+                         hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.3)]"
             >
               <div
-                className={`w-7 h-7 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center text-sm
-                              shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                className={`w-8 h-8 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center text-sm
+                              shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}
               >
                 {s.icon}
               </div>
               <div>
-                <p className="text-white font-black text-base leading-none">
+                <p className="text-white font-black text-lg leading-none tabular-nums">
                   {s.val}
                 </p>
-                <p className="text-white/60 text-[9px] font-bold uppercase tracking-wider leading-none mt-0.5">
+                <p className="text-white/50 text-[9px] font-bold uppercase tracking-[0.15em] leading-none mt-1">
                   {s.label}
                 </p>
               </div>
@@ -146,41 +169,40 @@ function CourseHeader({
           ))}
         </div>
 
-        {/* Student progress */}
+        {/* Student progress bar */}
         {!isTeacher && materials.length > 0 && (
-          <div className="mt-1">
-            <div className="flex items-center justify-between text-xs font-bold text-white/80 mb-2">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse inline-block" />
-                Your Progress
+          <div className="bg-white/8 rounded-2xl px-5 py-4 border border-white/10 backdrop-blur-sm">
+            <div className="flex items-center justify-between text-xs font-bold text-white/80 mb-3">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <span className="uppercase tracking-[0.1em] text-[11px]">Your Progress</span>
               </span>
-              <span className="text-white font-black text-sm">
+              <span className="text-white font-black text-base tabular-nums">
                 {matProgress}%
               </span>
             </div>
-            <div className="relative h-3 bg-white/15 rounded-full overflow-hidden backdrop-blur-sm">
+            <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
               <div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-white/90 to-white rounded-full
-                           transition-all duration-700 ease-out shadow-[0_0_16px_rgba(255,255,255,0.5)]"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-white/80 to-white rounded-full
+                           transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(255,255,255,0.4)]"
                 style={{ width: `${matProgress}%` }}
               />
-              {/* shimmer */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite]" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-[shimmer_2.5s_infinite]" />
             </div>
-            <p className="text-white/50 text-[10px] font-semibold mt-1.5">
-              Keep going — you're doing great!
+            <p className="text-white/40 text-[11px] font-medium mt-2">
+              {matProgress < 100 ? "Keep going — you're doing great!" : "🎉 All materials completed!"}
             </p>
           </div>
         )}
 
-        {/* Teacher badge */}
+        {/* Teacher badges */}
         {isTeacher && (
-          <div className="flex items-center gap-2 mt-1">
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/12 rounded-xl border border-white/15 text-white/80 text-xs font-bold backdrop-blur-sm">
+          <div className="flex items-center gap-2.5">
+            <span className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl border border-white/12 text-white/80 text-xs font-bold backdrop-blur-sm">
               <span>🎓</span> Teaching Mode
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/12 rounded-xl border border-white/15 text-white/80 text-xs font-bold backdrop-blur-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-xl border border-white/12 text-white/80 text-xs font-bold backdrop-blur-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
               Active Course
             </span>
           </div>

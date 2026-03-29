@@ -10,6 +10,7 @@ function LiveClassModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
         Schedule Live Class
       </h3>
       <form onSubmit={onSubmit} className="space-y-4">
+        {/* Title */}
         <div>
           <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">
             Title *
@@ -22,6 +23,8 @@ function LiveClassModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
             required
           />
         </div>
+
+        {/* Description */}
         <div>
           <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">
             Description
@@ -33,24 +36,77 @@ function LiveClassModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
             placeholder="What will be covered..."
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">
-              Date & Time *
-            </label>
-            <input
-              type="datetime-local"
-              className={inputCls}
-              value={form.scheduledAt}
-              onChange={(e) =>
-                onChange({ ...form, scheduledAt: e.target.value })
-              }
-              required
-            />
+
+        {/* Date & Time */}
+        <div>
+          <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">
+            Date &amp; Time *
+          </label>
+          <input
+            type="datetime-local"
+            className={inputCls}
+            value={form.scheduledAt}
+            onChange={(e) => onChange({ ...form, scheduledAt: e.target.value })}
+            required
+          />
+        </div>
+
+        {/* Class type toggle */}
+        <div>
+          <label className="block text-xs font-medium text-[var(--muted)] mb-2">
+            Class Type *
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              {
+                value: "platform",
+                icon: "🖥️",
+                title: "On Platform",
+                desc: "Share your screen directly here",
+              },
+              {
+                value: "meetLink",
+                icon: "🔗",
+                title: "External Link",
+                desc: "Google Meet, Zoom, etc.",
+              },
+            ].map((opt) => {
+              const active = form.type === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() =>
+                    onChange({ ...form, type: opt.value, meetingLink: "" })
+                  }
+                  className={`flex flex-col items-start gap-1 px-4 py-3 rounded-2xl border text-left cursor-pointer
+                               transition-all duration-200
+                               ${
+                                 active
+                                   ? "bg-[var(--accent)]/12 border-[var(--accent)]/40 shadow-[0_4px_16px_-4px_var(--accent)/20]"
+                                   : "glass border-[var(--border)]/25 hover:border-[var(--accent)]/20"
+                               }`}
+                >
+                  <span className="text-lg">{opt.icon}</span>
+                  <span
+                    className={`text-xs font-bold ${active ? "text-[var(--accent)]" : "text-[var(--text)]"}`}
+                  >
+                    {opt.title}
+                  </span>
+                  <span className="text-[10px] text-[var(--muted)] leading-tight">
+                    {opt.desc}
+                  </span>
+                </button>
+              );
+            })}
           </div>
+        </div>
+
+        {/* Meeting link — only shown for meetLink type */}
+        {form.type === "meetLink" && (
           <div>
             <label className="block text-xs font-medium text-[var(--muted)] mb-1.5">
-              Meeting Link
+              Meeting Link *
             </label>
             <input
               className={inputCls}
@@ -59,9 +115,21 @@ function LiveClassModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
                 onChange({ ...form, meetingLink: e.target.value })
               }
               placeholder="https://meet.google.com/..."
+              required={form.type === "meetLink"}
             />
           </div>
-        </div>
+        )}
+
+        {form.type === "platform" && (
+          <div className="flex items-start gap-2.5 px-4 py-3 rounded-2xl bg-[var(--accent)]/6 border border-[var(--accent)]/15 text-[12px] text-[var(--muted)]">
+            <span className="text-base shrink-0">ℹ️</span>
+            <span>
+              After starting the class, use <strong className="text-[var(--text)]">Start Screen Share</strong> inside
+              the class room to go live. You can also record the session.
+            </span>
+          </div>
+        )}
+
         <div className="flex justify-end gap-3 pt-2">
           <button
             type="button"

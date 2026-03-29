@@ -8,6 +8,9 @@ const liveClassSchema = new mongoose.Schema(
     teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     scheduledAt: { type: Date, required: true },
     status: { type: String, enum: ['scheduled', 'live', 'ended'], default: 'scheduled' },
+    // 'meetLink' = teacher pastes a Google Meet / Zoom URL
+    // 'platform' = class hosted on-platform via Jitsi embed
+    type: { type: String, enum: ['meetLink', 'platform'], default: 'meetLink' },
     meetingLink: { type: String, trim: true, default: '' },
     recordingUrl: { type: String, trim: true, default: '' },
     attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
