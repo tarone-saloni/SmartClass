@@ -9,21 +9,30 @@ const COOKIE_TYPES = [
     icon: "🔑",
     required: true,
     desc: "These cookies are strictly necessary for SmartClass to function. They manage your login session and keep you securely authenticated. They cannot be disabled.",
-    examples: ["session_token — keeps you logged in", "csrf_token — prevents cross-site request forgery"],
+    examples: [
+      "session_token — keeps you logged in",
+      "csrf_token — prevents cross-site request forgery",
+    ],
   },
   {
     type: "Preferences",
     icon: "🎨",
     required: false,
     desc: "These cookies remember your choices like selected theme, language preference, and notification settings so you don't have to set them again on each visit.",
-    examples: ["smartclass_theme — your selected UI theme", "locale — your preferred language"],
+    examples: [
+      "smartclass_theme — your selected UI theme",
+      "locale — your preferred language",
+    ],
   },
   {
     type: "Analytics",
     icon: "📊",
     required: false,
     desc: "We use privacy-respecting analytics to understand how users interact with SmartClass. This helps us fix bugs and prioritise improvements. All data is aggregated and anonymised.",
-    examples: ["_sc_session — anonymised session identifier", "_sc_referrer — page that referred you"],
+    examples: [
+      "_sc_session — anonymised session identifier",
+      "_sc_referrer — page that referred you",
+    ],
   },
   {
     type: "Marketing",
@@ -74,7 +83,9 @@ function Cookies() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{c.icon}</span>
-                    <h3 className="font-bold text-[var(--text)]">{c.type} Cookies</h3>
+                    <h3 className="font-bold text-[var(--text)]">
+                      {c.type} Cookies
+                    </h3>
                   </div>
                   <span
                     className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
@@ -92,7 +103,10 @@ function Cookies() {
                 {c.examples.length > 0 && (
                   <ul className="space-y-1">
                     {c.examples.map((ex) => (
-                      <li key={ex} className="text-xs text-[var(--muted)] font-mono bg-[var(--bg)] px-3 py-1.5 rounded-lg border border-[var(--border)]/30">
+                      <li
+                        key={ex}
+                        className="text-xs text-[var(--muted)] font-mono bg-[var(--bg)] px-3 py-1.5 rounded-lg border border-[var(--border)]/30"
+                      >
                         {ex}
                       </li>
                     ))}

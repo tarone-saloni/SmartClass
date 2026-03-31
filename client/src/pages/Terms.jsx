@@ -71,10 +71,10 @@ function Terms() {
           </div>
 
           <p className="text-sm text-[var(--muted)] leading-relaxed mb-10 p-5 rounded-xl border border-[var(--border)]/40 bg-[var(--card)]">
-            Please read these Terms of Service carefully before using SmartClass.
-            By using our platform, you agree to these terms. If you are using
-            SmartClass on behalf of an institution, you represent that you have
-            authority to bind that institution.
+            Please read these Terms of Service carefully before using
+            SmartClass. By using our platform, you agree to these terms. If you
+            are using SmartClass on behalf of an institution, you represent that
+            you have authority to bind that institution.
           </p>
 
           <div className="space-y-8">

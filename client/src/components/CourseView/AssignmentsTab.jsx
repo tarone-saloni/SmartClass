@@ -25,7 +25,8 @@ function AssignmentsTab({
               Assignments
             </h2>
             <p className="text-[11px] text-[var(--muted)] font-medium mt-0.5">
-              {assignments.length} {assignments.length === 1 ? "assignment" : "assignments"} posted
+              {assignments.length}{" "}
+              {assignments.length === 1 ? "assignment" : "assignments"} posted
             </p>
           </div>
         </div>
@@ -44,10 +45,14 @@ function AssignmentsTab({
       </div>
 
       {assignments.length === 0 ? (
-        <div className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
-                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]">
-          <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/15 flex items-center justify-center text-3xl mx-auto mb-5
-                          shadow-[0_8px_24px_-8px_rgba(245,158,11,0.15)]">
+        <div
+          className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
+                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]"
+        >
+          <div
+            className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/15 flex items-center justify-center text-3xl mx-auto mb-5
+                          shadow-[0_8px_24px_-8px_rgba(245,158,11,0.15)]"
+          >
             📋
           </div>
           <p className="text-lg font-bold text-[var(--text)] mb-2">

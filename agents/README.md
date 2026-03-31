@@ -33,12 +33,18 @@ agents/
 ├── agent.py            # Agentic loop (multi-tool, multi-step tasks)
 ├── requirements.txt    # Python dependencies
 ├── README.md           # This file
-└── routes/
-    ├── __init__.py
-    ├── info.py         # GET /  and  GET /health
-    ├── student.py      # /chat, /feedback, /study-plan, /explain,
-    │                   #   /analyze-performance, /summarize
-    └── teacher.py      # /generate-quiz, /course-outline, /agent
+├── routes/
+│   ├── __init__.py
+│   ├── info.py         # GET /  and  GET /health
+│   ├── student.py      # /chat, /feedback, /study-plan, /explain,
+│   │                   #   /analyze-performance, /summarize
+│   └── teacher.py      # /generate-quiz, /course-outline, /agent
+└── tests/
+    ├── conftest.py     # Fixtures, mock factories, TestClient setup
+    ├── test_info.py    # GET / and GET /health
+    ├── test_student.py # All student endpoints
+    ├── test_teacher.py # /generate-quiz and /course-outline
+    └── test_agent.py   # Full agentic loop (tool-use, chaining, errors)
 ```
 
 ---
@@ -200,7 +206,7 @@ Generate a personalized weekly study schedule.
 **Request**
 ```json
 {
-  "student_name": "Aditya",
+  "student_name": "Alex",
   "enrolled_courses": ["Data Structures", "Web Development", "Machine Learning"],
   "weak_areas": ["Recursion", "CSS Flexbox"],
   "available_hours_per_week": 12,
@@ -212,7 +218,7 @@ Generate a personalized weekly study schedule.
 ```json
 {
   "study_plan": "### Weekly Overview\n...\n### Day-by-Day Schedule\n...",
-  "student": "Aditya"
+  "student": "Alex"
 }
 ```
 
@@ -298,7 +304,7 @@ Full agentic workflow. Claude autonomously selects and chains tools to complete 
 {
   "task": "Generate a 5-question quiz on recursion AND create a study plan for a student weak in algorithms who has 10 hours per week",
   "context": {
-    "student_name": "Aditya",
+    "student_name": "Alex",
     "course": "Data Structures"
   }
 }
@@ -404,6 +410,26 @@ MODEL = "claude-haiku-4-5-20251001"  # Fastest, lowest cost
 
 ---
 
+## Testing
+
+The test suite lives in `agents/tests/` and uses **pytest** + **httpx**. All Anthropic API calls are mocked — no real API key is needed.
+
+```bash
+# From the agents/ directory with the venv activated
+python -m pytest tests/ -v
+```
+
+| Test file | What it covers |
+|---|---|
+| `test_info.py` | `GET /` index and `GET /health` liveness probe |
+| `test_student.py` | `/chat`, `/summarize`, `/explain`, `/feedback`, `/study-plan`, `/analyze-performance` |
+| `test_teacher.py` | `/generate-quiz` (including JSON parsing, code-fence stripping, parse_error fallback), `/course-outline` |
+| `test_agent.py` | Agentic loop: direct `end_turn`, single-tool use, two-tool chain, unknown tool error handling, max-iterations cap, input validation |
+
+**Mocking strategy:** Each module imports `client` from `config` by name (`from config import client`), creating a local binding. `conftest.py` patches `llm.client`, `agent.client`, and `routes.student.client` directly so the mock takes effect in every module, not just `config`.
+
+---
+
 ## Dependencies
 
 | Package | Purpose |
@@ -413,3 +439,5 @@ MODEL = "claude-haiku-4-5-20251001"  # Fastest, lowest cost
 | `anthropic` | Claude API client |
 | `python-dotenv` | Load `.env` variables |
 | `pydantic` | Request/response validation |
+| `pytest` | Test runner |
+| `httpx` | HTTP client used by FastAPI TestClient |

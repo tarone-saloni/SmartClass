@@ -31,10 +31,14 @@ function StudentsTab({ students }) {
       </div>
 
       {students.length === 0 ? (
-        <div className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
-                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]">
-          <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-3xl mx-auto mb-5
-                          shadow-[0_8px_24px_-8px_rgba(16,185,129,0.15)]">
+        <div
+          className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
+                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]"
+        >
+          <div
+            className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-3xl mx-auto mb-5
+                          shadow-[0_8px_24px_-8px_rgba(16,185,129,0.15)]"
+          >
             👨‍🎓
           </div>
           <p className="text-lg font-bold text-[var(--text)] mb-2">
@@ -82,7 +86,13 @@ function StudentsTab({ students }) {
                     className="w-8 h-8 rounded-xl bg-emerald-500/8 border border-emerald-500/12 flex items-center justify-center shrink-0
                                   opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-100 scale-75"
                   >
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" className="text-emerald-400">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                      className="text-emerald-400"
+                    >
                       <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
                     </svg>
                   </div>

@@ -4,10 +4,26 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 const VALUES = [
-  { icon: "🎯", title: "Student-Centred", desc: "Every decision starts with what's best for learners." },
-  { icon: "💡", title: "Innovation", desc: "We embrace AI and emerging technology to unlock new possibilities." },
-  { icon: "🤝", title: "Collaboration", desc: "Great education is a team sport — we build tools that bring people together." },
-  { icon: "🔒", title: "Trust & Privacy", desc: "We handle student data with the utmost care and transparency." },
+  {
+    icon: "🎯",
+    title: "Student-Centred",
+    desc: "Every decision starts with what's best for learners.",
+  },
+  {
+    icon: "💡",
+    title: "Innovation",
+    desc: "We embrace AI and emerging technology to unlock new possibilities.",
+  },
+  {
+    icon: "🤝",
+    title: "Collaboration",
+    desc: "Great education is a team sport — we build tools that bring people together.",
+  },
+  {
+    icon: "🔒",
+    title: "Trust & Privacy",
+    desc: "We handle student data with the utmost care and transparency.",
+  },
 ];
 
 const STATS = [
@@ -40,10 +56,10 @@ function About() {
               accessible to everyone
             </h1>
             <p className="text-[var(--muted)] text-lg leading-relaxed">
-              SmartClass was founded with a simple belief: the right tools
-              can make teaching more effective and learning more engaging.
-              We build intelligent software that empowers educators and
-              inspires students every single day.
+              SmartClass was founded with a simple belief: the right tools can
+              make teaching more effective and learning more engaging. We build
+              intelligent software that empowers educators and inspires students
+              every single day.
             </p>
           </div>
 
@@ -66,14 +82,16 @@ function About() {
 
           {/* Story */}
           <div className="rounded-2xl border border-[var(--border)]/40 bg-[var(--card)] p-8 mb-12">
-            <h2 className="text-2xl font-bold text-[var(--text)] mb-4">Our Story</h2>
+            <h2 className="text-2xl font-bold text-[var(--text)] mb-4">
+              Our Story
+            </h2>
             <div className="space-y-4 text-sm text-[var(--muted)] leading-relaxed">
               <p>
-                SmartClass started in 2023 when a group of educators and engineers
-                came together, frustrated by clunky, outdated learning management
-                systems. We set out to build something fundamentally different —
-                a platform that feels modern, moves fast, and puts teachers in
-                control.
+                SmartClass started in 2023 when a group of educators and
+                engineers came together, frustrated by clunky, outdated learning
+                management systems. We set out to build something fundamentally
+                different — a platform that feels modern, moves fast, and puts
+                teachers in control.
               </p>
               <p>
                 What began as a weekend project quickly grew into a full product
@@ -101,7 +119,9 @@ function About() {
               >
                 <span className="text-2xl mt-0.5">{v.icon}</span>
                 <div>
-                  <h3 className="font-bold text-[var(--text)] mb-1">{v.title}</h3>
+                  <h3 className="font-bold text-[var(--text)] mb-1">
+                    {v.title}
+                  </h3>
                   <p className="text-sm text-[var(--muted)]">{v.desc}</p>
                 </div>
               </div>

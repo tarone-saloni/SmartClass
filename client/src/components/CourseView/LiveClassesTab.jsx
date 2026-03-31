@@ -37,9 +37,12 @@ function LiveClassesTab({
               Live Classes
             </h2>
             <p className="text-[11px] text-[var(--muted)] font-medium mt-0.5">
-              {liveClasses.length} {liveClasses.length === 1 ? "session" : "sessions"} total
+              {liveClasses.length}{" "}
+              {liveClasses.length === 1 ? "session" : "sessions"} total
               {liveNow.length > 0 && (
-                <span className="text-red-400 font-bold ml-1">· {liveNow.length} live now</span>
+                <span className="text-red-400 font-bold ml-1">
+                  · {liveNow.length} live now
+                </span>
               )}
             </p>
           </div>
@@ -59,10 +62,14 @@ function LiveClassesTab({
       </div>
 
       {liveClasses.length === 0 ? (
-        <div className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
-                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]">
-          <div className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/15 flex items-center justify-center text-3xl mx-auto mb-5
-                          shadow-[0_8px_24px_-8px_rgba(239,68,68,0.15)]">
+        <div
+          className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
+                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]"
+        >
+          <div
+            className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/15 flex items-center justify-center text-3xl mx-auto mb-5
+                          shadow-[0_8px_24px_-8px_rgba(239,68,68,0.15)]"
+          >
             📹
           </div>
           <p className="text-lg font-bold text-[var(--text)] mb-2">
@@ -86,7 +93,11 @@ function LiveClassesTab({
         <div className="space-y-8">
           {liveNow.length > 0 && (
             <section>
-              <SectionLabel dot="bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]" label="Live Now" count={liveNow.length} />
+              <SectionLabel
+                dot="bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+                label="Live Now"
+                count={liveNow.length}
+              />
               <div className="space-y-3">
                 {liveNow.map((lc, i) => (
                   <div
@@ -109,7 +120,11 @@ function LiveClassesTab({
 
           {upcoming.length > 0 && (
             <section>
-              <SectionLabel dot="bg-blue-400" label="Upcoming" count={upcoming.length} />
+              <SectionLabel
+                dot="bg-blue-400"
+                label="Upcoming"
+                count={upcoming.length}
+              />
               <div className="space-y-3">
                 {upcoming.map((lc, i) => (
                   <div
@@ -132,7 +147,11 @@ function LiveClassesTab({
 
           {ended.length > 0 && (
             <section>
-              <SectionLabel dot="bg-[var(--muted)]/30" label="Past Sessions" count={ended.length} />
+              <SectionLabel
+                dot="bg-[var(--muted)]/30"
+                label="Past Sessions"
+                count={ended.length}
+              />
               <div className="space-y-3">
                 {ended.map((lc, i) => (
                   <div

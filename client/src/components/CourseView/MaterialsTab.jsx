@@ -9,7 +9,9 @@ function MaterialsTab({
   onAddClick,
 }) {
   const doneCount = completedMats?.size ?? 0;
-  const pct = materials.length ? Math.round((doneCount / materials.length) * 100) : 0;
+  const pct = materials.length
+    ? Math.round((doneCount / materials.length) * 100)
+    : 0;
 
   return (
     <div>
@@ -24,7 +26,8 @@ function MaterialsTab({
               Course Materials
             </h2>
             <p className="text-[11px] text-[var(--muted)] font-medium mt-0.5">
-              {materials.length} {materials.length === 1 ? "item" : "items"} available
+              {materials.length} {materials.length === 1 ? "item" : "items"}{" "}
+              available
             </p>
           </div>
         </div>
@@ -44,8 +47,10 @@ function MaterialsTab({
 
       {/* Student progress bar */}
       {!isTeacher && materials.length > 0 && (
-        <div className="flex items-center gap-4 mb-6 px-5 py-4 glass-heavy rounded-2xl border border-[var(--border)]/12
-                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)]">
+        <div
+          className="flex items-center gap-4 mb-6 px-5 py-4 glass-heavy rounded-2xl border border-[var(--border)]/12
+                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)]"
+        >
           <div className="w-10 h-10 rounded-2xl bg-emerald-500/12 border border-emerald-500/15 flex items-center justify-center text-lg shrink-0">
             📊
           </div>
@@ -71,10 +76,14 @@ function MaterialsTab({
 
       {/* Material list or empty state */}
       {materials.length === 0 ? (
-        <div className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
-                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]">
-          <div className="w-16 h-16 rounded-3xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-3xl mx-auto mb-5
-                          shadow-[0_8px_24px_-8px_rgba(59,130,246,0.15)]">
+        <div
+          className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
+                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]"
+        >
+          <div
+            className="w-16 h-16 rounded-3xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-3xl mx-auto mb-5
+                          shadow-[0_8px_24px_-8px_rgba(59,130,246,0.15)]"
+          >
             📄
           </div>
           <p className="text-lg font-bold text-[var(--text)] mb-2">

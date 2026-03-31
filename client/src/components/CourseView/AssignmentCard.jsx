@@ -22,15 +22,30 @@ function AssignmentCard({
   const hasSubmission = !!mySubmission;
   const isGraded = mySubmission?.status === "graded";
 
-  const statusConfig = isOverdue && !hasSubmission
-    ? { bar: "from-red-500 to-red-600", iconBg: "bg-red-500/12 border-red-500/18", icon: "⚠️" }
-    : hasSubmission
-      ? { bar: "from-emerald-500 to-teal-500", iconBg: "bg-emerald-500/12 border-emerald-500/18", icon: "✅" }
-      : { bar: "from-amber-500 to-orange-500", iconBg: "bg-amber-500/12 border-amber-500/18", icon: "📋" };
+  const statusConfig =
+    isOverdue && !hasSubmission
+      ? {
+          bar: "from-red-500 to-red-600",
+          iconBg: "bg-red-500/12 border-red-500/18",
+          icon: "⚠️",
+        }
+      : hasSubmission
+        ? {
+            bar: "from-emerald-500 to-teal-500",
+            iconBg: "bg-emerald-500/12 border-emerald-500/18",
+            icon: "✅",
+          }
+        : {
+            bar: "from-amber-500 to-orange-500",
+            iconBg: "bg-amber-500/12 border-amber-500/18",
+            icon: "📋",
+          };
 
   return (
-    <div className="group glass-heavy rounded-2xl border border-[var(--border)]/12 hover:border-[var(--accent)]/18 transition-all duration-400 overflow-hidden
-                    hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.12)]">
+    <div
+      className="group glass-heavy rounded-2xl border border-[var(--border)]/12 hover:border-[var(--accent)]/18 transition-all duration-400 overflow-hidden
+                    hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.12)]"
+    >
       {/* Status accent bar */}
       <div className={`h-[2px] w-full bg-gradient-to-r ${statusConfig.bar}`} />
 
@@ -76,7 +91,12 @@ function AssignmentCard({
                   </span>
                 ) : hasSubmission ? (
                   <span className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-xl text-xs font-bold border border-emerald-500/18">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                    >
                       <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
                     </svg>
                     Submitted
@@ -90,13 +110,17 @@ function AssignmentCard({
               {assignment.dueDate && (
                 <span
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold border
-                  ${isOverdue
+                  ${
+                    isOverdue
                       ? "bg-red-500/10 text-red-400 border-red-500/18"
                       : "bg-[var(--border)]/10 text-[var(--muted)] border-[var(--border)]/15"
-                    }`}
+                  }`}
                 >
                   {isOverdue ? "⚠ Overdue" : "📅"}{" "}
-                  {new Date(assignment.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {new Date(assignment.dueDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </span>
               )}
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-[var(--border)]/8 text-[var(--muted)] border border-[var(--border)]/15">

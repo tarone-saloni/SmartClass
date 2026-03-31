@@ -73,8 +73,8 @@ function Features() {
               <span className="text-[var(--accent)]">teach & learn</span>
             </h1>
             <p className="text-[var(--muted)] text-lg max-w-2xl mx-auto">
-              SmartClass brings together powerful tools for teachers and students
-              in one seamless, intelligent platform.
+              SmartClass brings together powerful tools for teachers and
+              students in one seamless, intelligent platform.
             </p>
           </div>
 

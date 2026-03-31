@@ -103,7 +103,9 @@ function Pricing() {
                   <h3 className="text-lg font-bold text-[var(--text)] mb-1">
                     {plan.name}
                   </h3>
-                  <p className="text-sm text-[var(--muted)] mb-4">{plan.desc}</p>
+                  <p className="text-sm text-[var(--muted)] mb-4">
+                    {plan.desc}
+                  </p>
                   <div className="flex items-end gap-1">
                     <span className="text-4xl font-extrabold text-[var(--text)]">
                       {plan.price}

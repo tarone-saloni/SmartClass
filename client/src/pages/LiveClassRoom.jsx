@@ -22,8 +22,12 @@ function timeAgo(date) {
 
 function Avatar({ name = "?" }) {
   const cols = [
-    "bg-violet-500","bg-blue-500","bg-emerald-500",
-    "bg-amber-500","bg-pink-500","bg-indigo-500",
+    "bg-violet-500",
+    "bg-blue-500",
+    "bg-emerald-500",
+    "bg-amber-500",
+    "bg-pink-500",
+    "bg-indigo-500",
   ];
   return (
     <div
@@ -37,7 +41,15 @@ function Avatar({ name = "?" }) {
 }
 
 // Reusable toolbar icon-button
-function CtrlBtn({ onClick, active, danger, disabled, title, label, children }) {
+function CtrlBtn({
+  onClick,
+  active,
+  danger,
+  disabled,
+  title,
+  label,
+  children,
+}) {
   return (
     <button
       onClick={onClick}
@@ -51,8 +63,8 @@ function CtrlBtn({ onClick, active, danger, disabled, title, label, children }) 
                     danger
                       ? "bg-red-500/20 text-red-400 border border-red-500/25 hover:bg-red-500/30"
                       : active
-                      ? "bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30"
-                      : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white"
+                        ? "bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)]/30"
+                        : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white"
                   }`}
     >
       <span className="text-lg leading-tight">{children}</span>
@@ -101,24 +113,24 @@ export default function LiveClassRoom() {
   const [recDone, setRecDone] = useState(false);
 
   // ── media stream refs ───────────────────────────────────────────────────────
-  const cameraStreamRef = useRef(null);   // teacher: getUserMedia stream
-  const screenStreamRef = useRef(null);   // teacher: getDisplayMedia stream
-  const studentMicRef = useRef(null);     // student: mic-only getUserMedia stream
+  const cameraStreamRef = useRef(null); // teacher: getUserMedia stream
+  const screenStreamRef = useRef(null); // teacher: getDisplayMedia stream
+  const studentMicRef = useRef(null); // student: mic-only getUserMedia stream
   // When teacher's screen track arrives before remoteScreenRef DOM node exists,
   // we hold the MediaStream here and mount it in a useEffect.
   const pendingScreenRef = useRef(null);
 
   // ── WebRTC refs ─────────────────────────────────────────────────────────────
   // Teacher keeps one RTCPeerConnection per viewer
-  const peerConnsRef = useRef(new Map());     // viewerSocketId → PC
+  const peerConnsRef = useRef(new Map()); // viewerSocketId → PC
   const screenSendersRef = useRef(new Map()); // viewerSocketId → RTCRtpSender for screen track
   // Student keeps one RTCPeerConnection to teacher
   const peerConnRef = useRef(null);
   const makingOfferRef = useRef(false); // guard against simultaneous renegotiations
 
   // ── video element refs ──────────────────────────────────────────────────────
-  const localCameraRef = useRef(null);  // teacher: camera <video>
-  const localScreenRef = useRef(null);  // teacher: screen <video>
+  const localCameraRef = useRef(null); // teacher: camera <video>
+  const localScreenRef = useRef(null); // teacher: screen <video>
   const remoteCameraRef = useRef(null); // student: teacher's camera <video>
   const remoteScreenRef = useRef(null); // student: teacher's screen <video>
 
@@ -137,12 +149,16 @@ export default function LiveClassRoom() {
   }, [id]);
 
   const loadComments = useCallback(async () => {
-    const data = await fetch(`/api/live-classes/${id}/comments`).then((r) => r.json());
+    const data = await fetch(`/api/live-classes/${id}/comments`).then((r) =>
+      r.json(),
+    );
     if (Array.isArray(data)) setComments(data);
   }, [id]);
 
   const loadQuestions = useCallback(async () => {
-    const data = await fetch(`/api/live-classes/${id}/questions`).then((r) => r.json());
+    const data = await fetch(`/api/live-classes/${id}/questions`).then((r) =>
+      r.json(),
+    );
     if (Array.isArray(data)) setQuestions(data);
   }, [id]);
 
@@ -169,7 +185,8 @@ export default function LiveClassRoom() {
       }
 
       pc.onicecandidate = ({ candidate }) => {
-        if (candidate) socket.emit("ice-candidate", { to: viewerSocketId, candidate });
+        if (candidate)
+          socket.emit("ice-candidate", { to: viewerSocketId, candidate });
       };
 
       // Renegotiation: fires when tracks are added/removed later
@@ -276,7 +293,9 @@ export default function LiveClassRoom() {
     // Remove screen senders from all peer connections (triggers renegotiation)
     screenSendersRef.current.forEach((sender, vid) => {
       const pc = peerConnsRef.current.get(vid);
-      try { pc?.removeTrack(sender); } catch (_) {}
+      try {
+        pc?.removeTrack(sender);
+      } catch (_) {}
     });
     screenSendersRef.current.clear();
 
@@ -290,9 +309,12 @@ export default function LiveClassRoom() {
     if (!stream) return;
     chunksRef.current = [];
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9" : "video/webm";
+      ? "video/webm;codecs=vp9"
+      : "video/webm";
     const rec = new MediaRecorder(stream, { mimeType });
-    rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+    rec.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data);
+    };
     rec.start(1000);
     recorderRef.current = rec;
     setIsRecording(true);
@@ -309,7 +331,10 @@ export default function LiveClassRoom() {
       form.append("recording", blob, "recording.webm");
       form.append("teacherId", user.id);
       try {
-        const res = await fetch(`/api/live-classes/${id}/recording`, { method: "POST", body: form });
+        const res = await fetch(`/api/live-classes/${id}/recording`, {
+          method: "POST",
+          body: form,
+        });
         const data = await res.json();
         if (data.recordingUrl) {
           setLiveClass((p) => p && { ...p, recordingUrl: data.recordingUrl });
@@ -344,7 +369,9 @@ export default function LiveClassRoom() {
       setMicOn(false);
     } else {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
         studentMicRef.current = stream;
         const track = stream.getAudioTracks()[0];
         if (peerConnRef.current) {
@@ -370,51 +397,82 @@ export default function LiveClassRoom() {
   }, [isHandRaised, id, socket, user]);
 
   // ─── reactions ───────────────────────────────────────────────────────────
-  const sendReaction = useCallback((emoji) => {
-    socket.emit("send-reaction", { liveClassId: id, emoji, userName: user.name });
-    setShowReactPicker(false);
-  }, [id, socket, user.name]);
+  const sendReaction = useCallback(
+    (emoji) => {
+      socket.emit("send-reaction", {
+        liveClassId: id,
+        emoji,
+        userName: user.name,
+      });
+      setShowReactPicker(false);
+    },
+    [id, socket, user.name],
+  );
 
   const showReaction = useCallback((emoji, name) => {
     const rid = `${Date.now()}-${Math.random()}`;
-    setReactions((p) => [...p, { id: rid, emoji, name, x: Math.random() * 60 + 20 }]);
+    setReactions((p) => [
+      ...p,
+      { id: rid, emoji, name, x: Math.random() * 60 + 20 },
+    ]);
     setTimeout(() => setReactions((p) => p.filter((r) => r.id !== rid)), 3000);
   }, []);
 
   // ─── chat ────────────────────────────────────────────────────────────────
-  const postComment = useCallback(async (e) => {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-    await fetch(`/api/live-classes/${id}/comments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id, text: commentText.trim(), parentComment: replyTo?.id || null }),
-    });
-    setCommentText(""); setReplyTo(null);
-  }, [id, user.id, commentText, replyTo]);
+  const postComment = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!commentText.trim()) return;
+      await fetch(`/api/live-classes/${id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          text: commentText.trim(),
+          parentComment: replyTo?.id || null,
+        }),
+      });
+      setCommentText("");
+      setReplyTo(null);
+    },
+    [id, user.id, commentText, replyTo],
+  );
 
-  const postQuestion = useCallback(async (e) => {
-    e.preventDefault();
-    if (!questionText.trim()) return;
-    await fetch(`/api/live-classes/${id}/questions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ studentId: user.id, question: questionText.trim() }),
-    });
-    setQuestionText("");
-  }, [id, user.id, questionText]);
+  const postQuestion = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!questionText.trim()) return;
+      await fetch(`/api/live-classes/${id}/questions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: user.id,
+          question: questionText.trim(),
+        }),
+      });
+      setQuestionText("");
+    },
+    [id, user.id, questionText],
+  );
 
-  const markAnswered = useCallback(async (qId) => {
-    await fetch(`/api/live-classes/${id}/questions/${qId}/answer`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ teacherId: user.id }),
-    });
-  }, [id, user.id]);
+  const markAnswered = useCallback(
+    async (qId) => {
+      await fetch(`/api/live-classes/${id}/questions/${qId}/answer`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teacherId: user.id }),
+      });
+    },
+    [id, user.id],
+  );
 
   // Mount pending screen stream once remoteScreenRef is available
   useEffect(() => {
-    if (teacherHasScreen && remoteScreenRef.current && pendingScreenRef.current) {
+    if (
+      teacherHasScreen &&
+      remoteScreenRef.current &&
+      pendingScreenRef.current
+    ) {
       remoteScreenRef.current.srcObject = pendingScreenRef.current;
     }
   }, [teacherHasScreen]);
@@ -426,11 +484,14 @@ export default function LiveClassRoom() {
 
   // ─── socket + WebRTC setup ───────────────────────────────────────────────
   useEffect(() => {
-    loadClass(); loadComments(); loadQuestions();
+    loadClass();
+    loadComments();
+    loadQuestions();
 
     socket.emit("join-liveclass", id);
     fetch(`/api/live-classes/${id}/join`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user.id }),
     });
     if (!isTeacher) socket.emit("viewer", { liveClassId: id });
@@ -440,18 +501,25 @@ export default function LiveClassRoom() {
     const onNewReply = (r) => setComments((p) => [...p, r]);
     const onNewQuestion = (q) => setQuestions((p) => [...p, q]);
     const onQAnswered = ({ questionId }) =>
-      setQuestions((p) => p.map((q) => q.id === questionId ? { ...q, isAnswered: true } : q));
+      setQuestions((p) =>
+        p.map((q) => (q.id === questionId ? { ...q, isAnswered: true } : q)),
+      );
 
     // ── reactions / hands ─────────────────────────────────────────────────
     const onReaction = ({ emoji, userName }) => showReaction(emoji, userName);
     const onHandRaised = ({ userId, userName }) =>
       setRaisedHands((p) => ({ ...p, [userId]: userName }));
     const onHandLowered = ({ userId }) =>
-      setRaisedHands((p) => { const n = { ...p }; delete n[userId]; return n; });
+      setRaisedHands((p) => {
+        const n = { ...p };
+        delete n[userId];
+        return n;
+      });
 
     // ── room status ───────────────────────────────────────────────────────
     const onStatus = ({ status }) => setLiveClass((p) => p && { ...p, status });
-    const onParticipant = ({ attendeeCount }) => setParticipantCount(attendeeCount);
+    const onParticipant = ({ attendeeCount }) =>
+      setParticipantCount(attendeeCount);
     const onClassEnded = () => navigate(-1);
 
     // ── student: receive offer from teacher ───────────────────────────────
@@ -489,7 +557,8 @@ export default function LiveClassRoom() {
       };
 
       pc.onicecandidate = ({ candidate }) => {
-        if (candidate) socket.emit("ice-candidate", { to: fromSocketId, candidate });
+        if (candidate)
+          socket.emit("ice-candidate", { to: fromSocketId, candidate });
       };
 
       // Student mic renegotiation
@@ -551,13 +620,17 @@ export default function LiveClassRoom() {
     // ── student: teacher's answer for mic ─────────────────────────────────
     const onTeacherReanswer = async ({ answer }) => {
       if (peerConnRef.current)
-        await peerConnRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+        await peerConnRef.current.setRemoteDescription(
+          new RTCSessionDescription(answer),
+        );
     };
 
     // ── ICE candidates ────────────────────────────────────────────────────
     const onIce = async ({ from, candidate }) => {
       try {
-        const pc = isTeacher ? peerConnsRef.current.get(from) : peerConnRef.current;
+        const pc = isTeacher
+          ? peerConnsRef.current.get(from)
+          : peerConnRef.current;
         if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate));
       } catch (_) {}
     };
@@ -566,9 +639,11 @@ export default function LiveClassRoom() {
       if (!isTeacher) socket.emit("viewer", { liveClassId: id });
     };
     const onBroadcasterLeft = () => {
-      setStreamActive(false); setTeacherHasScreen(false);
+      setStreamActive(false);
+      setTeacherHasScreen(false);
       if (remoteCameraRef.current) remoteCameraRef.current.srcObject = null;
-      peerConnRef.current?.close(); peerConnRef.current = null;
+      peerConnRef.current?.close();
+      peerConnRef.current = null;
     };
 
     const onScreenStarted = () => setTeacherHasScreen(true);
@@ -614,16 +689,26 @@ export default function LiveClassRoom() {
         peerConnRef.current?.close();
       }
       [
-        ["new-comment", onNewComment], ["new-reply", onNewReply],
-        ["new-question", onNewQuestion], ["question-answered", onQAnswered],
-        ["reaction", onReaction], ["hand-raised", onHandRaised],
-        ["hand-lowered", onHandLowered], ["live-class-status", onStatus],
-        ["participant-joined", onParticipant], ["class-ended", onClassEnded],
-        ["broadcaster-ready", onBroadcasterReady], ["offer", onOffer],
-        ["new-viewer", onNewViewer], ["answer", onAnswer],
-        ["student-offer", onStudentOffer], ["teacher-reanswer", onTeacherReanswer],
-        ["ice-candidate", onIce], ["broadcaster-left", onBroadcasterLeft],
-        ["screen-share-started", onScreenStarted], ["screen-share-stopped", onScreenStopped],
+        ["new-comment", onNewComment],
+        ["new-reply", onNewReply],
+        ["new-question", onNewQuestion],
+        ["question-answered", onQAnswered],
+        ["reaction", onReaction],
+        ["hand-raised", onHandRaised],
+        ["hand-lowered", onHandLowered],
+        ["live-class-status", onStatus],
+        ["participant-joined", onParticipant],
+        ["class-ended", onClassEnded],
+        ["broadcaster-ready", onBroadcasterReady],
+        ["offer", onOffer],
+        ["new-viewer", onNewViewer],
+        ["answer", onAnswer],
+        ["student-offer", onStudentOffer],
+        ["teacher-reanswer", onTeacherReanswer],
+        ["ice-candidate", onIce],
+        ["broadcaster-left", onBroadcasterLeft],
+        ["screen-share-started", onScreenStarted],
+        ["screen-share-stopped", onScreenStopped],
         ["recording-available", onRecordingAvailable],
       ].forEach(([ev, fn]) => socket.off(ev, fn));
     };
@@ -638,7 +723,9 @@ export default function LiveClassRoom() {
   const handCount = Object.keys(raisedHands).length;
 
   // PiP is shown when teacher has both camera and screen active
-  const showPiP = isTeacher ? (screenSharing && cameraStreamRef.current) : teacherHasScreen;
+  const showPiP = isTeacher
+    ? screenSharing && cameraStreamRef.current
+    : teacherHasScreen;
 
   if (!liveClass) {
     return (
@@ -647,7 +734,9 @@ export default function LiveClassRoom() {
           <div className="w-12 h-12 rounded-2xl glass border border-[var(--border)]/30 flex items-center justify-center mx-auto mb-3 animate-pulse">
             <span className="text-xl">📡</span>
           </div>
-          <p className="text-sm text-[var(--muted)] font-semibold">Loading class…</p>
+          <p className="text-sm text-[var(--muted)] font-semibold">
+            Loading class…
+          </p>
         </div>
       </div>
     );
@@ -678,7 +767,9 @@ export default function LiveClassRoom() {
             ←
           </button>
           <div>
-            <h1 className="text-sm font-bold text-[var(--text)] leading-tight">{liveClass.title}</h1>
+            <h1 className="text-sm font-bold text-[var(--text)] leading-tight">
+              {liveClass.title}
+            </h1>
             <p className="text-[11px] text-[var(--muted)]">
               {isTeacher ? "You are hosting" : "Joined as student"}
             </p>
@@ -699,7 +790,8 @@ export default function LiveClassRoom() {
           )}
           {isLive && (
             <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-black bg-red-500/12 text-red-400 border border-red-500/20 uppercase tracking-wide">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> Live
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />{" "}
+              Live
             </span>
           )}
           {isEnded && (
@@ -712,18 +804,17 @@ export default function LiveClassRoom() {
 
       {/* ── Body ─────────────────────────────────────────────────────────────── */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-
         {/* ═══ VIDEO PANEL ══════════════════════════════════════════════════════ */}
         <div className="flex-1 flex flex-col bg-black relative min-w-0">
-
           {/* Video area */}
           <div className="flex-1 relative overflow-hidden">
-
             {/* ── Teacher: main screen view ── */}
             {isTeacher && (
               <video
                 ref={localScreenRef}
-                autoPlay muted playsInline
+                autoPlay
+                muted
+                playsInline
                 className={`w-full h-full object-contain ${!screenSharing ? "hidden" : ""}`}
               />
             )}
@@ -732,7 +823,9 @@ export default function LiveClassRoom() {
             {isTeacher && (
               <video
                 ref={localCameraRef}
-                autoPlay muted playsInline
+                autoPlay
+                muted
+                playsInline
                 className={`object-cover transition-all ${
                   showPiP
                     ? "absolute bottom-4 right-4 w-44 h-32 rounded-2xl border-2 border-white/20 z-20 shadow-xl"
@@ -745,7 +838,8 @@ export default function LiveClassRoom() {
             {!isTeacher && teacherHasScreen && (
               <video
                 ref={remoteScreenRef}
-                autoPlay playsInline
+                autoPlay
+                playsInline
                 className="w-full h-full object-contain"
               />
             )}
@@ -754,7 +848,8 @@ export default function LiveClassRoom() {
             {!isTeacher && (
               <video
                 ref={remoteCameraRef}
-                autoPlay playsInline
+                autoPlay
+                playsInline
                 className={`object-cover ${
                   showPiP
                     ? "absolute bottom-4 right-4 w-44 h-32 rounded-2xl border-2 border-white/20 z-20 shadow-xl"
@@ -771,10 +866,14 @@ export default function LiveClassRoom() {
                 style={{ left: `${r.x}%`, bottom: "80px" }}
               >
                 <div style={{ fontSize: "2rem" }}>{r.emoji}</div>
-                <div style={{
-                  color: "rgba(255,255,255,0.8)", fontSize: "10px",
-                  fontWeight: 700, textShadow: "0 1px 4px rgba(0,0,0,0.5)",
-                }}>
+                <div
+                  style={{
+                    color: "rgba(255,255,255,0.8)",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    textShadow: "0 1px 4px rgba(0,0,0,0.5)",
+                  }}
+                >
                   {r.name}
                 </div>
               </div>
@@ -787,20 +886,29 @@ export default function LiveClassRoom() {
                   👤
                 </div>
                 <p className="text-white/50 font-semibold text-sm">
-                  Click <span className="font-bold text-white/70">📷 Start Camera</span> to go live
+                  Click{" "}
+                  <span className="font-bold text-white/70">
+                    📷 Start Camera
+                  </span>{" "}
+                  to go live
                 </p>
               </div>
             )}
 
             {/* ── Teacher: camera off overlay ── */}
-            {isTeacher && cameraStreamRef.current && !cameraOn && !screenSharing && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 z-10">
-                <div className="w-16 h-16 rounded-full bg-white/8 flex items-center justify-center text-3xl">
-                  📵
+            {isTeacher &&
+              cameraStreamRef.current &&
+              !cameraOn &&
+              !screenSharing && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 z-10">
+                  <div className="w-16 h-16 rounded-full bg-white/8 flex items-center justify-center text-3xl">
+                    📵
+                  </div>
+                  <p className="text-white/50 text-sm font-medium">
+                    Camera is off
+                  </p>
                 </div>
-                <p className="text-white/50 text-sm font-medium">Camera is off</p>
-              </div>
-            )}
+              )}
 
             {/* ── Student: no stream placeholder ── */}
             {!isTeacher && !streamActive && (
@@ -812,8 +920,8 @@ export default function LiveClassRoom() {
                   {isEnded
                     ? "This class has ended"
                     : isLive
-                    ? "Waiting for teacher to start camera…"
-                    : "Class hasn't started yet"}
+                      ? "Waiting for teacher to start camera…"
+                      : "Class hasn't started yet"}
                 </p>
                 {liveClass.recordingUrl && (
                   <a
@@ -831,13 +939,16 @@ export default function LiveClassRoom() {
 
           {/* ═══ Toolbar ══════════════════════════════════════════════════════ */}
           <div className="flex items-center justify-between px-4 py-3 bg-black/80 border-t border-white/8 shrink-0 gap-2 flex-wrap">
-
             {/* Left: media controls */}
             <div className="flex items-center gap-2 flex-wrap">
               {isTeacher ? (
                 <>
                   {!cameraStreamRef.current ? (
-                    <CtrlBtn onClick={startCamera} label="Camera" disabled={isEnded}>
+                    <CtrlBtn
+                      onClick={startCamera}
+                      label="Camera"
+                      disabled={isEnded}
+                    >
                       📷
                     </CtrlBtn>
                   ) : (
@@ -868,9 +979,11 @@ export default function LiveClassRoom() {
                     {screenSharing ? "🖥️" : "📺"}
                   </CtrlBtn>
 
-                  {(cameraStreamRef.current || screenStreamRef.current) && (
-                    isRecording ? (
-                      <CtrlBtn onClick={stopAndUpload} active label="Stop Rec">⏹️</CtrlBtn>
+                  {(cameraStreamRef.current || screenStreamRef.current) &&
+                    (isRecording ? (
+                      <CtrlBtn onClick={stopAndUpload} active label="Stop Rec">
+                        ⏹️
+                      </CtrlBtn>
                     ) : (
                       <CtrlBtn
                         onClick={startRecording}
@@ -879,11 +992,12 @@ export default function LiveClassRoom() {
                       >
                         {recDone ? "✅" : "⏺️"}
                       </CtrlBtn>
-                    )
-                  )}
+                    ))}
 
                   {uploadingRec && (
-                    <span className="text-[10px] text-amber-400 font-bold animate-pulse">Uploading…</span>
+                    <span className="text-[10px] text-amber-400 font-bold animate-pulse">
+                      Uploading…
+                    </span>
                   )}
                 </>
               ) : (
@@ -907,7 +1021,10 @@ export default function LiveClassRoom() {
 
               {/* Emoji reactions (everyone) */}
               <div className="relative">
-                <CtrlBtn onClick={() => setShowReactPicker((p) => !p)} label="React">
+                <CtrlBtn
+                  onClick={() => setShowReactPicker((p) => !p)}
+                  label="React"
+                >
                   😊
                 </CtrlBtn>
                 {showReactPicker && (
@@ -931,7 +1048,9 @@ export default function LiveClassRoom() {
               {isTeacher ? (
                 confirmEnd ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-white/50">End class for everyone?</span>
+                    <span className="text-[11px] text-white/50">
+                      End class for everyone?
+                    </span>
                     <button
                       onClick={endClass}
                       className="px-3 py-1.5 rounded-xl bg-red-500 text-white text-xs font-bold cursor-pointer hover:bg-red-600 active:scale-95 transition-all"
@@ -946,7 +1065,11 @@ export default function LiveClassRoom() {
                     </button>
                   </div>
                 ) : (
-                  <CtrlBtn danger onClick={() => setConfirmEnd(true)} label="End Class">
+                  <CtrlBtn
+                    danger
+                    onClick={() => setConfirmEnd(true)}
+                    label="End Class"
+                  >
                     ⬛
                   </CtrlBtn>
                 )
@@ -961,25 +1084,33 @@ export default function LiveClassRoom() {
 
         {/* ═══ SIDEBAR PANEL ════════════════════════════════════════════════════ */}
         <aside className="w-80 flex flex-col border-l border-[var(--border)]/20 glass-heavy shrink-0">
-
           {/* Tabs */}
           <div className="flex border-b border-[var(--border)]/20 shrink-0">
             {[
               { key: "chat", label: "💬 Chat", badge: comments.length },
-              { key: "qa", label: "❓ Q&A", badge: questions.filter((q) => !q.isAnswered).length },
+              {
+                key: "qa",
+                label: "❓ Q&A",
+                badge: questions.filter((q) => !q.isAnswered).length,
+              },
               { key: "people", label: "👥 People", badge: handCount || null },
             ].map(({ key, label, badge }) => (
               <button
                 key={key}
                 onClick={() => setPanelTab(key)}
                 className={`flex-1 py-3 text-[11px] font-bold uppercase tracking-wide transition-colors cursor-pointer
-                            ${panelTab === key
-                              ? "text-[var(--accent)] border-b-2 border-[var(--accent)]"
-                              : "text-[var(--muted)] hover:text-[var(--text)]"
+                            ${
+                              panelTab === key
+                                ? "text-[var(--accent)] border-b-2 border-[var(--accent)]"
+                                : "text-[var(--muted)] hover:text-[var(--text)]"
                             }`}
               >
                 {label}
-                {badge > 0 && <span className="ml-1 text-[9px] font-black opacity-60">({badge})</span>}
+                {badge > 0 && (
+                  <span className="ml-1 text-[9px] font-black opacity-60">
+                    ({badge})
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -991,7 +1122,9 @@ export default function LiveClassRoom() {
                 {topLevel.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full gap-2 opacity-40">
                     <span className="text-3xl">💬</span>
-                    <p className="text-xs text-[var(--muted)]">No messages yet</p>
+                    <p className="text-xs text-[var(--muted)]">
+                      No messages yet
+                    </p>
                   </div>
                 )}
                 {topLevel.map((c) => {
@@ -1002,17 +1135,29 @@ export default function LiveClassRoom() {
                         <Avatar name={c.user?.name || "?"} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-baseline gap-1.5 mb-0.5 flex-wrap">
-                            <span className="text-[12px] font-bold text-[var(--text)]">{c.user?.name}</span>
+                            <span className="text-[12px] font-bold text-[var(--text)]">
+                              {c.user?.name}
+                            </span>
                             {c.isTeacherReply && (
                               <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20">
                                 Teacher
                               </span>
                             )}
-                            <span className="text-[10px] text-[var(--muted)]/50">{timeAgo(c.createdAt)}</span>
+                            <span className="text-[10px] text-[var(--muted)]/50">
+                              {timeAgo(c.createdAt)}
+                            </span>
                           </div>
-                          <p className="text-[13px] text-[var(--text)]/85 leading-snug break-words">{c.text}</p>
+                          <p className="text-[13px] text-[var(--text)]/85 leading-snug break-words">
+                            {c.text}
+                          </p>
                           <button
-                            onClick={() => setReplyTo(replyTo?.id === c.id ? null : { id: c.id, userName: c.user?.name })}
+                            onClick={() =>
+                              setReplyTo(
+                                replyTo?.id === c.id
+                                  ? null
+                                  : { id: c.id, userName: c.user?.name },
+                              )
+                            }
                             className="mt-1 text-[10px] font-bold text-[var(--muted)]/50 hover:text-[var(--accent)] transition-colors cursor-pointer"
                           >
                             ↩ Reply
@@ -1026,15 +1171,21 @@ export default function LiveClassRoom() {
                               <Avatar name={r.user?.name || "?"} />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-baseline gap-1.5 mb-0.5 flex-wrap">
-                                  <span className="text-[11px] font-bold text-[var(--text)]">{r.user?.name}</span>
+                                  <span className="text-[11px] font-bold text-[var(--text)]">
+                                    {r.user?.name}
+                                  </span>
                                   {r.isTeacherReply && (
                                     <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/20">
                                       Teacher
                                     </span>
                                   )}
-                                  <span className="text-[10px] text-[var(--muted)]/50">{timeAgo(r.createdAt)}</span>
+                                  <span className="text-[10px] text-[var(--muted)]/50">
+                                    {timeAgo(r.createdAt)}
+                                  </span>
                                 </div>
-                                <p className="text-[12px] text-[var(--text)]/80 leading-snug break-words">{r.text}</p>
+                                <p className="text-[12px] text-[var(--text)]/80 leading-snug break-words">
+                                  {r.text}
+                                </p>
                               </div>
                             </div>
                           ))}
@@ -1049,17 +1200,32 @@ export default function LiveClassRoom() {
               {replyTo && (
                 <div className="mx-3 mb-1 flex items-center justify-between px-3 py-1.5 rounded-xl bg-[var(--accent)]/8 border border-[var(--accent)]/15 text-[11px]">
                   <span className="text-[var(--muted)]">
-                    Replying to <span className="font-bold text-[var(--accent)]">{replyTo.userName}</span>
+                    Replying to{" "}
+                    <span className="font-bold text-[var(--accent)]">
+                      {replyTo.userName}
+                    </span>
                   </span>
-                  <button onClick={() => setReplyTo(null)} className="text-[var(--muted)] hover:text-[var(--text)] cursor-pointer text-base leading-none">×</button>
+                  <button
+                    onClick={() => setReplyTo(null)}
+                    className="text-[var(--muted)] hover:text-[var(--text)] cursor-pointer text-base leading-none"
+                  >
+                    ×
+                  </button>
                 </div>
               )}
 
-              <form onSubmit={postComment} className="p-3 border-t border-[var(--border)]/15 flex gap-2 shrink-0">
+              <form
+                onSubmit={postComment}
+                className="p-3 border-t border-[var(--border)]/15 flex gap-2 shrink-0"
+              >
                 <input
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  placeholder={replyTo ? `Reply to ${replyTo.userName}…` : "Send a message…"}
+                  placeholder={
+                    replyTo
+                      ? `Reply to ${replyTo.userName}…`
+                      : "Send a message…"
+                  }
                   className="flex-1 px-3 py-2 rounded-xl text-sm outline-none border border-[var(--border)]/30 focus:border-[var(--accent)] glass-heavy text-[var(--text)] placeholder:text-[var(--muted)]/40 transition-colors"
                 />
                 <button
@@ -1080,7 +1246,9 @@ export default function LiveClassRoom() {
                 {questions.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full gap-2 opacity-40">
                     <span className="text-3xl">❓</span>
-                    <p className="text-xs text-[var(--muted)]">No questions yet</p>
+                    <p className="text-xs text-[var(--muted)]">
+                      No questions yet
+                    </p>
                   </div>
                 )}
                 {questions.map((q) => (
@@ -1096,14 +1264,18 @@ export default function LiveClassRoom() {
                       <Avatar name={q.student?.name || "?"} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                          <span className="text-[12px] font-bold text-[var(--text)]">{q.student?.name}</span>
+                          <span className="text-[12px] font-bold text-[var(--text)]">
+                            {q.student?.name}
+                          </span>
                           {q.isAnswered && (
                             <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
                               Answered
                             </span>
                           )}
                         </div>
-                        <p className="text-[13px] text-[var(--text)]/85 leading-snug break-words">{q.question}</p>
+                        <p className="text-[13px] text-[var(--text)]/85 leading-snug break-words">
+                          {q.question}
+                        </p>
                       </div>
                     </div>
                     {isTeacher && !q.isAnswered && (
@@ -1115,7 +1287,10 @@ export default function LiveClassRoom() {
                           ✓ Mark answered
                         </button>
                         <button
-                          onClick={() => { setPanelTab("chat"); setCommentText(`@${q.student?.name} `); }}
+                          onClick={() => {
+                            setPanelTab("chat");
+                            setCommentText(`@${q.student?.name} `);
+                          }}
                           className="text-[11px] font-bold text-[var(--muted)]/60 hover:text-[var(--accent)] cursor-pointer transition-colors"
                         >
                           ↩ Reply in chat
@@ -1126,7 +1301,10 @@ export default function LiveClassRoom() {
                 ))}
               </div>
               {!isTeacher && (
-                <form onSubmit={postQuestion} className="p-3 border-t border-[var(--border)]/15 flex gap-2 shrink-0">
+                <form
+                  onSubmit={postQuestion}
+                  className="p-3 border-t border-[var(--border)]/15 flex gap-2 shrink-0"
+                >
                   <input
                     value={questionText}
                     onChange={(e) => setQuestionText(e.target.value)}
@@ -1150,16 +1328,36 @@ export default function LiveClassRoom() {
             <div className="flex-1 overflow-y-auto p-4 space-y-5 min-h-0">
               {/* Host */}
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]/50 mb-2">Host</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]/50 mb-2">
+                  Host
+                </p>
                 <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--accent)]/6 border border-[var(--accent)]/15">
                   <Avatar name={liveClass.teacher?.name || "T"} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-[var(--text)] truncate">{liveClass.teacher?.name}</p>
+                    <p className="text-[13px] font-bold text-[var(--text)] truncate">
+                      {liveClass.teacher?.name}
+                    </p>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      {isTeacher && cameraOn && <span className="text-[10px] text-emerald-400 font-bold">📷 on</span>}
-                      {isTeacher && micOn && <span className="text-[10px] text-emerald-400 font-bold">🎤 on</span>}
-                      {isTeacher && screenSharing && <span className="text-[10px] text-blue-400 font-bold">🖥️ sharing</span>}
-                      {isTeacher && isRecording && <span className="text-[10px] text-red-400 font-bold animate-pulse">⏺ rec</span>}
+                      {isTeacher && cameraOn && (
+                        <span className="text-[10px] text-emerald-400 font-bold">
+                          📷 on
+                        </span>
+                      )}
+                      {isTeacher && micOn && (
+                        <span className="text-[10px] text-emerald-400 font-bold">
+                          🎤 on
+                        </span>
+                      )}
+                      {isTeacher && screenSharing && (
+                        <span className="text-[10px] text-blue-400 font-bold">
+                          🖥️ sharing
+                        </span>
+                      )}
+                      {isTeacher && isRecording && (
+                        <span className="text-[10px] text-red-400 font-bold animate-pulse">
+                          ⏺ rec
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1179,13 +1377,22 @@ export default function LiveClassRoom() {
                       >
                         <div className="flex items-center gap-2">
                           <Avatar name={name} />
-                          <span className="text-[12px] font-bold text-[var(--text)]">{name}</span>
+                          <span className="text-[12px] font-bold text-[var(--text)]">
+                            {name}
+                          </span>
                         </div>
                         {isTeacher && (
                           <button
                             onClick={() => {
-                              socket.emit("lower-hand", { liveClassId: id, userId: uid });
-                              setRaisedHands((p) => { const n = { ...p }; delete n[uid]; return n; });
+                              socket.emit("lower-hand", {
+                                liveClassId: id,
+                                userId: uid,
+                              });
+                              setRaisedHands((p) => {
+                                const n = { ...p };
+                                delete n[uid];
+                                return n;
+                              });
                             }}
                             className="text-[10px] text-[var(--muted)] hover:text-red-400 cursor-pointer transition-colors font-bold"
                           >
@@ -1204,7 +1411,9 @@ export default function LiveClassRoom() {
                   Students · {participantCount}
                 </p>
                 <p className="text-[12px] text-[var(--muted)]/60 leading-relaxed">
-                  {participantCount} {participantCount === 1 ? "person has" : "people have"} joined this session.
+                  {participantCount}{" "}
+                  {participantCount === 1 ? "person has" : "people have"} joined
+                  this session.
                 </p>
                 {liveClass.recordingUrl && (
                   <a

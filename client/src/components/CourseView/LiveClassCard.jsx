@@ -19,7 +19,8 @@ function LiveClassCard({
         border: "border-red-500/25",
         bar: "from-red-500 to-red-600",
         icon: "📡",
-        cardBorder: "border-red-500/25 shadow-[0_0_32px_-8px_rgba(239,68,68,0.15)]",
+        cardBorder:
+          "border-red-500/25 shadow-[0_0_32px_-8px_rgba(239,68,68,0.15)]",
       }
     : isEnded
       ? {
@@ -40,7 +41,8 @@ function LiveClassCard({
           border: "border-blue-500/20",
           bar: "from-blue-500 to-indigo-600",
           icon: "📅",
-          cardBorder: "border-[var(--border)]/12 hover:border-[var(--accent)]/18",
+          cardBorder:
+            "border-[var(--border)]/12 hover:border-[var(--accent)]/18",
         };
 
   return (
@@ -79,8 +81,10 @@ function LiveClassCard({
               {statusMeta.label}
             </span>
             {/* Type badge */}
-            <span className="flex items-center gap-1 px-2 py-[3px] rounded-lg text-[10px] font-bold
-                               bg-[var(--border)]/8 text-[var(--muted)] border border-[var(--border)]/15">
+            <span
+              className="flex items-center gap-1 px-2 py-[3px] rounded-lg text-[10px] font-bold
+                               bg-[var(--border)]/8 text-[var(--muted)] border border-[var(--border)]/15"
+            >
               {isPlatform ? "🖥️ On Platform" : "🔗 External Link"}
             </span>
           </div>
@@ -203,7 +207,9 @@ function LiveClassCard({
                   ) : (
                     /* External meeting link → open in new tab */
                     <button
-                      onClick={() => onJoin(liveClass.id, liveClass.meetingLink)}
+                      onClick={() =>
+                        onJoin(liveClass.id, liveClass.meetingLink)
+                      }
                       className="flex items-center gap-2.5 px-6 py-2.5 bg-gradient-to-r from-red-500 to-red-600
                                  hover:shadow-[0_12px_28px_-6px_rgba(239,68,68,0.45)]
                                  text-white rounded-xl text-xs font-black border-none cursor-pointer transition-all duration-300 active:scale-95"

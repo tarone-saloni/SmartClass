@@ -124,8 +124,9 @@ function LiveClassModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
           <div className="flex items-start gap-2.5 px-4 py-3 rounded-2xl bg-[var(--accent)]/6 border border-[var(--accent)]/15 text-[12px] text-[var(--muted)]">
             <span className="text-base shrink-0">ℹ️</span>
             <span>
-              After starting the class, use <strong className="text-[var(--text)]">Start Screen Share</strong> inside
-              the class room to go live. You can also record the session.
+              After starting the class, use{" "}
+              <strong className="text-[var(--text)]">Start Screen Share</strong>{" "}
+              inside the class room to go live. You can also record the session.
             </span>
           </div>
         )}

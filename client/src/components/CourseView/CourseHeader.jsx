@@ -175,7 +175,9 @@ function CourseHeader({
             <div className="flex items-center justify-between text-xs font-bold text-white/80 mb-3">
               <span className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                <span className="uppercase tracking-[0.1em] text-[11px]">Your Progress</span>
+                <span className="uppercase tracking-[0.1em] text-[11px]">
+                  Your Progress
+                </span>
               </span>
               <span className="text-white font-black text-base tabular-nums">
                 {matProgress}%
@@ -190,7 +192,9 @@ function CourseHeader({
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-[shimmer_2.5s_infinite]" />
             </div>
             <p className="text-white/40 text-[11px] font-medium mt-2">
-              {matProgress < 100 ? "Keep going — you're doing great!" : "🎉 All materials completed!"}
+              {matProgress < 100
+                ? "Keep going — you're doing great!"
+                : "🎉 All materials completed!"}
             </p>
           </div>
         )}

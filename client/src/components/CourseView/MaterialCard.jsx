@@ -55,17 +55,19 @@ function MaterialCard({
   return (
     <div
       className={`group relative glass-heavy rounded-2xl border transition-all duration-400 overflow-hidden
-                     ${isDone
-          ? "border-emerald-500/25 shadow-[0_0_24px_-6px_rgba(16,185,129,0.12)]"
-          : "border-[var(--border)]/15 hover:border-[var(--accent)]/20 hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.15)]"
-        }`}
+                     ${
+                       isDone
+                         ? "border-emerald-500/25 shadow-[0_0_24px_-6px_rgba(16,185,129,0.12)]"
+                         : "border-[var(--border)]/15 hover:border-[var(--accent)]/20 hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.15)]"
+                     }`}
     >
       {/* Subtle top gradient line */}
       <div
-        className={`h-[2px] w-full bg-gradient-to-r ${isDone
+        className={`h-[2px] w-full bg-gradient-to-r ${
+          isDone
             ? "from-emerald-500/60 via-emerald-400/40 to-transparent"
             : `${meta.bg.replace(/\/\d+/g, "")}`
-          }`}
+        }`}
         style={{
           background: isDone
             ? "linear-gradient(90deg, rgba(16,185,129,0.5), rgba(20,184,166,0.3), transparent)"
@@ -99,7 +101,12 @@ function MaterialCard({
                 </span>
                 {isDone && (
                   <span className="flex items-center gap-1 px-2.5 py-[3px] rounded-lg text-[10px] font-black uppercase tracking-widest bg-emerald-500/12 text-emerald-400 border border-emerald-500/20">
-                    <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                    >
                       <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
                     </svg>
                     Done
@@ -113,10 +120,11 @@ function MaterialCard({
                   <button
                     onClick={() => onToggleComplete(material.id)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-all duration-300 active:scale-95
-                                 ${isDone
-                        ? "bg-emerald-500/12 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20 shadow-[0_0_12px_-4px_rgba(16,185,129,0.2)]"
-                        : "glass hover:bg-[var(--accent)]/10 text-[var(--muted)] hover:text-[var(--accent)] border-[var(--border)]/25 hover:border-[var(--accent)]/25"
-                      }`}
+                                 ${
+                                   isDone
+                                     ? "bg-emerald-500/12 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20 shadow-[0_0_12px_-4px_rgba(16,185,129,0.2)]"
+                                     : "glass hover:bg-[var(--accent)]/10 text-[var(--muted)] hover:text-[var(--accent)] border-[var(--border)]/25 hover:border-[var(--accent)]/25"
+                                 }`}
                   >
                     {isDone ? "✓ Completed" : "Mark Done"}
                   </button>
@@ -142,7 +150,12 @@ function MaterialCard({
 
             {/* Date */}
             <p className="text-[11px] text-[var(--muted)]/50 font-medium mb-2">
-              Added {new Date(material.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              Added{" "}
+              {new Date(material.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
             </p>
 
             {/* Video embed */}
@@ -163,7 +176,13 @@ function MaterialCard({
                              hover:shadow-md transition-all duration-300 hover:scale-[1.02]`}
               >
                 {meta.icon} Open {meta.label}
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" className="opacity-60">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  className="opacity-60"
+                >
                   <path d="M3.75 2h3.5a.75.75 0 010 1.5H4.56l7.72 7.72a.75.75 0 11-1.06 1.06L3.5 4.56v2.69a.75.75 0 01-1.5 0v-3.5A1.75 1.75 0 013.75 2z" />
                 </svg>
               </a>
