@@ -14,7 +14,7 @@ function GradeModal({ isOpen, gradeForm, onSubmit, onClose, onChange }) {
       </h3>
       <form onSubmit={onSubmit} className="space-y-5">
         <div>
-          <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1">
+          <label className="block text-[11px] font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1 opacity-80">
             Score
           </label>
           <input
@@ -27,7 +27,7 @@ function GradeModal({ isOpen, gradeForm, onSubmit, onClose, onChange }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1">
+          <label className="block text-[11px] font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1 opacity-80">
             Feedback
           </label>
           <textarea
