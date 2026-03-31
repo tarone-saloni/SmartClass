@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import OtpInput from "./OtpInput";
 import ErrorMessage from "./ErrorMessage";
 
-function OtpStep({ email, role, onBack }) {
+function OtpStep({ email, onBack }) {
   const { login } = useAuth();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
