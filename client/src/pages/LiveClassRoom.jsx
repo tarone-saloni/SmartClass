@@ -295,7 +295,9 @@ export default function LiveClassRoom() {
       const pc = peerConnsRef.current.get(vid);
       try {
         pc?.removeTrack(sender);
-      } catch (_) {}
+      } catch {
+        // ignore
+      }
     });
     screenSendersRef.current.clear();
 
@@ -632,7 +634,9 @@ export default function LiveClassRoom() {
           ? peerConnsRef.current.get(from)
           : peerConnRef.current;
         if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (_) {}
+      } catch {
+        // ignore
+      }
     };
 
     const onBroadcasterReady = () => {

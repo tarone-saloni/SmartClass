@@ -1,9 +1,7 @@
-import { useNavigate } from "react-router-dom";
 import SignUpForm from "./SignUpForm";
 import OtpStep from "./OtpStep";
 
 function SignUpCard({
-  form,
   role,
   setRole,
   error,
@@ -12,8 +10,6 @@ function SignUpCard({
   setOtpEmail,
   onSubmit,
 }) {
-  const navigate = useNavigate();
-
   return (
     <div
       className="sc-card-premium glass-heavy rounded-2xl overflow-hidden p-8 sm:p-10

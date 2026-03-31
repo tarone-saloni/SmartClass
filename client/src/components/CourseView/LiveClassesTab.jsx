@@ -1,5 +1,17 @@
 import LiveClassCard from "./LiveClassCard";
 
+function SectionLabel({ dot, label, count }) {
+  return (
+    <div className="flex items-center gap-2.5 mb-4">
+      <span className={`w-2.5 h-2.5 rounded-full ${dot}`} />
+      <h3 className="font-medium text-sm">
+        {label}
+        <span className="text-[var(--muted)] ml-2">({count})</span>
+      </h3>
+    </div>
+  );
+}
+
 function LiveClassesTab({
   liveClasses,
   isTeacher,
@@ -11,18 +23,6 @@ function LiveClassesTab({
   const liveNow = liveClasses.filter((lc) => lc.status === "live");
   const upcoming = liveClasses.filter((lc) => lc.status === "scheduled");
   const ended = liveClasses.filter((lc) => lc.status === "ended");
-
-  const SectionLabel = ({ dot, label, count }) => (
-    <div className="flex items-center gap-2.5 mb-4">
-      <span className={`w-2.5 h-2.5 rounded-full ${dot}`} />
-      <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-[var(--muted)]">
-        {label}
-      </h3>
-      <span className="text-[10px] font-bold text-[var(--muted)]/50 bg-[var(--border)]/10 px-2 py-0.5 rounded-lg">
-        {count}
-      </span>
-    </div>
-  );
 
   return (
     <div>

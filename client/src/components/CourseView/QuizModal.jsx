@@ -1,4 +1,4 @@
-import { inputCls, textareaCls, modalOverlay } from "./Modals";
+import { inputCls, modalOverlay } from "./Modals";
 
 function QuizModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
   if (!isOpen) return null;

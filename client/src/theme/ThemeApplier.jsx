@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export const themeStyles = {
+const themeStyles = {
   light: {
     "--bg": "#f8f9fc",
     "--surface": "#ffffff",
