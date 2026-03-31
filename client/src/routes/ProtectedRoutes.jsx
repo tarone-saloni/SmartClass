@@ -10,6 +10,7 @@ function CourseViewRedirect() {
   const { id } = useParams();
   return <Navigate to={`/course/${id}/materials`} replace />;
 }
+import AIPlayground from "../pages/AIPlayground";
 import Features from "../pages/Features";
 import Pricing from "../pages/Pricing";
 import Security from "../pages/Security";
@@ -37,6 +38,7 @@ function ProtectedRoutes() {
       <Route path="/course/:id/:tab" element={<CourseView />} />
       <Route path="/quiz/:id" element={<QuizView />} />
       <Route path="/live-class/:id" element={<LiveClassRoom />} />
+      <Route path="/ai-playground" element={<AIPlayground />} />
       <Route path="/features" element={<Features />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/security" element={<Security />} />
