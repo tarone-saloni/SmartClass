@@ -107,8 +107,19 @@ function QuizModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
                   onClick={() => handleRemoveQuestion(qi)}
                   className="w-7 h-7 flex items-center justify-center text-red-400 hover:text-red-500 hover:bg-red-400/10 rounded-full transition-colors cursor-pointer"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               )}
@@ -135,14 +146,17 @@ function QuizModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
                       title="Mark as correct answer"
                     />
                     <div className="w-5 h-5 rounded-full border-2 border-[var(--border)] peer-checked:border-[var(--accent)] peer-checked:bg-[var(--accent)] transition-all flex items-center justify-center cursor-pointer shadow-sm">
-                      {q.answer === oi && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                      {q.answer === oi && (
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      )}
                     </div>
                   </div>
                   <input
-                    className={`flex-1 px-4 py-3 border border-[var(--border)]/40 rounded-xl text-sm outline-none transition-all duration-300 glass-heavy placeholder:text-[var(--muted)]/50 ${q.answer === oi
+                    className={`flex-1 px-4 py-3 border border-[var(--border)]/40 rounded-xl text-sm outline-none transition-all duration-300 glass-heavy placeholder:text-[var(--muted)]/50 ${
+                      q.answer === oi
                         ? "border-[var(--accent)]/50 bg-[var(--accent)]/5 text-[var(--text)] ring-1 ring-[var(--accent)]/20 shadow-inner"
                         : "focus:border-[var(--accent)]/40 hover:border-[var(--border)] text-[var(--text)]"
-                      }`}
+                    }`}
                     placeholder={`Option ${String.fromCharCode(65 + oi)}`}
                     value={opt}
                     onChange={(e) => handleUpdateOption(qi, oi, e.target.value)}

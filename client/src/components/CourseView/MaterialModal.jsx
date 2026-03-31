@@ -55,7 +55,9 @@ function MaterialModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
         <div>
           <label className="block text-[11px] font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1 opacity-80">
             {form.type === "video" ? "YouTube URL " : "URL / Link "}
-            {form.type === "video" && <span className="text-[var(--accent)]">*</span>}
+            {form.type === "video" && (
+              <span className="text-[var(--accent)]">*</span>
+            )}
           </label>
           <input
             className={inputCls}

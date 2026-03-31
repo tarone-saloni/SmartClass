@@ -16,7 +16,9 @@ async function post(path, body) {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+    const err = await res
+      .json()
+      .catch(() => ({ detail: `HTTP ${res.status}` }));
     throw new Error(err.detail || `HTTP ${res.status}`);
   }
   return res.json();
@@ -160,34 +162,48 @@ function MarkdownText({ text }) {
       {lines.map((line, i) => {
         if (/^### (.+)/.test(line))
           return (
-            <h3 key={i} className="font-bold text-[var(--accent)] mt-3 mb-1 text-base">
+            <h3
+              key={i}
+              className="font-bold text-[var(--accent)] mt-3 mb-1 text-base"
+            >
               {line.replace(/^### /, "")}
             </h3>
           );
         if (/^## (.+)/.test(line))
           return (
-            <h2 key={i} className="font-bold text-[var(--text)] mt-4 mb-1 text-lg">
+            <h2
+              key={i}
+              className="font-bold text-[var(--text)] mt-4 mb-1 text-lg"
+            >
               {line.replace(/^## /, "")}
             </h2>
           );
         if (/^# (.+)/.test(line))
           return (
-            <h1 key={i} className="font-bold text-[var(--text)] mt-4 mb-1 text-xl">
+            <h1
+              key={i}
+              className="font-bold text-[var(--text)] mt-4 mb-1 text-xl"
+            >
               {line.replace(/^# /, "")}
             </h1>
           );
         if (/^[-*] (.+)/.test(line))
           return (
-            <p key={i} className="pl-4 before:content-['•'] before:mr-2 before:text-[var(--accent)]">
+            <p
+              key={i}
+              className="pl-4 before:content-['•'] before:mr-2 before:text-[var(--accent)]"
+            >
               {line.replace(/^[-*] /, "").replace(/\*\*(.+?)\*\*/g, "$1")}
             </p>
           );
         if (line.trim() === "") return <div key={i} className="h-1" />;
         return (
           <p key={i}>
-            {line.split(/\*\*(.+?)\*\*/).map((part, j) =>
-              j % 2 === 1 ? <strong key={j}>{part}</strong> : part
-            )}
+            {line
+              .split(/\*\*(.+?)\*\*/)
+              .map((part, j) =>
+                j % 2 === 1 ? <strong key={j}>{part}</strong> : part,
+              )}
           </p>
         );
       })}
@@ -226,7 +242,10 @@ function ChatTab() {
         user_role: role,
         course_context: context || undefined,
       });
-      setMessages([...newHistory, { role: "assistant", content: data.response }]);
+      setMessages([
+        ...newHistory,
+        { role: "assistant", content: data.response },
+      ]);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -239,7 +258,11 @@ function ChatTab() {
       <div className="flex gap-3">
         <div className="flex-1">
           <label className={lbl}>Role</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)} className={inp}>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className={inp}
+          >
             <option value="student">Student</option>
             <option value="teacher">Teacher</option>
           </select>
@@ -254,7 +277,10 @@ function ChatTab() {
           />
         </div>
         <button
-          onClick={() => { setMessages([]); setError(""); }}
+          onClick={() => {
+            setMessages([]);
+            setError("");
+          }}
           className="self-end px-4 py-3 rounded-xl border border-[var(--border)]/50 text-sm text-[var(--muted)] hover:text-red-400 hover:border-red-400/40 transition-all"
         >
           Clear
@@ -268,7 +294,10 @@ function ChatTab() {
           </p>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+          <div
+            key={i}
+            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+          >
             <div
               className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                 m.role === "user"
@@ -276,7 +305,11 @@ function ChatTab() {
                   : "glass border border-[var(--border)]/40 text-[var(--text)] rounded-bl-sm"
               }`}
             >
-              {m.role === "assistant" ? <MarkdownText text={m.content} /> : m.content}
+              {m.role === "assistant" ? (
+                <MarkdownText text={m.content} />
+              ) : (
+                m.content
+              )}
             </div>
           </div>
         ))}
@@ -284,8 +317,12 @@ function ChatTab() {
           <div className="flex justify-start">
             <div className="glass border border-[var(--border)]/40 px-4 py-3 rounded-2xl rounded-bl-sm">
               <span className="flex gap-1">
-                {[0,1,2].map(i => (
-                  <span key={i} className="w-2 h-2 bg-[var(--accent)] rounded-full animate-bounce" style={{ animationDelay: `${i*0.15}s` }} />
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className="w-2 h-2 bg-[var(--accent)] rounded-full animate-bounce"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
                 ))}
               </span>
             </div>
@@ -309,7 +346,12 @@ function ChatTab() {
 }
 
 function QuizTab() {
-  const [form, setForm] = useState({ topic: "", num_questions: 5, difficulty: "medium", content: "" });
+  const [form, setForm] = useState({
+    topic: "",
+    num_questions: 5,
+    difficulty: "medium",
+    content: "",
+  });
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState(null);
   const [error, setError] = useState("");
@@ -317,11 +359,22 @@ function QuizTab() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setRes(null);
+    setLoading(true);
+    setError("");
+    setRes(null);
     try {
-      setRes(await post("/generate-quiz", { ...form, num_questions: Number(form.num_questions), content: form.content || undefined }));
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+      setRes(
+        await post("/generate-quiz", {
+          ...form,
+          num_questions: Number(form.num_questions),
+          content: form.content || undefined,
+        }),
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -329,24 +382,49 @@ function QuizTab() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
           <label className={lbl}>Topic *</label>
-          <input className={inp} required value={form.topic} onChange={set("topic")} placeholder="e.g. Python Functions" />
+          <input
+            className={inp}
+            required
+            value={form.topic}
+            onChange={set("topic")}
+            placeholder="e.g. Python Functions"
+          />
         </div>
         <div>
           <label className={lbl}>Questions</label>
-          <input type="number" min={1} max={20} className={inp} value={form.num_questions} onChange={set("num_questions")} />
+          <input
+            type="number"
+            min={1}
+            max={20}
+            className={inp}
+            value={form.num_questions}
+            onChange={set("num_questions")}
+          />
         </div>
       </div>
       <div>
         <label className={lbl}>Difficulty</label>
-        <select className={inp} value={form.difficulty} onChange={set("difficulty")}>
+        <select
+          className={inp}
+          value={form.difficulty}
+          onChange={set("difficulty")}
+        >
           <option value="easy">Easy</option>
           <option value="medium">Medium</option>
           <option value="hard">Hard</option>
         </select>
       </div>
       <div>
-        <label className={lbl}>Course Content (optional — paste material to base questions on)</label>
-        <textarea className={`${inp} resize-none`} rows={4} value={form.content} onChange={set("content")} placeholder="Paste relevant course material here…" />
+        <label className={lbl}>
+          Course Content (optional — paste material to base questions on)
+        </label>
+        <textarea
+          className={`${inp} resize-none`}
+          rows={4}
+          value={form.content}
+          onChange={set("content")}
+          placeholder="Paste relevant course material here…"
+        />
       </div>
       <SendBtn loading={loading} label="Generate Quiz" />
       <ResponseBox data={res} error={error} />
@@ -363,17 +441,30 @@ function SummarizeTab() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setRes(null);
-    try { setRes(await post("/summarize", form)); }
-    catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+    setLoading(true);
+    setError("");
+    setRes(null);
+    try {
+      setRes(await post("/summarize", form));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
         <label className={lbl}>Content to Summarize *</label>
-        <textarea className={`${inp} resize-none`} rows={8} required value={form.content} onChange={set("content")} placeholder="Paste your course material, lecture notes, or text here…" />
+        <textarea
+          className={`${inp} resize-none`}
+          rows={8}
+          required
+          value={form.content}
+          onChange={set("content")}
+          placeholder="Paste your course material, lecture notes, or text here…"
+        />
       </div>
       <div>
         <label className={lbl}>Summary Style</label>
@@ -391,7 +482,12 @@ function SummarizeTab() {
 }
 
 function FeedbackTab() {
-  const [form, setForm] = useState({ assignment_title: "", assignment_description: "", student_submission: "", max_score: 100 });
+  const [form, setForm] = useState({
+    assignment_title: "",
+    assignment_description: "",
+    student_submission: "",
+    max_score: 100,
+  });
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState(null);
   const [error, setError] = useState("");
@@ -399,11 +495,22 @@ function FeedbackTab() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setRes(null);
+    setLoading(true);
+    setError("");
+    setRes(null);
     try {
-      setRes(await post("/feedback", { ...form, max_score: Number(form.max_score), assignment_description: form.assignment_description || undefined }));
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+      setRes(
+        await post("/feedback", {
+          ...form,
+          max_score: Number(form.max_score),
+          assignment_description: form.assignment_description || undefined,
+        }),
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -411,20 +518,46 @@ function FeedbackTab() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
           <label className={lbl}>Assignment Title *</label>
-          <input className={inp} required value={form.assignment_title} onChange={set("assignment_title")} placeholder="e.g. Implement a Stack in Python" />
+          <input
+            className={inp}
+            required
+            value={form.assignment_title}
+            onChange={set("assignment_title")}
+            placeholder="e.g. Implement a Stack in Python"
+          />
         </div>
         <div>
           <label className={lbl}>Max Score</label>
-          <input type="number" min={1} max={1000} className={inp} value={form.max_score} onChange={set("max_score")} />
+          <input
+            type="number"
+            min={1}
+            max={1000}
+            className={inp}
+            value={form.max_score}
+            onChange={set("max_score")}
+          />
         </div>
       </div>
       <div>
         <label className={lbl}>Assignment Description (optional)</label>
-        <textarea className={`${inp} resize-none`} rows={2} value={form.assignment_description} onChange={set("assignment_description")} placeholder="Requirements or rubric…" />
+        <textarea
+          className={`${inp} resize-none`}
+          rows={2}
+          value={form.assignment_description}
+          onChange={set("assignment_description")}
+          placeholder="Requirements or rubric…"
+        />
       </div>
       <div>
         <label className={lbl}>Student Submission *</label>
-        <textarea className={`${inp} resize-none`} rows={8} required value={form.student_submission} onChange={set("student_submission")} placeholder="Paste the student's work here…" />
+        <textarea
+          className={`${inp} resize-none`}
+          rows={8}
+          required
+          value={form.student_submission}
+          onChange={set("student_submission")}
+          placeholder="Paste the student's work here…"
+        />
       </div>
       <SendBtn loading={loading} label="Get Feedback" />
       <ResponseBox data={res} error={error} />
@@ -433,7 +566,13 @@ function FeedbackTab() {
 }
 
 function StudyPlanTab() {
-  const [form, setForm] = useState({ student_name: "", enrolled_courses: "", weak_areas: "", available_hours_per_week: 10, goals: "" });
+  const [form, setForm] = useState({
+    student_name: "",
+    enrolled_courses: "",
+    weak_areas: "",
+    available_hours_per_week: 10,
+    goals: "",
+  });
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState(null);
   const [error, setError] = useState("");
@@ -441,17 +580,30 @@ function StudyPlanTab() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setRes(null);
+    setLoading(true);
+    setError("");
+    setRes(null);
     try {
-      setRes(await post("/study-plan", {
-        student_name: form.student_name,
-        enrolled_courses: form.enrolled_courses.split(",").map((s) => s.trim()).filter(Boolean),
-        weak_areas: form.weak_areas.split(",").map((s) => s.trim()).filter(Boolean),
-        available_hours_per_week: Number(form.available_hours_per_week),
-        goals: form.goals || undefined,
-      }));
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+      setRes(
+        await post("/study-plan", {
+          student_name: form.student_name,
+          enrolled_courses: form.enrolled_courses
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+          weak_areas: form.weak_areas
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+          available_hours_per_week: Number(form.available_hours_per_week),
+          goals: form.goals || undefined,
+        }),
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -459,24 +611,54 @@ function StudyPlanTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={lbl}>Student Name *</label>
-          <input className={inp} required value={form.student_name} onChange={set("student_name")} placeholder="e.g. Alex" />
+          <input
+            className={inp}
+            required
+            value={form.student_name}
+            onChange={set("student_name")}
+            placeholder="e.g. Alex"
+          />
         </div>
         <div>
           <label className={lbl}>Hours per Week</label>
-          <input type="number" min={1} max={80} className={inp} value={form.available_hours_per_week} onChange={set("available_hours_per_week")} />
+          <input
+            type="number"
+            min={1}
+            max={80}
+            className={inp}
+            value={form.available_hours_per_week}
+            onChange={set("available_hours_per_week")}
+          />
         </div>
       </div>
       <div>
         <label className={lbl}>Enrolled Courses * (comma-separated)</label>
-        <input className={inp} required value={form.enrolled_courses} onChange={set("enrolled_courses")} placeholder="e.g. Data Structures, Web Development, Machine Learning" />
+        <input
+          className={inp}
+          required
+          value={form.enrolled_courses}
+          onChange={set("enrolled_courses")}
+          placeholder="e.g. Data Structures, Web Development, Machine Learning"
+        />
       </div>
       <div>
         <label className={lbl}>Weak Areas (comma-separated, optional)</label>
-        <input className={inp} value={form.weak_areas} onChange={set("weak_areas")} placeholder="e.g. Recursion, CSS Flexbox" />
+        <input
+          className={inp}
+          value={form.weak_areas}
+          onChange={set("weak_areas")}
+          placeholder="e.g. Recursion, CSS Flexbox"
+        />
       </div>
       <div>
         <label className={lbl}>Goals (optional)</label>
-        <textarea className={`${inp} resize-none`} rows={2} value={form.goals} onChange={set("goals")} placeholder="e.g. Prepare for upcoming exams" />
+        <textarea
+          className={`${inp} resize-none`}
+          rows={2}
+          value={form.goals}
+          onChange={set("goals")}
+          placeholder="e.g. Prepare for upcoming exams"
+        />
       </div>
       <SendBtn loading={loading} label="Generate Study Plan" />
       <ResponseBox data={res} error={error} />
@@ -485,7 +667,11 @@ function StudyPlanTab() {
 }
 
 function ExplainTab() {
-  const [form, setForm] = useState({ concept: "", course_context: "", difficulty_level: "intermediate" });
+  const [form, setForm] = useState({
+    concept: "",
+    course_context: "",
+    difficulty_level: "intermediate",
+  });
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState(null);
   const [error, setError] = useState("");
@@ -493,11 +679,21 @@ function ExplainTab() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setRes(null);
+    setLoading(true);
+    setError("");
+    setRes(null);
     try {
-      setRes(await post("/explain", { ...form, course_context: form.course_context || undefined }));
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+      setRes(
+        await post("/explain", {
+          ...form,
+          course_context: form.course_context || undefined,
+        }),
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -505,16 +701,31 @@ function ExplainTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={lbl}>Concept *</label>
-          <input className={inp} required value={form.concept} onChange={set("concept")} placeholder="e.g. Recursion" />
+          <input
+            className={inp}
+            required
+            value={form.concept}
+            onChange={set("concept")}
+            placeholder="e.g. Recursion"
+          />
         </div>
         <div>
           <label className={lbl}>Course Context (optional)</label>
-          <input className={inp} value={form.course_context} onChange={set("course_context")} placeholder="e.g. Data Structures" />
+          <input
+            className={inp}
+            value={form.course_context}
+            onChange={set("course_context")}
+            placeholder="e.g. Data Structures"
+          />
         </div>
       </div>
       <div>
         <label className={lbl}>Difficulty Level</label>
-        <select className={inp} value={form.difficulty_level} onChange={set("difficulty_level")}>
+        <select
+          className={inp}
+          value={form.difficulty_level}
+          onChange={set("difficulty_level")}
+        >
           <option value="beginner">Beginner</option>
           <option value="intermediate">Intermediate</option>
           <option value="advanced">Advanced</option>
@@ -527,7 +738,12 @@ function ExplainTab() {
 }
 
 function PerformanceTab() {
-  const [form, setForm] = useState({ subject: "", quiz_scores: "", assignment_grades: "", course_progress: 0 });
+  const [form, setForm] = useState({
+    subject: "",
+    quiz_scores: "",
+    assignment_grades: "",
+    course_progress: 0,
+  });
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState(null);
   const [error, setError] = useState("");
@@ -535,16 +751,29 @@ function PerformanceTab() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setRes(null);
+    setLoading(true);
+    setError("");
+    setRes(null);
     try {
-      setRes(await post("/analyze-performance", {
-        subject: form.subject,
-        quiz_scores: form.quiz_scores.split(",").map((s) => parseFloat(s.trim())).filter((n) => !isNaN(n)),
-        assignment_grades: form.assignment_grades.split(",").map((s) => parseFloat(s.trim())).filter((n) => !isNaN(n)),
-        course_progress: Number(form.course_progress),
-      }));
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+      setRes(
+        await post("/analyze-performance", {
+          subject: form.subject,
+          quiz_scores: form.quiz_scores
+            .split(",")
+            .map((s) => parseFloat(s.trim()))
+            .filter((n) => !isNaN(n)),
+          assignment_grades: form.assignment_grades
+            .split(",")
+            .map((s) => parseFloat(s.trim()))
+            .filter((n) => !isNaN(n)),
+          course_progress: Number(form.course_progress),
+        }),
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -552,20 +781,45 @@ function PerformanceTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={lbl}>Subject *</label>
-          <input className={inp} required value={form.subject} onChange={set("subject")} placeholder="e.g. Data Structures" />
+          <input
+            className={inp}
+            required
+            value={form.subject}
+            onChange={set("subject")}
+            placeholder="e.g. Data Structures"
+          />
         </div>
         <div>
           <label className={lbl}>Course Progress (%)</label>
-          <input type="number" min={0} max={100} className={inp} value={form.course_progress} onChange={set("course_progress")} />
+          <input
+            type="number"
+            min={0}
+            max={100}
+            className={inp}
+            value={form.course_progress}
+            onChange={set("course_progress")}
+          />
         </div>
       </div>
       <div>
         <label className={lbl}>Quiz Scores (comma-separated, optional)</label>
-        <input className={inp} value={form.quiz_scores} onChange={set("quiz_scores")} placeholder="e.g. 72, 68, 80, 85, 90" />
+        <input
+          className={inp}
+          value={form.quiz_scores}
+          onChange={set("quiz_scores")}
+          placeholder="e.g. 72, 68, 80, 85, 90"
+        />
       </div>
       <div>
-        <label className={lbl}>Assignment Grades (comma-separated, optional)</label>
-        <input className={inp} value={form.assignment_grades} onChange={set("assignment_grades")} placeholder="e.g. 75, 82, 88" />
+        <label className={lbl}>
+          Assignment Grades (comma-separated, optional)
+        </label>
+        <input
+          className={inp}
+          value={form.assignment_grades}
+          onChange={set("assignment_grades")}
+          placeholder="e.g. 75, 82, 88"
+        />
       </div>
       <SendBtn loading={loading} label="Analyze Performance" />
       <ResponseBox data={res} error={error} />
@@ -574,7 +828,13 @@ function PerformanceTab() {
 }
 
 function CourseOutlineTab() {
-  const [form, setForm] = useState({ course_title: "", subject: "", duration_weeks: 8, target_level: "intermediate", learning_objectives: "" });
+  const [form, setForm] = useState({
+    course_title: "",
+    subject: "",
+    duration_weeks: 8,
+    target_level: "intermediate",
+    learning_objectives: "",
+  });
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState(null);
   const [error, setError] = useState("");
@@ -582,11 +842,22 @@ function CourseOutlineTab() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setRes(null);
+    setLoading(true);
+    setError("");
+    setRes(null);
     try {
-      setRes(await post("/course-outline", { ...form, duration_weeks: Number(form.duration_weeks), learning_objectives: form.learning_objectives || undefined }));
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+      setRes(
+        await post("/course-outline", {
+          ...form,
+          duration_weeks: Number(form.duration_weeks),
+          learning_objectives: form.learning_objectives || undefined,
+        }),
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -594,21 +865,44 @@ function CourseOutlineTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={lbl}>Course Title *</label>
-          <input className={inp} required value={form.course_title} onChange={set("course_title")} placeholder="e.g. Introduction to Machine Learning" />
+          <input
+            className={inp}
+            required
+            value={form.course_title}
+            onChange={set("course_title")}
+            placeholder="e.g. Introduction to Machine Learning"
+          />
         </div>
         <div>
           <label className={lbl}>Subject *</label>
-          <input className={inp} required value={form.subject} onChange={set("subject")} placeholder="e.g. Computer Science" />
+          <input
+            className={inp}
+            required
+            value={form.subject}
+            onChange={set("subject")}
+            placeholder="e.g. Computer Science"
+          />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={lbl}>Duration (weeks)</label>
-          <input type="number" min={1} max={52} className={inp} value={form.duration_weeks} onChange={set("duration_weeks")} />
+          <input
+            type="number"
+            min={1}
+            max={52}
+            className={inp}
+            value={form.duration_weeks}
+            onChange={set("duration_weeks")}
+          />
         </div>
         <div>
           <label className={lbl}>Target Level</label>
-          <select className={inp} value={form.target_level} onChange={set("target_level")}>
+          <select
+            className={inp}
+            value={form.target_level}
+            onChange={set("target_level")}
+          >
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
@@ -617,7 +911,13 @@ function CourseOutlineTab() {
       </div>
       <div>
         <label className={lbl}>Learning Objectives (optional)</label>
-        <textarea className={`${inp} resize-none`} rows={3} value={form.learning_objectives} onChange={set("learning_objectives")} placeholder="e.g. Students will understand core ML algorithms and implement them in Python" />
+        <textarea
+          className={`${inp} resize-none`}
+          rows={3}
+          value={form.learning_objectives}
+          onChange={set("learning_objectives")}
+          placeholder="e.g. Students will understand core ML algorithms and implement them in Python"
+        />
       </div>
       <SendBtn loading={loading} label="Generate Outline" />
       <ResponseBox data={res} error={error} />
@@ -642,16 +942,26 @@ function AgentTab() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(""); setRes(null);
+    setLoading(true);
+    setError("");
+    setRes(null);
     let ctx = {};
     if (context.trim()) {
-      try { ctx = JSON.parse(context); }
-      catch { setError("Context must be valid JSON (or leave empty)"); setLoading(false); return; }
+      try {
+        ctx = JSON.parse(context);
+      } catch {
+        setError("Context must be valid JSON (or leave empty)");
+        setLoading(false);
+        return;
+      }
     }
     try {
       setRes(await post("/agent", { task, context: ctx }));
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -673,11 +983,26 @@ function AgentTab() {
       </div>
       <div>
         <label className={lbl}>Task *</label>
-        <textarea className={`${inp} resize-none`} rows={4} required value={task} onChange={(e) => setTask(e.target.value)} placeholder="Describe what you want the AI agent to do…" />
+        <textarea
+          className={`${inp} resize-none`}
+          rows={4}
+          required
+          value={task}
+          onChange={(e) => setTask(e.target.value)}
+          placeholder="Describe what you want the AI agent to do…"
+        />
       </div>
       <div>
         <label className={lbl}>Context (JSON, optional)</label>
-        <textarea className={`${inp} resize-none font-mono text-xs`} rows={3} value={context} onChange={(e) => setContext(e.target.value)} placeholder={'{ "student_name": "Alex", "course": "Data Structures" }'} />
+        <textarea
+          className={`${inp} resize-none font-mono text-xs`}
+          rows={3}
+          value={context}
+          onChange={(e) => setContext(e.target.value)}
+          placeholder={
+            '{ "student_name": "Alex", "course": "Data Structures" }'
+          }
+        />
       </div>
       <SendBtn loading={loading} label="Run Agent" />
       <ResponseBox data={res} error={error} />
@@ -688,15 +1013,30 @@ function AgentTab() {
 // ─────────────────────────── MAIN ────────────────────────────
 
 const TABS = [
-  { id: "chat",           label: "Chat",           icon: "💬", component: ChatTab },
-  { id: "quiz",           label: "Quiz Generator", icon: "📝", component: QuizTab },
-  { id: "summarize",      label: "Summarize",      icon: "📋", component: SummarizeTab },
-  { id: "feedback",       label: "Feedback",       icon: "✅", component: FeedbackTab },
-  { id: "study-plan",     label: "Study Plan",     icon: "📅", component: StudyPlanTab },
-  { id: "explain",        label: "Explain",        icon: "💡", component: ExplainTab },
-  { id: "performance",    label: "Performance",    icon: "📊", component: PerformanceTab },
-  { id: "course-outline", label: "Course Outline", icon: "🎓", component: CourseOutlineTab },
-  { id: "agent",          label: "Agent",          icon: "🤖", component: AgentTab },
+  { id: "chat", label: "Chat", icon: "💬", component: ChatTab },
+  { id: "quiz", label: "Quiz Generator", icon: "📝", component: QuizTab },
+  { id: "summarize", label: "Summarize", icon: "📋", component: SummarizeTab },
+  { id: "feedback", label: "Feedback", icon: "✅", component: FeedbackTab },
+  {
+    id: "study-plan",
+    label: "Study Plan",
+    icon: "📅",
+    component: StudyPlanTab,
+  },
+  { id: "explain", label: "Explain", icon: "💡", component: ExplainTab },
+  {
+    id: "performance",
+    label: "Performance",
+    icon: "📊",
+    component: PerformanceTab,
+  },
+  {
+    id: "course-outline",
+    label: "Course Outline",
+    icon: "🎓",
+    component: CourseOutlineTab,
+  },
+  { id: "agent", label: "Agent", icon: "🤖", component: AgentTab },
 ];
 
 export default function AIPlayground() {
@@ -711,10 +1051,13 @@ export default function AIPlayground() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-3xl">🤖</span>
-            <h1 className="text-3xl font-black text-[var(--text)]">AI Playground</h1>
+            <h1 className="text-3xl font-black text-[var(--text)]">
+              AI Playground
+            </h1>
           </div>
           <p className="text-[var(--muted)] text-sm">
-            Test all SmartClass AI agent routes interactively. Agent server must be running on{" "}
+            Test all SmartClass AI agent routes interactively. Agent server must
+            be running on{" "}
             <code className="px-1.5 py-0.5 rounded bg-[var(--border)]/30 font-mono text-xs text-[var(--accent)]">
               localhost:8000
             </code>

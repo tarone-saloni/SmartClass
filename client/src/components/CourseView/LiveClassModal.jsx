@@ -82,10 +82,11 @@ function LiveClassModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
                   onClick={() =>
                     onChange({ ...form, type: opt.value, meetingLink: "" })
                   }
-                  className={`flex flex-col items-start gap-1 px-4 py-3 rounded-2xl border text-left cursor-pointer transition-all duration-200 ${active
+                  className={`flex flex-col items-start gap-1 px-4 py-3 rounded-2xl border text-left cursor-pointer transition-all duration-200 ${
+                    active
                       ? "bg-[var(--accent)]/12 border-[var(--accent)]/40 shadow-[0_4px_16px_-4px_var(--accent)/20]"
                       : "glass border-[var(--border)]/25 hover:border-[var(--accent)]/20 shadow-sm"
-                    }`}
+                  }`}
                 >
                   <span className="text-lg">{opt.icon}</span>
                   <span
@@ -125,7 +126,9 @@ function LiveClassModal({ isOpen, form, saving, onSubmit, onClose, onChange }) {
             <span className="text-base shrink-0">ℹ️</span>
             <span>
               After starting the class, use{" "}
-              <strong className="text-[var(--text)] font-bold">Start Screen Share</strong>{" "}
+              <strong className="text-[var(--text)] font-bold">
+                Start Screen Share
+              </strong>{" "}
               inside the class room to go live. You can also record the session.
             </span>
           </div>
