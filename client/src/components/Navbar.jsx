@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeContext, themes as themeMap } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { getSocket } from "../socket";
@@ -30,16 +30,47 @@ const THEME_META = {
   },
 };
 
+const AI_TABS = [
+  { id: "chat", label: "Chat", icon: "💬" },
+  { id: "quiz", label: "Quiz Generator", icon: "📝" },
+  { id: "summarize", label: "Summarize", icon: "📋" },
+  { id: "feedback", label: "Feedback", icon: "✅" },
+  { id: "study-plan", label: "Study Plan", icon: "📅" },
+  { id: "explain", label: "Explain", icon: "💡" },
+  { id: "performance", label: "Performance", icon: "📊" },
+  { id: "course-outline", label: "Course Outline", icon: "🎓" },
+  { id: "agent", label: "Agent", icon: "🤖" },
+];
+
+const NAV_LINKS = [
+  { label: "Dashboard", icon: "🏠", path: "/" },
+  {
+    label: "AI Playground",
+    icon: "🤖",
+    path: "/ai-playground/chat",
+    matchPrefix: "/ai-playground",
+    dropdown: AI_TABS.map((t) => ({
+      label: t.label,
+      icon: t.icon,
+      path: `/ai-playground/${t.id}`,
+    })),
+  },
+  { label: "Live Classes", icon: "📹", path: "/live-classes" },
+];
+
 function Navbar({ showBack }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { themeName, setThemeName } = useContext(ThemeContext);
   const { user, logout } = useAuth();
   const [notifs, setNotifs] = useState([]);
   const [open, setOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [navDropdown, setNavDropdown] = useState(null); // label of open dropdown
   const [scrolled, setScrolled] = useState(false);
   const ref = useRef(null);
   const mobileMenuRef = useRef(null);
+  const navDropdownRef = useRef(null);
 
   const themeKeys = Object.keys(themeMap || {});
   const unread = notifs.filter((n) => !n.read).length;
@@ -120,6 +151,8 @@ function Navbar({ showBack }) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target))
         setMobileMenuOpen(false);
+      if (navDropdownRef.current && !navDropdownRef.current.contains(e.target))
+        setNavDropdown(null);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -195,7 +228,7 @@ function Navbar({ showBack }) {
           <button
             onClick={() => navigate(-1)}
             className="text-xs sm:text-sm font-semibold text-[var(--muted)] hover:text-[var(--accent)]
-                       bg-transparent border-none cursor-pointer transition-all duration-300 ml-2 sm:ml-4 pl-2 sm:pl-4 
+                       bg-transparent border-none cursor-pointer transition-all duration-300 ml-2 sm:ml-4 pl-2 sm:pl-4
                        border-l border-[var(--border)]/50 active:opacity-70 hover:-translate-x-0.5
                        flex items-center gap-1"
             title="Go back"
@@ -205,6 +238,81 @@ function Navbar({ showBack }) {
             </span>{" "}
             Back
           </button>
+        )}
+
+        {/* Desktop Nav Links — authenticated only */}
+        {isAuthenticated && (
+          <nav
+            ref={navDropdownRef}
+            className="hidden lg:flex items-center gap-1 ml-2 pl-4 border-l border-[var(--border)]/40"
+          >
+            {NAV_LINKS.map((link) => {
+              const active = link.matchPrefix
+                ? location.pathname.startsWith(link.matchPrefix)
+                : location.pathname === link.path;
+              const isOpen = navDropdown === link.label;
+
+              return (
+                <div key={link.label} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (link.dropdown) {
+                        setNavDropdown(isOpen ? null : link.label);
+                      } else {
+                        navigate(link.path);
+                        setNavDropdown(null);
+                      }
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-300 active:scale-95 border-none cursor-pointer
+                      ${
+                        active
+                          ? "bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[0_4px_16px_-4px_var(--accent)]"
+                          : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--accent)]/8"
+                      }`}
+                  >
+                    <span>{link.icon}</span>
+                    <span>{link.label}</span>
+                    {link.dropdown && (
+                      <span
+                        className={`text-xs transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                      >
+                        ▾
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Dropdown panel */}
+                  {link.dropdown && isOpen && (
+                    <div className="absolute left-0 top-full mt-2 w-48 rounded-2xl border border-[var(--border)]/50 glass-heavy shadow-[0_20px_40px_-8px_rgba(0,0,0,0.25)] overflow-hidden z-[300] animate-[scale-in_0.2s_cubic-bezier(0.16,1,0.3,1)_both] origin-top-left">
+                      {link.dropdown.map((item) => {
+                        const itemActive = location.pathname === item.path;
+                        return (
+                          <button
+                            key={item.path}
+                            type="button"
+                            onClick={() => {
+                              navigate(item.path);
+                              setNavDropdown(null);
+                            }}
+                            className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-all duration-200 border-none cursor-pointer text-left
+                              ${
+                                itemActive
+                                  ? "bg-[var(--accent)]/15 text-[var(--accent)] font-semibold"
+                                  : "text-[var(--text)] hover:bg-[var(--accent)]/8"
+                              }`}
+                          >
+                            <span>{item.icon}</span>
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
         )}
       </div>
 
@@ -430,11 +538,36 @@ function Navbar({ showBack }) {
                     {user.role}
                   </div>
                 </div>
+                <div className="p-2 border-b border-[var(--border)]/30">
+                  {NAV_LINKS.map((link) => {
+                    const active = location.pathname === link.path;
+                    return (
+                      <button
+                        key={link.path}
+                        type="button"
+                        onClick={() => {
+                          navigate(link.path);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5
+                          transition-all duration-300 active:scale-95 border-none cursor-pointer
+                          ${
+                            active
+                              ? "bg-[var(--accent)]/15 text-[var(--accent)]"
+                              : "text-[var(--text)] hover:bg-[var(--accent)]/8"
+                          }`}
+                      >
+                        <span>{link.icon}</span>
+                        <span>{link.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
                 <div className="p-2">
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold 
-                               text-red-500 hover:bg-red-500/10 
+                    className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold
+                               text-red-500 hover:bg-red-500/10
                                transition-all duration-300 active:scale-95 border-none bg-transparent cursor-pointer
                                flex items-center gap-2"
                   >

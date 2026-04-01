@@ -5,12 +5,15 @@ import StudentDashboard from "../pages/StudentDashboard";
 import CourseView from "../pages/CourseView";
 import QuizView from "../pages/QuizView";
 import LiveClassRoom from "../pages/LiveClassRoom";
-
-function CourseViewRedirect() {
-  const { id } = useParams();
-  return <Navigate to={`/course/${id}/materials`} replace />;
-}
-import AIPlayground from "../pages/AIPlayground";
+import AiChat from "../pages/ai/AiChat";
+import AiQuiz from "../pages/ai/AiQuiz";
+import AiSummarize from "../pages/ai/AiSummarize";
+import AiFeedback from "../pages/ai/AiFeedback";
+import AiStudyPlan from "../pages/ai/AiStudyPlan";
+import AiExplain from "../pages/ai/AiExplain";
+import AiPerformance from "../pages/ai/AiPerformance";
+import AiCourseOutline from "../pages/ai/AiCourseOutline";
+import AiAgent from "../pages/ai/AiAgent";
 import Features from "../pages/Features";
 import Pricing from "../pages/Pricing";
 import Security from "../pages/Security";
@@ -23,6 +26,11 @@ import Privacy from "../pages/Privacy";
 import Terms from "../pages/Terms";
 import Cookies from "../pages/Cookies";
 import License from "../pages/License";
+
+function CourseViewRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/course/${id}/materials`} replace />;
+}
 
 function ProtectedRoutes() {
   const { user } = useAuth();
@@ -38,7 +46,26 @@ function ProtectedRoutes() {
       <Route path="/course/:id/:tab" element={<CourseView />} />
       <Route path="/quiz/:id" element={<QuizView />} />
       <Route path="/live-class/:id" element={<LiveClassRoom />} />
-      <Route path="/ai-playground" element={<AIPlayground />} />
+      <Route path="/live-classes" element={<Navigate to="/" replace />} />
+
+      {/* AI — each feature is its own page */}
+      <Route
+        path="/ai-playground"
+        element={<Navigate to="/ai-playground/chat" replace />}
+      />
+      <Route path="/ai-playground/chat" element={<AiChat />} />
+      <Route path="/ai-playground/quiz" element={<AiQuiz />} />
+      <Route path="/ai-playground/summarize" element={<AiSummarize />} />
+      <Route path="/ai-playground/feedback" element={<AiFeedback />} />
+      <Route path="/ai-playground/study-plan" element={<AiStudyPlan />} />
+      <Route path="/ai-playground/explain" element={<AiExplain />} />
+      <Route path="/ai-playground/performance" element={<AiPerformance />} />
+      <Route
+        path="/ai-playground/course-outline"
+        element={<AiCourseOutline />}
+      />
+      <Route path="/ai-playground/agent" element={<AiAgent />} />
+
       <Route path="/features" element={<Features />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/security" element={<Security />} />

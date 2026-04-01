@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getSocket } from "../socket";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import {
@@ -22,44 +24,106 @@ import {
 
 function SdAiMarkdown({ text }) {
   return (
-    <div className="space-y-1 text-sm leading-relaxed text-[var(--text)]">
-      {text.split("\n").map((line, i) => {
-        if (/^### (.+)/.test(line))
-          return (
-            <h3
-              key={i}
-              className="font-bold text-[var(--accent)] mt-3 mb-0.5 text-sm"
-            >
-              {line.replace(/^### /, "")}
-            </h3>
-          );
-        if (/^## (.+)/.test(line))
-          return (
-            <h2 key={i} className="font-bold text-[var(--text)] mt-3 mb-0.5">
-              {line.replace(/^## /, "")}
-            </h2>
-          );
-        if (/^[-*] /.test(line))
-          return (
-            <p
-              key={i}
-              className="pl-3 before:content-['•'] before:mr-2 before:text-[var(--accent)]"
-            >
-              {line.replace(/^[-*] /, "")}
-            </p>
-          );
-        if (line.trim() === "") return <div key={i} className="h-1" />;
-        return (
-          <p key={i}>
-            {line
-              .split(/\*\*(.+?)\*\*/)
-              .map((part, j) =>
-                j % 2 === 1 ? <strong key={j}>{part}</strong> : part,
-              )}
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        h1: ({ children }) => (
+          <h1 className="text-base font-bold text-[var(--text)] mt-4 mb-2">
+            {children}
+          </h1>
+        ),
+        h2: ({ children }) => (
+          <h2 className="text-sm font-bold text-[var(--text)] mt-3 mb-1">
+            {children}
+          </h2>
+        ),
+        h3: ({ children }) => (
+          <h3 className="text-sm font-bold text-[var(--accent)] mt-3 mb-0.5">
+            {children}
+          </h3>
+        ),
+        p: ({ children }) => (
+          <p className="text-sm leading-relaxed text-[var(--text)] mb-1.5">
+            {children}
           </p>
-        );
-      })}
-    </div>
+        ),
+        strong: ({ children }) => (
+          <strong className="font-semibold text-[var(--text)]">
+            {children}
+          </strong>
+        ),
+        em: ({ children }) => (
+          <em className="italic text-[var(--muted)]">{children}</em>
+        ),
+        ul: ({ children }) => (
+          <ul className="list-none space-y-1 my-1.5 pl-1">{children}</ul>
+        ),
+        ol: ({ children }) => (
+          <ol className="list-decimal list-inside space-y-1 my-1.5 pl-1 text-sm text-[var(--text)]">
+            {children}
+          </ol>
+        ),
+        li: ({ children }) => (
+          <li className="text-sm text-[var(--text)] flex gap-2 items-start">
+            <span className="text-[var(--accent)] shrink-0">•</span>
+            <span>{children}</span>
+          </li>
+        ),
+        code: ({ className, children }) =>
+          className ? (
+            <code
+              className={`text-xs font-mono text-[var(--text)] whitespace-pre-wrap ${className}`}
+            >
+              {children}
+            </code>
+          ) : (
+            <code className="px-1 py-0.5 rounded bg-[var(--border)]/30 text-[var(--accent)] text-xs font-mono">
+              {children}
+            </code>
+          ),
+        pre: ({ children }) => (
+          <pre className="my-2 p-3 rounded-lg bg-[var(--border)]/20 border border-[var(--border)]/40 overflow-x-auto text-xs font-mono">
+            {children}
+          </pre>
+        ),
+        blockquote: ({ children }) => (
+          <blockquote className="my-1.5 pl-3 border-l-4 border-[var(--accent)]/50 text-[var(--muted)] italic text-sm">
+            {children}
+          </blockquote>
+        ),
+        table: ({ children }) => (
+          <div className="overflow-x-auto my-2">
+            <table className="w-full text-sm border-collapse">{children}</table>
+          </div>
+        ),
+        thead: ({ children }) => (
+          <thead className="bg-[var(--border)]/20">{children}</thead>
+        ),
+        th: ({ children }) => (
+          <th className="px-2 py-1.5 text-left text-xs font-semibold text-[var(--muted)] uppercase tracking-wider border border-[var(--border)]/30">
+            {children}
+          </th>
+        ),
+        td: ({ children }) => (
+          <td className="px-2 py-1.5 text-sm text-[var(--text)] border border-[var(--border)]/20">
+            {children}
+          </td>
+        ),
+        hr: () => <hr className="my-3 border-[var(--border)]/30" />,
+        a: ({ href, children }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--accent)] underline underline-offset-2 hover:opacity-80"
+          >
+            {children}
+          </a>
+        ),
+      }}
+    >
+      {text}
+    </ReactMarkdown>
   );
 }
 

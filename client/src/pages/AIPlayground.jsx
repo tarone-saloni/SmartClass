@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -155,59 +158,112 @@ function ResponseRenderer({ data }) {
 }
 
 function MarkdownText({ text }) {
-  // Simple markdown-like rendering: headings, bold, bullets
-  const lines = text.split("\n");
   return (
-    <div className="space-y-1 text-sm leading-relaxed text-[var(--text)]">
-      {lines.map((line, i) => {
-        if (/^### (.+)/.test(line))
-          return (
-            <h3
-              key={i}
-              className="font-bold text-[var(--accent)] mt-3 mb-1 text-base"
-            >
-              {line.replace(/^### /, "")}
-            </h3>
-          );
-        if (/^## (.+)/.test(line))
-          return (
-            <h2
-              key={i}
-              className="font-bold text-[var(--text)] mt-4 mb-1 text-lg"
-            >
-              {line.replace(/^## /, "")}
-            </h2>
-          );
-        if (/^# (.+)/.test(line))
-          return (
-            <h1
-              key={i}
-              className="font-bold text-[var(--text)] mt-4 mb-1 text-xl"
-            >
-              {line.replace(/^# /, "")}
-            </h1>
-          );
-        if (/^[-*] (.+)/.test(line))
-          return (
-            <p
-              key={i}
-              className="pl-4 before:content-['•'] before:mr-2 before:text-[var(--accent)]"
-            >
-              {line.replace(/^[-*] /, "").replace(/\*\*(.+?)\*\*/g, "$1")}
-            </p>
-          );
-        if (line.trim() === "") return <div key={i} className="h-1" />;
-        return (
-          <p key={i}>
-            {line
-              .split(/\*\*(.+?)\*\*/)
-              .map((part, j) =>
-                j % 2 === 1 ? <strong key={j}>{part}</strong> : part,
-              )}
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        h1: ({ children }) => (
+          <h1 className="text-xl font-bold text-[var(--text)] mt-4 mb-2">
+            {children}
+          </h1>
+        ),
+        h2: ({ children }) => (
+          <h2 className="text-lg font-bold text-[var(--text)] mt-4 mb-1">
+            {children}
+          </h2>
+        ),
+        h3: ({ children }) => (
+          <h3 className="text-base font-bold text-[var(--accent)] mt-3 mb-1">
+            {children}
+          </h3>
+        ),
+        h4: ({ children }) => (
+          <h4 className="text-sm font-semibold text-[var(--text)] mt-2 mb-1">
+            {children}
+          </h4>
+        ),
+        p: ({ children }) => (
+          <p className="text-sm leading-relaxed text-[var(--text)] mb-2">
+            {children}
           </p>
-        );
-      })}
-    </div>
+        ),
+        strong: ({ children }) => (
+          <strong className="font-semibold text-[var(--text)]">
+            {children}
+          </strong>
+        ),
+        em: ({ children }) => (
+          <em className="italic text-[var(--muted)]">{children}</em>
+        ),
+        ul: ({ children }) => (
+          <ul className="list-none space-y-1 my-2 pl-2">{children}</ul>
+        ),
+        ol: ({ children }) => (
+          <ol className="list-decimal list-inside space-y-1 my-2 pl-2 text-sm text-[var(--text)]">
+            {children}
+          </ol>
+        ),
+        li: ({ children }) => (
+          <li className="text-sm text-[var(--text)] flex gap-2 items-start">
+            <span className="text-[var(--accent)] mt-0.5 shrink-0">•</span>
+            <span>{children}</span>
+          </li>
+        ),
+        code: ({ className, children }) =>
+          className ? (
+            <code
+              className={`text-xs font-mono text-[var(--text)] leading-relaxed whitespace-pre-wrap ${className}`}
+            >
+              {children}
+            </code>
+          ) : (
+            <code className="px-1.5 py-0.5 rounded bg-[var(--border)]/30 text-[var(--accent)] text-xs font-mono">
+              {children}
+            </code>
+          ),
+        pre: ({ children }) => (
+          <pre className="my-3 p-4 rounded-xl bg-[var(--border)]/20 border border-[var(--border)]/40 overflow-x-auto text-xs font-mono leading-relaxed">
+            {children}
+          </pre>
+        ),
+        blockquote: ({ children }) => (
+          <blockquote className="my-2 pl-4 border-l-4 border-[var(--accent)]/50 text-[var(--muted)] italic text-sm">
+            {children}
+          </blockquote>
+        ),
+        table: ({ children }) => (
+          <div className="overflow-x-auto my-3">
+            <table className="w-full text-sm border-collapse">{children}</table>
+          </div>
+        ),
+        thead: ({ children }) => (
+          <thead className="bg-[var(--border)]/20">{children}</thead>
+        ),
+        th: ({ children }) => (
+          <th className="px-3 py-2 text-left text-xs font-semibold text-[var(--muted)] uppercase tracking-wider border border-[var(--border)]/30">
+            {children}
+          </th>
+        ),
+        td: ({ children }) => (
+          <td className="px-3 py-2 text-sm text-[var(--text)] border border-[var(--border)]/20">
+            {children}
+          </td>
+        ),
+        hr: () => <hr className="my-4 border-[var(--border)]/30" />,
+        a: ({ href, children }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--accent)] underline underline-offset-2 hover:opacity-80"
+          >
+            {children}
+          </a>
+        ),
+      }}
+    >
+      {text}
+    </ReactMarkdown>
   );
 }
 
@@ -1040,51 +1096,57 @@ const TABS = [
 ];
 
 export default function AIPlayground() {
-  const [activeTab, setActiveTab] = useState("chat");
-  const ActiveComponent = TABS.find((t) => t.id === activeTab)?.component;
+  const { tab } = useParams();
+  const navigate = useNavigate();
+  const activePage = TABS.find((t) => t.id === tab) ?? TABS[0];
+  const ActiveComponent = activePage.component;
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">🤖</span>
-            <h1 className="text-3xl font-black text-[var(--text)]">
-              AI Playground
-            </h1>
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
+        {/* Page header */}
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-4xl">{activePage.icon}</span>
+              <h1 className="text-3xl font-black text-[var(--text)]">
+                {activePage.label}
+              </h1>
+            </div>
+            <p className="text-[var(--muted)] text-sm ml-1">
+              AI Playground · Agent server must be running on{" "}
+              <code className="px-1.5 py-0.5 rounded bg-[var(--border)]/30 font-mono text-xs text-[var(--accent)]">
+                localhost:8000
+              </code>
+            </p>
           </div>
-          <p className="text-[var(--muted)] text-sm">
-            Test all SmartClass AI agent routes interactively. Agent server must
-            be running on{" "}
-            <code className="px-1.5 py-0.5 rounded bg-[var(--border)]/30 font-mono text-xs text-[var(--accent)]">
-              localhost:8000
-            </code>
-          </p>
+
+          {/* Quick-jump pill nav */}
+          <div className="flex-shrink-0 hidden md:flex flex-wrap gap-1 justify-end max-w-xs">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => navigate(`/ai-playground/${t.id}`)}
+                title={t.label}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border-none cursor-pointer whitespace-nowrap
+                  ${
+                    activePage.id === t.id
+                      ? "bg-[var(--accent)] text-white"
+                      : "glass border border-[var(--border)]/40 text-[var(--muted)] hover:text-[var(--text)]"
+                  }`}
+              >
+                <span>{t.icon}</span>
+                <span className="hidden lg:inline">{t.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Tab bar */}
-        <div className="flex gap-1 overflow-x-auto pb-1 mb-6 scrollbar-none">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
-                activeTab === tab.id
-                  ? "bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/25"
-                  : "glass border border-[var(--border)]/40 text-[var(--muted)] hover:text-[var(--text)] hover:border-[var(--accent)]/30"
-              }`}
-            >
-              <span>{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab content */}
+        {/* Page content */}
         <div className="glass-heavy rounded-2xl border border-[var(--border)]/40 p-6 shadow-xl">
-          {ActiveComponent && <ActiveComponent />}
+          <ActiveComponent />
         </div>
       </main>
       <Footer />
