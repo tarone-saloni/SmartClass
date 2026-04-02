@@ -1,0 +1,21 @@
+{
+  "name": "smartclass",
+  "version": "1.0.0",
+  "description": "A full-stack LMS platform with real-time features, multi-role dashboards, and an integrated Claude AI agent for students and teachers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ishita06-ai/SmartClass.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Ishita06-ai/SmartClass/issues"
+  },
+  "homepage": "https://github.com/Ishita06-ai/SmartClass#readme"
+}
