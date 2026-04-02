@@ -12,21 +12,16 @@ const SOCIAL = [
 const LINKS = {
   Product: [
     { label: "Features", to: "/features" },
-    { label: "Pricing", to: "/pricing" },
     { label: "Security", to: "/security" },
     { label: "Enterprise", to: "/enterprise" },
   ],
   Company: [
     { label: "About", to: "/about" },
     { label: "Blog", to: "/blog" },
-    { label: "Careers", to: "/careers" },
-    { label: "Contact", to: "/contact" },
   ],
   Legal: [
     { label: "Privacy", to: "/privacy" },
     { label: "Terms", to: "/terms" },
-    { label: "Cookies", to: "/cookies" },
-    { label: "License", to: "/license" },
   ],
 };
 
