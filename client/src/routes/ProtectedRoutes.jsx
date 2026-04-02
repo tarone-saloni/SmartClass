@@ -62,17 +62,12 @@ function ProtectedRoutes() {
       <Route path="/ai-playground/agent" element={<AiAgent />} />
 
       <Route path="/features" element={<Features />} />
-      <Route path="/pricing" element={<Pricing />} />
       <Route path="/security" element={<Security />} />
       <Route path="/enterprise" element={<Enterprise />} />
       <Route path="/about" element={<About />} />
       <Route path="/blog" element={<Blog />} />
-      <Route path="/careers" element={<Careers />} />
-      <Route path="/contact" element={<Contact />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
-      <Route path="/cookies" element={<Cookies />} />
-      <Route path="/license" element={<License />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
