@@ -15,17 +15,12 @@ import AiPerformance from "../pages/ai/AiPerformance";
 import AiCourseOutline from "../pages/ai/AiCourseOutline";
 import AiAgent from "../pages/ai/AiAgent";
 import Features from "../pages/Features";
-import Pricing from "../pages/Pricing";
 import Security from "../pages/Security";
 import Enterprise from "../pages/Enterprise";
 import About from "../pages/About";
 import Blog from "../pages/Blog";
-import Careers from "../pages/Careers";
-import Contact from "../pages/Contact";
 import Privacy from "../pages/Privacy";
 import Terms from "../pages/Terms";
-import Cookies from "../pages/Cookies";
-import License from "../pages/License";
 
 function CourseViewRedirect() {
   const { id } = useParams();
