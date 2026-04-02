@@ -194,7 +194,7 @@ function Navbar({ showBack }) {
                 ? user.role === "teacher"
                   ? "/teacher-dashboard"
                   : "/student-dashboard"
-                : "/signin",
+                : "/",
             )
           }
           className="flex items-center gap-2 sm:gap-3 no-underline min-w-0 group bg-transparent border-none cursor-pointer 
@@ -581,14 +581,14 @@ function Navbar({ showBack }) {
           /* GUEST / NOT AUTHENTICATED SECTION */
           <>
             <button
-              onClick={() => navigate("/signin")}
+              onClick={() => navigate("/")}
               className="hidden sm:flex px-4 py-2 rounded-xl text-sm font-semibold 
                          border border-[var(--border)]/50 text-[var(--text)] glass
                          hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/8
                          hover:shadow-[0_4px_16px_-4px_var(--accent)]
                          transition-all duration-300 cursor-pointer active:scale-95"
             >
-              Sign In
+              Home
             </button>
 
             <button
