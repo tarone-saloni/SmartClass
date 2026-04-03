@@ -5,7 +5,6 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoutes from "./routes/ProtectedRoutes";
 import PublicRoutes from "./routes/PublicRoutes";
 import ThemeApplier from "./theme/ThemeApplier";
-import Mainpage from "./pages/Mainpage";
 
 function AppRoutes() {
   const { user } = useAuth();
