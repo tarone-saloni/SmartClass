@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import OtpInput from "./OtpInput";
 import ErrorMessage from "./ErrorMessage";
+import { apiFetch } from "../../utils/api.js";
 
 function OtpStep({ email, onBack }) {
   const { login } = useAuth();
@@ -43,7 +44,7 @@ function OtpStep({ email, onBack }) {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/verify-otp", {
+      const res = await apiFetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -64,7 +65,7 @@ function OtpStep({ email, onBack }) {
     setResent(false);
     setError("");
     try {
-      const res = await fetch("/api/auth/resend-otp", {
+      const res = await apiFetch("/api/auth/resend-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

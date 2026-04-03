@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/api.js";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import CourseHeader from "../components/CourseView/CourseHeader";
@@ -93,7 +94,7 @@ function CourseView() {
 
   const loadCourse = useCallback(
     () =>
-      fetch(`/api/courses/${id}`)
+      apiFetch(`/api/courses/${id}`)
         .then((r) => r.json())
         .then((d) => !d.error && setCourse(d)),
     [id],
@@ -101,7 +102,7 @@ function CourseView() {
 
   const loadMaterials = useCallback(
     () =>
-      fetch(`/api/courses/${id}/materials`)
+      apiFetch(`/api/courses/${id}/materials`)
         .then((r) => r.json())
         .then((d) => Array.isArray(d) && setMaterials(d)),
     [id],
@@ -109,7 +110,7 @@ function CourseView() {
 
   const loadAssignments = useCallback(
     () =>
-      fetch(`/api/courses/${id}/assignments`)
+      apiFetch(`/api/courses/${id}/assignments`)
         .then((r) => r.json())
         .then((d) => Array.isArray(d) && setAssignments(d)),
     [id],
@@ -117,7 +118,7 @@ function CourseView() {
 
   const loadQuizzes = useCallback(
     () =>
-      fetch(`/api/courses/${id}/quizzes`)
+      apiFetch(`/api/courses/${id}/quizzes`)
         .then((r) => r.json())
         .then((d) => Array.isArray(d) && setQuizzes(d)),
     [id],
@@ -125,7 +126,7 @@ function CourseView() {
 
   const loadLiveClasses = useCallback(
     () =>
-      fetch(`/api/courses/${id}/live-classes`)
+      apiFetch(`/api/courses/${id}/live-classes`)
         .then((r) => r.json())
         .then((d) => Array.isArray(d) && setLiveClasses(d)),
     [id],
@@ -133,14 +134,14 @@ function CourseView() {
 
   const loadStudents = useCallback(() => {
     const qs = isTeacher ? `?teacherId=${user.id}` : "";
-    fetch(`/api/courses/${id}/students${qs}`)
+    apiFetch(`/api/courses/${id}/students${qs}`)
       .then((r) => r.json())
       .then((d) => d.students && setStudents(d.students));
   }, [id, isTeacher, user.id]);
 
   const loadProgress = useCallback(() => {
     if (isTeacher) return;
-    fetch(`/api/courses/${id}/materials/progress?studentId=${user.id}`)
+    apiFetch(`/api/courses/${id}/materials/progress?studentId=${user.id}`)
       .then((r) => r.json())
       .then((d) => {
         if (!d.error) {
@@ -167,7 +168,7 @@ function CourseView() {
   useEffect(() => {
     if (isTeacher || assignments.length === 0) return;
     assignments.forEach((a) => {
-      fetch(`/api/assignments/${a.id}/my-submission?studentId=${user.id}`)
+      apiFetch(`/api/assignments/${a.id}/my-submission?studentId=${user.id}`)
         .then((r) => r.json())
         .then((s) => {
           if (!s.error) setMySubmissions((p) => ({ ...p, [a.id]: s }));
@@ -179,7 +180,7 @@ function CourseView() {
   const saveMaterial = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const res = await fetch(`/api/courses/${id}/materials`, {
+    const res = await apiFetch(`/api/courses/${id}/materials`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...matForm, teacherId: user.id }),
@@ -193,7 +194,7 @@ function CourseView() {
   };
 
   const deleteMaterial = async (mid) => {
-    await fetch(`/api/courses/${id}/materials/${mid}`, {
+    await apiFetch(`/api/courses/${id}/materials/${mid}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
@@ -203,7 +204,7 @@ function CourseView() {
 
   const toggleComplete = async (mid) => {
     const isDone = completedMats.has(mid);
-    await fetch(`/api/courses/${id}/materials/${mid}/complete`, {
+    await apiFetch(`/api/courses/${id}/materials/${mid}/complete`, {
       method: isDone ? "DELETE" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ studentId: user.id }),
@@ -222,7 +223,7 @@ function CourseView() {
   const saveAssignment = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const res = await fetch(`/api/courses/${id}/assignments`, {
+    const res = await apiFetch(`/api/courses/${id}/assignments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...assForm, teacherId: user.id }),
@@ -236,7 +237,7 @@ function CourseView() {
   };
 
   const deleteAssignment = async (aid) => {
-    await fetch(`/api/assignments/${aid}`, {
+    await apiFetch(`/api/assignments/${aid}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
@@ -252,7 +253,7 @@ function CourseView() {
   const submitAssignment = async (aid, content, isUpdate = false) => {
     if (!isUpdate) {
       if (!content?.trim()) return;
-      const res = await fetch(`/api/assignments/${aid}/submit`, {
+      const res = await apiFetch(`/api/assignments/${aid}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId: user.id, content }),
@@ -273,7 +274,7 @@ function CourseView() {
       });
       return;
     }
-    const data = await fetch(
+    const data = await apiFetch(
       `/api/assignments/${aid}/submissions?teacherId=${user.id}`,
     ).then((r) => r.json());
     setExpandedSubs((p) => ({ ...p, [aid]: Array.isArray(data) ? data : [] }));
@@ -281,7 +282,7 @@ function CourseView() {
 
   const gradeSubmission = async (e) => {
     e.preventDefault();
-    const res = await fetch(
+    const res = await apiFetch(
       `/api/assignments/submissions/${gradingSubId}/grade`,
       {
         method: "PATCH",
@@ -318,7 +319,7 @@ function CourseView() {
     )
       return;
     setSaving(true);
-    const res = await fetch(`/api/courses/${id}/quizzes`, {
+    const res = await apiFetch(`/api/courses/${id}/quizzes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -348,7 +349,7 @@ function CourseView() {
   };
 
   const deleteQuiz = async (qid) => {
-    await fetch(`/api/quizzes/${qid}`, {
+    await apiFetch(`/api/quizzes/${qid}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
@@ -360,7 +361,7 @@ function CourseView() {
   const saveLiveClass = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const res = await fetch(`/api/courses/${id}/live-classes`, {
+    const res = await apiFetch(`/api/courses/${id}/live-classes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...lcForm, teacherId: user.id }),
@@ -380,7 +381,7 @@ function CourseView() {
   };
 
   const deleteLiveClass = async (lcId) => {
-    await fetch(`/api/live-classes/${lcId}`, {
+    await apiFetch(`/api/live-classes/${lcId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teacherId: user.id }),
@@ -389,7 +390,7 @@ function CourseView() {
   };
 
   const setClassStatus = async (lcId, status) => {
-    const res = await fetch(`/api/live-classes/${lcId}/status`, {
+    const res = await apiFetch(`/api/live-classes/${lcId}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status, teacherId: user.id }),
@@ -404,7 +405,7 @@ function CourseView() {
   };
 
   const joinClass = async (lcId, meetingLink) => {
-    await fetch(`/api/live-classes/${lcId}/join`, {
+    await apiFetch(`/api/live-classes/${lcId}/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user.id }),

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/api.js";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import QuizHeader from "../components/QuizView/QuizHeader";
@@ -24,12 +25,12 @@ function QuizView() {
 
   useEffect(() => {
     // Load quiz data
-    fetch(`/api/quizzes/${id}`)
+    apiFetch(`/api/quizzes/${id}`)
       .then((r) => r.json())
       .then((d) => !d.error && setQuiz(d));
 
     // Load previous result if exists
-    fetch(`/api/quizzes/${id}/my-result?studentId=${user.id}`)
+    apiFetch(`/api/quizzes/${id}/my-result?studentId=${user.id}`)
       .then((r) => r.json())
       .then((r) => {
         if (r && !r.error) {
@@ -53,7 +54,7 @@ function QuizView() {
     }));
 
     try {
-      const res = await fetch(`/api/quizzes/${id}/submit`, {
+      const res = await apiFetch(`/api/quizzes/${id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId: user.id, answers: answersArray }),

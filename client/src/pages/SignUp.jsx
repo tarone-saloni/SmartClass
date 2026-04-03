@@ -1,5 +1,6 @@
 import { useState, useContext } from "react";
 import { ThemeContext } from "../context/ThemeContext";
+import { apiFetch } from "../utils/api.js";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import GlobalStyles from "../components/SignUp/GlobalStyles";
@@ -18,7 +19,7 @@ function SignUp() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await apiFetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

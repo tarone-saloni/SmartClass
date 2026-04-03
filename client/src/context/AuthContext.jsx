@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback } from "react";
+import { apiFetch } from "../utils/api.js";
 
 const AuthContext = createContext(null);
 
@@ -24,7 +25,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await fetch("/api/auth/logout", {
+    await apiFetch("/api/auth/logout", {
       method: "POST",
       credentials: "include",
     }).catch(() => {});

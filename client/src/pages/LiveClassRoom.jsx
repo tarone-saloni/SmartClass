@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getSocket } from "../socket";
+import { apiFetch } from "../utils/api.js";
 
 const ICE_CONFIG = {
   iceServers: (
@@ -142,7 +143,7 @@ export default function LiveClassRoom() {
 
   // ─── data fetch ──────────────────────────────────────────────────────────────
   const loadClass = useCallback(async () => {
-    const res = await fetch(`/api/live-classes/${id}`);
+    const res = await apiFetch(`/api/live-classes/${id}`);
     const data = await res.json();
     if (!data.error) {
       setLiveClass(data);
@@ -151,14 +152,14 @@ export default function LiveClassRoom() {
   }, [id]);
 
   const loadComments = useCallback(async () => {
-    const data = await fetch(`/api/live-classes/${id}/comments`).then((r) =>
+    const data = await apiFetch(`/api/live-classes/${id}/comments`).then((r) =>
       r.json(),
     );
     if (Array.isArray(data)) setComments(data);
   }, [id]);
 
   const loadQuestions = useCallback(async () => {
-    const data = await fetch(`/api/live-classes/${id}/questions`).then((r) =>
+    const data = await apiFetch(`/api/live-classes/${id}/questions`).then((r) =>
       r.json(),
     );
     if (Array.isArray(data)) setQuestions(data);
@@ -335,7 +336,7 @@ export default function LiveClassRoom() {
       form.append("recording", blob, "recording.webm");
       form.append("teacherId", user.id);
       try {
-        const res = await fetch(`/api/live-classes/${id}/recording`, {
+        const res = await apiFetch(`/api/live-classes/${id}/recording`, {
           method: "POST",
           body: form,
         });
@@ -353,7 +354,7 @@ export default function LiveClassRoom() {
   // ─── teacher: end class ──────────────────────────────────────────────────
   const endClass = useCallback(async () => {
     socket.emit("end-class", { liveClassId: id });
-    await fetch(`/api/live-classes/${id}/status`, {
+    await apiFetch(`/api/live-classes/${id}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "ended", teacherId: user.id }),
@@ -427,7 +428,7 @@ export default function LiveClassRoom() {
     async (e) => {
       e.preventDefault();
       if (!commentText.trim()) return;
-      await fetch(`/api/live-classes/${id}/comments`, {
+      await apiFetch(`/api/live-classes/${id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -446,7 +447,7 @@ export default function LiveClassRoom() {
     async (e) => {
       e.preventDefault();
       if (!questionText.trim()) return;
-      await fetch(`/api/live-classes/${id}/questions`, {
+      await apiFetch(`/api/live-classes/${id}/questions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -461,7 +462,7 @@ export default function LiveClassRoom() {
 
   const markAnswered = useCallback(
     async (qId) => {
-      await fetch(`/api/live-classes/${id}/questions/${qId}/answer`, {
+      await apiFetch(`/api/live-classes/${id}/questions/${qId}/answer`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ teacherId: user.id }),
@@ -493,7 +494,7 @@ export default function LiveClassRoom() {
     loadQuestions();
 
     socket.emit("join-liveclass", id);
-    fetch(`/api/live-classes/${id}/join`, {
+    apiFetch(`/api/live-classes/${id}/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user.id }),

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/api.js";
 import { getSocket } from "../socket";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -213,7 +214,7 @@ function StudentDashboard() {
         enrolled_courses: enrolled.map((c) => c.title).join(", "),
       }));
       if (!plansLoaded) {
-        fetch(`/api/ai/students/${user.id}/study-plans`, {
+        apiFetch(`/api/ai/students/${user.id}/study-plans`, {
           credentials: "include",
         })
           .then((r) => r.json())
@@ -227,7 +228,7 @@ function StudentDashboard() {
       }
     }
     if (type === "performance" && !perfContext) {
-      fetch(`/api/ai/students/${user.id}/performance-context`, {
+      apiFetch(`/api/ai/students/${user.id}/performance-context`, {
         credentials: "include",
       })
         .then((r) => r.json())
@@ -243,7 +244,7 @@ function StudentDashboard() {
   };
 
   async function aiPost(path, body, method = "POST") {
-    const res = await fetch(`/api/ai${path}`, {
+    const res = await apiFetch(`/api/ai${path}`, {
       method,
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -301,7 +302,7 @@ function StudentDashboard() {
 
   const deletePlan = async (id) => {
     try {
-      const res = await fetch(`/api/ai/study-plans/${id}`, {
+      const res = await apiFetch(`/api/ai/study-plans/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -360,7 +361,7 @@ function StudentDashboard() {
     try {
       const results = await Promise.all(
         enrolledCourses.map((c) =>
-          fetch(`/api/courses/${c.id}/quizzes`, { credentials: "include" })
+          apiFetch(`/api/courses/${c.id}/quizzes`, { credentials: "include" })
             .then((r) => r.json())
             .then((qs) =>
               Array.isArray(qs)
@@ -384,7 +385,7 @@ function StudentDashboard() {
     setQuizResult(null);
     // check if already taken
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/quizzes/${quiz.id}/my-result?studentId=${user.id}`,
         { credentials: "include" },
       );
@@ -405,7 +406,7 @@ function StudentDashboard() {
         questionIndex: i,
         selectedOption: quizAnswers[i] ?? -1,
       }));
-      const res = await fetch(`/api/quizzes/${quizModal.id}/submit`, {
+      const res = await apiFetch(`/api/quizzes/${quizModal.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -427,7 +428,9 @@ function StudentDashboard() {
     try {
       const results = await Promise.all(
         enrolledCourses.map((c) =>
-          fetch(`/api/courses/${c.id}/assignments`, { credentials: "include" })
+          apiFetch(`/api/courses/${c.id}/assignments`, {
+            credentials: "include",
+          })
             .then((r) => r.json())
             .then((as) =>
               Array.isArray(as)
@@ -449,7 +452,7 @@ function StudentDashboard() {
     setMySubmission(null);
     setAiFeedback(null);
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/assignments/${assignment.id}/my-submission?studentId=${user.id}`,
         { credentials: "include" },
       );
@@ -467,7 +470,7 @@ function StudentDashboard() {
     if (!submitModal || !submitContent.trim()) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/assignments/${submitModal.id}/submit`, {
+      const res = await apiFetch(`/api/assignments/${submitModal.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -487,7 +490,7 @@ function StudentDashboard() {
     setAiFeedbackLoading(true);
     setAiFeedback(null);
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/ai/submissions/${mySubmission.id}/feedback`,
         {
           method: "POST",
@@ -542,7 +545,7 @@ function StudentDashboard() {
   const load = async () => {
     try {
       setLoading(true);
-      const dashResponse = await fetch(`/api/students/${user.id}/dashboard`);
+      const dashResponse = await apiFetch(`/api/students/${user.id}/dashboard`);
       const dashDataRes = await dashResponse.json();
       if (!dashDataRes.error) {
         setDashData(dashDataRes);
@@ -552,7 +555,7 @@ function StudentDashboard() {
         loadAssignments(enrolled);
       }
 
-      const coursesResponse = await fetch("/api/courses");
+      const coursesResponse = await apiFetch("/api/courses");
       const coursesData = await coursesResponse.json();
       if (Array.isArray(coursesData)) {
         setAllCourses(coursesData);
@@ -582,7 +585,7 @@ function StudentDashboard() {
   const enroll = async (courseId) => {
     setEnrollingId(courseId);
     try {
-      const response = await fetch("/api/enrollments", {
+      const response = await apiFetch("/api/enrollments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId: user.id, courseId }),
@@ -601,7 +604,7 @@ function StudentDashboard() {
     if (!confirmUnenroll) return;
     setUnenrollingId(confirmUnenroll.id);
     try {
-      const response = await fetch("/api/enrollments", {
+      const response = await apiFetch("/api/enrollments", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

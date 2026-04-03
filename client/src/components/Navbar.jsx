@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ThemeContext, themes as themeMap } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { getSocket } from "../socket";
+import { apiFetch } from "../utils/api.js";
 
 function timeAgo(date) {
   const s = Math.floor((Date.now() - new Date(date)) / 1000);
@@ -86,7 +87,7 @@ function Navbar({ showBack }) {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    fetch(`/api/notifications/${user.id}`)
+    apiFetch(`/api/notifications/${user.id}`)
       .then((r) => r.json())
       .then((d) => Array.isArray(d) && setNotifs(d));
 
@@ -159,7 +160,9 @@ function Navbar({ showBack }) {
   }, []);
 
   const markAll = async () => {
-    await fetch(`/api/notifications/read-all/${user.id}`, { method: "PATCH" });
+    await apiFetch(`/api/notifications/read-all/${user.id}`, {
+      method: "PATCH",
+    });
     setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 

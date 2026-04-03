@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/api.js";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import {
@@ -266,7 +267,9 @@ function TeacherDashboard() {
       }));
     }
     if (type === "outline") {
-      fetch(`/api/ai/teachers/${user.id}/outlines`, { credentials: "include" })
+      apiFetch(`/api/ai/teachers/${user.id}/outlines`, {
+        credentials: "include",
+      })
         .then((r) => r.json())
         .then((d) => Array.isArray(d) && setSavedOutlines(d))
         .catch(() => {});
@@ -286,7 +289,7 @@ function TeacherDashboard() {
   };
 
   async function aiPost(path, body, method = "POST") {
-    const res = await fetch(`/api/ai${path}`, {
+    const res = await apiFetch(`/api/ai${path}`, {
       method,
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -390,8 +393,10 @@ function TeacherDashboard() {
     setContentLoading(true);
     try {
       const [qRes, aRes] = await Promise.all([
-        fetch(`/api/courses/${courseId}/quizzes`, { credentials: "include" }),
-        fetch(`/api/courses/${courseId}/assignments`, {
+        apiFetch(`/api/courses/${courseId}/quizzes`, {
+          credentials: "include",
+        }),
+        apiFetch(`/api/courses/${courseId}/assignments`, {
           credentials: "include",
         }),
       ]);
@@ -407,7 +412,7 @@ function TeacherDashboard() {
 
   const toggleQuizActive = async (quiz) => {
     try {
-      const res = await fetch(`/api/quizzes/${quiz.id}`, {
+      const res = await apiFetch(`/api/quizzes/${quiz.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -428,7 +433,7 @@ function TeacherDashboard() {
   const deleteQuizFromCourse = async (id) => {
     if (!window.confirm("Delete this quiz and all student results?")) return;
     try {
-      await fetch(`/api/quizzes/${id}`, {
+      await apiFetch(`/api/quizzes/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -453,7 +458,7 @@ function TeacherDashboard() {
     }
     setQuizBuilding(true);
     try {
-      const res = await fetch(`/api/courses/${contentCourse}/quizzes`, {
+      const res = await apiFetch(`/api/courses/${contentCourse}/quizzes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -488,7 +493,7 @@ function TeacherDashboard() {
   const deleteAssignmentFromCourse = async (id) => {
     if (!window.confirm("Delete this assignment and all submissions?")) return;
     try {
-      await fetch(`/api/assignments/${id}`, {
+      await apiFetch(`/api/assignments/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -505,7 +510,7 @@ function TeacherDashboard() {
     if (!assignForm.title.trim() || !contentCourse) return;
     setAssignBuilding(true);
     try {
-      const res = await fetch(`/api/courses/${contentCourse}/assignments`, {
+      const res = await apiFetch(`/api/courses/${contentCourse}/assignments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -542,7 +547,7 @@ function TeacherDashboard() {
     }
     setAssignAiLoading(true);
     try {
-      const res = await fetch("/api/ai/generate-assignment", {
+      const res = await apiFetch("/api/ai/generate-assignment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -593,7 +598,7 @@ function TeacherDashboard() {
   };
 
   const load = () =>
-    fetch(`/api/teachers/${user.id}/dashboard`)
+    apiFetch(`/api/teachers/${user.id}/dashboard`)
       .then((r) => r.json())
       .then((d) => !d.error && setData(d));
 
@@ -626,7 +631,7 @@ function TeacherDashboard() {
     setError("");
     try {
       const isEdit = !!editCourse;
-      const res = await fetch(
+      const res = await apiFetch(
         isEdit ? `/api/courses/${editCourse.id}` : "/api/courses",
         {
           method: isEdit ? "PATCH" : "POST",
@@ -653,7 +658,7 @@ function TeacherDashboard() {
   const handleDelete = async () => {
     if (!confirmDelete) return;
     try {
-      await fetch(`/api/courses/${confirmDelete.id}`, {
+      await apiFetch(`/api/courses/${confirmDelete.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

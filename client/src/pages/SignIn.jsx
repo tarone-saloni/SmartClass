@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/api.js";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import GlobalStyles from "../components/SignIn/GlobalStyles";
@@ -20,7 +21,7 @@ function SignIn() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await apiFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
