@@ -8,8 +8,8 @@ function BackgroundBlur() {
   const gradientClass = isDark
     ? "from-emerald-950/20 via-transparent to-slate-900/20"
     : isCosmic
-    ? "from-violet-950/30 via-transparent to-purple-950/20"
-    : "from-emerald-50/50 via-transparent to-emerald-100/30";
+      ? "from-violet-950/30 via-transparent to-purple-950/20"
+      : "from-emerald-50/50 via-transparent to-emerald-100/30";
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">

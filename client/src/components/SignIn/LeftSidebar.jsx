@@ -20,7 +20,9 @@ function LeftSidebar() {
         <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/20 backdrop-blur-sm ring-1 ring-white/30">
           <span className="text-base leading-none">🎓</span>
         </div>
-        <span className="text-base font-extrabold tracking-tight">SmartClass</span>
+        <span className="text-base font-extrabold tracking-tight">
+          SmartClass
+        </span>
       </div>
 
       {/* Main greeting */}
@@ -35,9 +37,7 @@ function LeftSidebar() {
 
       {/* Sign Up CTA */}
       <div className="flex flex-col items-center gap-3 relative z-10">
-        <p className="text-white/55 text-sm font-medium">
-          New to SmartClass?
-        </p>
+        <p className="text-white/55 text-sm font-medium">New to SmartClass?</p>
         <button
           onClick={() => navigate("/signup")}
           className="px-9 py-2.5 rounded-full border-2 border-white/50 text-white text-sm font-bold
