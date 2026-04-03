@@ -24,7 +24,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export function buildApp() {
   const app = express();
   const httpServer = createServer(app);
-  const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+  const CORS_ORIGIN = process.env.CORS_ORIGIN || "https://smart-class-ivory.vercel.app";
 
   // ─── Socket.IO ─────────────────────────────────────────────────────────────
   const io = new Server(httpServer, {
