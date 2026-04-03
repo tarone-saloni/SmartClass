@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { getSocket } from "../socket";
 import { apiFetch } from "../utils/api.js";
 
+
 const ICE_CONFIG = {
   iceServers: (
     import.meta.env.VITE_STUN_SERVERS ||
@@ -25,12 +26,12 @@ function timeAgo(date) {
 
 function Avatar({ name = "?" }) {
   const cols = [
-    "bg-violet-500",
-    "bg-blue-500",
     "bg-emerald-500",
+    "bg-teal-500",
+    "bg-lime-500",
     "bg-amber-500",
-    "bg-pink-500",
-    "bg-indigo-500",
+    "bg-emerald-400",
+    "bg-fuchsia-500",
   ];
   return (
     <div
@@ -81,6 +82,7 @@ export default function LiveClassRoom() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  
   const isTeacher = user.role === "teacher";
   const socket = getSocket(user.id);
 
@@ -1356,7 +1358,7 @@ export default function LiveClassRoom() {
                         </span>
                       )}
                       {isTeacher && screenSharing && (
-                        <span className="text-[10px] text-blue-400 font-bold">
+                        <span className="text-[10px] text-emerald-300 font-bold">
                           🖥️ sharing
                         </span>
                       )}

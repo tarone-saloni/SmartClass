@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import AiPlaygroundNav from "../components/AiPlaygroundNav";
 
 import { apiFetch } from "../utils/api.js";
 
@@ -1097,7 +1098,6 @@ const TABS = [
 
 export default function AIPlayground() {
   const { tab } = useParams();
-  const navigate = useNavigate();
   const activePage = TABS.find((t) => t.id === tab) ?? TABS[0];
   const ActiveComponent = activePage.component;
 
@@ -1122,26 +1122,7 @@ export default function AIPlayground() {
             </p>
           </div>
 
-          {/* Quick-jump pill nav */}
-          <div className="flex-shrink-0 hidden md:flex flex-wrap gap-1 justify-end max-w-xs">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => navigate(`/ai-playground/${t.id}`)}
-                title={t.label}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border-none cursor-pointer whitespace-nowrap
-                  ${
-                    activePage.id === t.id
-                      ? "bg-[var(--accent)] text-white"
-                      : "glass border border-[var(--border)]/40 text-[var(--muted)] hover:text-[var(--text)]"
-                  }`}
-              >
-                <span>{t.icon}</span>
-                <span className="hidden lg:inline">{t.label}</span>
-              </button>
-            ))}
-          </div>
+          <AiPlaygroundNav />
         </div>
 
         {/* Page content */}

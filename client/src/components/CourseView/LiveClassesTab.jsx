@@ -29,7 +29,7 @@ function LiveClassesTab({
       {/* Section header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-500/15 flex items-center justify-center text-lg">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/15 flex items-center justify-center text-lg">
             📹
           </div>
           <div>
@@ -40,7 +40,7 @@ function LiveClassesTab({
               {liveClasses.length}{" "}
               {liveClasses.length === 1 ? "session" : "sessions"} total
               {liveNow.length > 0 && (
-                <span className="text-red-400 font-bold ml-1">
+                <span className="text-emerald-300 font-bold ml-1">
                   · {liveNow.length} live now
                 </span>
               )}
@@ -67,8 +67,8 @@ function LiveClassesTab({
                         shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]"
         >
           <div
-            className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/15 flex items-center justify-center text-3xl mx-auto mb-5
-                          shadow-[0_8px_24px_-8px_rgba(239,68,68,0.15)]"
+            className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-3xl mx-auto mb-5
+                          shadow-[0_8px_24px_-8px_rgba(16,185,129,0.15)]"
           >
             📹
           </div>
@@ -94,7 +94,7 @@ function LiveClassesTab({
           {liveNow.length > 0 && (
             <section>
               <SectionLabel
-                dot="bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+                dot="bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"
                 label="Live Now"
                 count={liveNow.length}
               />
@@ -121,7 +121,7 @@ function LiveClassesTab({
           {upcoming.length > 0 && (
             <section>
               <SectionLabel
-                dot="bg-blue-400"
+                dot="bg-emerald-400"
                 label="Upcoming"
                 count={upcoming.length}
               />
