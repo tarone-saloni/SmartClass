@@ -595,6 +595,18 @@ function Navbar({ showBack }) {
             </button>
 
             <button
+              onClick={() => navigate("/signin")}
+              className="hidden sm:flex px-4 py-2 rounded-xl text-sm font-semibold 
+                         border border-[var(--accent)]/50 text-[var(--accent)] glass
+                         hover:border-[var(--accent)] hover:bg-[var(--accent)]/15
+                         hover:shadow-[0_4px_16px_-4px_var(--accent)]
+                         transition-all duration-300 cursor-pointer active:scale-95
+                         items-center gap-2"
+            >
+              Sign In
+            </button>
+
+            <button
               onClick={() => navigate("/signup")}
               className="px-4 py-2 rounded-xl text-sm font-bold border-none
                          text-[var(--accent-contrast)] sc-btn-glow
