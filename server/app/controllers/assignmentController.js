@@ -1,6 +1,7 @@
 import Assignment from "../models/Assignment.js";
 import Submission from "../models/Submission.js";
 import Course from "../models/Course.js";
+import { emitToCourse, emitToUser } from "../services/socketService.js";
 
 // ─── POST /api/courses/:courseId/assignments ──────────────────────────────────
 export async function createAssignment(req, res) {
@@ -26,7 +27,9 @@ export async function createAssignment(req, res) {
       createdBy: teacherId,
     });
 
-    res.status(201).json(formatAssignment(assignment));
+    const formatted = formatAssignment(assignment);
+    emitToCourse(courseId, "assignment:new", formatted);
+    res.status(201).json(formatted);
   } catch (err) {
     console.error("createAssignment error:", err);
     res.status(500).json({ error: "Failed to create assignment." });
@@ -78,7 +81,9 @@ export async function updateAssignment(req, res) {
     if (maxScore !== undefined) assignment.maxScore = maxScore;
     await assignment.save();
 
-    res.json(formatAssignment(assignment));
+    const formatted = formatAssignment(assignment);
+    emitToCourse(assignment.course.toString(), "assignment:updated", formatted);
+    res.json(formatted);
   } catch (err) {
     console.error("updateAssignment error:", err);
     res.status(500).json({ error: "Failed to update assignment." });
@@ -96,10 +101,11 @@ export async function deleteAssignment(req, res) {
     if (assignment.createdBy.toString() !== teacherId)
       return res.status(403).json({ error: "Only the assignment creator can delete it." });
 
+    const courseId = assignment.course.toString();
     await Assignment.findByIdAndDelete(req.params.id);
-    // Remove all submissions for this assignment
     await Submission.deleteMany({ assignment: req.params.id });
 
+    emitToCourse(courseId, "assignment:deleted", { id: req.params.id, courseId });
     res.json({ message: "Assignment deleted." });
   } catch (err) {
     console.error("deleteAssignment error:", err);
@@ -115,10 +121,9 @@ export async function submitAssignment(req, res) {
 
     if (!studentId) return res.status(400).json({ error: "studentId is required." });
 
-    const assignment = await Assignment.findById(id);
+    const assignment = await Assignment.findById(id).populate("createdBy", "name");
     if (!assignment) return res.status(404).json({ error: "Assignment not found." });
 
-    // Check if student is enrolled in the course
     const course = await Course.findById(assignment.course);
     const isEnrolled = course.enrolledStudents.some((s) => s.toString() === studentId);
     if (!isEnrolled) return res.status(403).json({ error: "You are not enrolled in this course." });
@@ -126,7 +131,6 @@ export async function submitAssignment(req, res) {
     const now = new Date();
     const isLate = assignment.dueDate && now > assignment.dueDate;
 
-    // Upsert: update if already submitted, else create
     const submission = await Submission.findOneAndUpdate(
       { assignment: id, student: studentId },
       {
@@ -140,6 +144,15 @@ export async function submitAssignment(req, res) {
       { upsert: true, new: true }
     );
 
+    // Notify teacher in real-time
+    emitToUser(course.teacher.toString(), "assignment:submitted", {
+      assignmentId: id,
+      assignmentTitle: assignment.title,
+      studentId,
+      courseId: assignment.course.toString(),
+      submittedAt: now,
+    });
+
     res.status(201).json(formatSubmission(submission));
   } catch (err) {
     console.error("submitAssignment error:", err);
@@ -148,7 +161,6 @@ export async function submitAssignment(req, res) {
 }
 
 // ─── GET /api/assignments/:id/submissions ─────────────────────────────────────
-// Teacher views all submissions for an assignment
 export async function getSubmissions(req, res) {
   try {
     const { id } = req.params;
@@ -172,7 +184,6 @@ export async function getSubmissions(req, res) {
 }
 
 // ─── GET /api/assignments/:id/my-submission ───────────────────────────────────
-// Student views their own submission
 export async function getMySubmission(req, res) {
   try {
     const { id } = req.params;
@@ -206,6 +217,16 @@ export async function gradeSubmission(req, res) {
     if (feedback !== undefined) submission.feedback = feedback;
     submission.status = "graded";
     await submission.save();
+
+    // Notify the student of their grade
+    emitToUser(submission.student.toString(), "assignment:graded", {
+      assignmentId: submission.assignment._id.toString(),
+      assignmentTitle: submission.assignment.title,
+      submissionId,
+      score: submission.score,
+      feedback: submission.feedback,
+      maxScore: submission.assignment.maxScore,
+    });
 
     res.json(formatSubmission(submission));
   } catch (err) {

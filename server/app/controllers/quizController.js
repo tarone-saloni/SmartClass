@@ -1,6 +1,7 @@
 import Quiz from "../models/Quiz.js";
 import QuizResult from "../models/QuizResult.js";
 import Course from "../models/Course.js";
+import { emitToCourse, emitToUser } from "../services/socketService.js";
 
 // ─── POST /api/courses/:courseId/quizzes ──────────────────────────────────────
 export async function createQuiz(req, res) {
@@ -27,7 +28,9 @@ export async function createQuiz(req, res) {
       dueDate: dueDate || null,
     });
 
-    res.status(201).json(formatQuiz(quiz));
+    const formatted = formatQuiz(quiz);
+    emitToCourse(courseId, "quiz:new", formatted);
+    res.status(201).json(formatted);
   } catch (err) {
     console.error("createQuiz error:", err);
     res.status(500).json({ error: "Failed to create quiz." });
@@ -81,7 +84,9 @@ export async function updateQuiz(req, res) {
     if (isActive !== undefined) quiz.isActive = isActive;
     await quiz.save();
 
-    res.json(formatQuiz(quiz));
+    const formatted = formatQuiz(quiz);
+    emitToCourse(quiz.course.toString(), "quiz:updated", formatted);
+    res.json(formatted);
   } catch (err) {
     console.error("updateQuiz error:", err);
     res.status(500).json({ error: "Failed to update quiz." });
@@ -99,9 +104,11 @@ export async function deleteQuiz(req, res) {
     if (quiz.createdBy.toString() !== teacherId)
       return res.status(403).json({ error: "Only the quiz creator can delete it." });
 
+    const courseId = quiz.course.toString();
     await Quiz.findByIdAndDelete(req.params.id);
     await QuizResult.deleteMany({ quiz: req.params.id });
 
+    emitToCourse(courseId, "quiz:deleted", { id: req.params.id, courseId });
     res.json({ message: "Quiz deleted." });
   } catch (err) {
     console.error("deleteQuiz error:", err);
@@ -122,7 +129,6 @@ export async function submitQuiz(req, res) {
     if (!quiz) return res.status(404).json({ error: "Quiz not found." });
     if (!quiz.isActive) return res.status(400).json({ error: "This quiz is no longer active." });
 
-    // Check enrollment
     const course = await Course.findById(quiz.course);
     const isEnrolled = course.enrolledStudents.some((s) => s.toString() === studentId);
     if (!isEnrolled) return res.status(403).json({ error: "You are not enrolled in this course." });
@@ -137,14 +143,25 @@ export async function submitQuiz(req, res) {
       return { questionIndex: a.questionIndex, selectedOption: a.selectedOption };
     });
 
-    // Upsert: retake overwrites previous result
     const result = await QuizResult.findOneAndUpdate(
       { quiz: id, student: studentId },
       { answers: gradedAnswers, score, totalPoints, submittedAt: new Date() },
       { upsert: true, new: true }
     );
 
-    res.status(201).json(formatResult(result));
+    const formatted = formatResult(result);
+
+    // Notify teacher of new submission
+    emitToUser(course.teacher.toString(), "quiz:submitted", {
+      quizId: id,
+      quizTitle: quiz.title,
+      studentId,
+      courseId: quiz.course.toString(),
+      score,
+      totalPoints,
+    });
+
+    res.status(201).json(formatted);
   } catch (err) {
     console.error("submitQuiz error:", err);
     res.status(500).json({ error: "Failed to submit quiz." });
@@ -152,7 +169,6 @@ export async function submitQuiz(req, res) {
 }
 
 // ─── GET /api/quizzes/:id/results ─────────────────────────────────────────────
-// Teacher views all results for a quiz
 export async function getQuizResults(req, res) {
   try {
     const { id } = req.params;
@@ -176,7 +192,6 @@ export async function getQuizResults(req, res) {
 }
 
 // ─── GET /api/quizzes/:id/my-result ──────────────────────────────────────────
-// Student views their own result
 export async function getMyResult(req, res) {
   try {
     const { id } = req.params;

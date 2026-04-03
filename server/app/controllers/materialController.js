@@ -3,6 +3,7 @@ import Course from "../models/Course.js";
 import CompletedMaterial from "../models/CompletedMaterial.js";
 import Enrollment from "../models/Enrollment.js";
 import { uploadToCloudinary, getResourceType } from "../utils/cloudinary.js";
+import { emitToCourse, emitToUser } from "../services/socketService.js";
 
 // ─── POST /api/courses/:courseId/materials/upload ────────────────────────────
 export async function uploadMaterialFile(req, res) {
@@ -39,7 +40,9 @@ export async function uploadMaterialFile(req, res) {
       uploadedBy: teacherId,
     });
 
-    res.status(201).json(formatMaterial(material));
+    const formatted = formatMaterial(material);
+    emitToCourse(courseId, "material:new", formatted);
+    res.status(201).json(formatted);
   } catch (err) {
     console.error("uploadMaterialFile error:", err);
     res.status(500).json({ error: "Failed to upload material." });
@@ -70,7 +73,9 @@ export async function addMaterial(req, res) {
       uploadedBy: teacherId,
     });
 
-    res.status(201).json(formatMaterial(material));
+    const formatted = formatMaterial(material);
+    emitToCourse(courseId, "material:new", formatted);
+    res.status(201).json(formatted);
   } catch (err) {
     console.error("addMaterial error:", err);
     res.status(500).json({ error: "Failed to add material." });
@@ -117,7 +122,9 @@ export async function updateMaterial(req, res) {
     if (fileUrl !== undefined) material.fileUrl = fileUrl;
     await material.save();
 
-    res.json(formatMaterial(material));
+    const formatted = formatMaterial(material);
+    emitToCourse(courseId, "material:updated", formatted);
+    res.json(formatted);
   } catch (err) {
     console.error("updateMaterial error:", err);
     res.status(500).json({ error: "Failed to update material." });
@@ -147,6 +154,7 @@ export async function deleteMaterial(req, res) {
         .catch((err) => console.warn("Could not delete Cloudinary file:", err.message));
     }
 
+    emitToCourse(courseId, "material:deleted", { id: materialId, courseId });
     res.json({ message: "Material deleted." });
   } catch (err) {
     console.error("deleteMaterial error:", err);
@@ -246,6 +254,14 @@ async function syncProgress(studentId, courseId) {
       update.completedAt = null;
     }
     await Enrollment.findOneAndUpdate({ student: studentId, course: courseId }, update);
+
+    // Push live progress update to the student
+    emitToUser(studentId, "material:progress", {
+      courseId: courseId.toString(),
+      progress,
+      completedCount: completed,
+      total,
+    });
   } catch {
     // non-critical — don't fail the request
   }

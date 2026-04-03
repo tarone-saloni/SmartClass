@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api.js";
+import { getSocket } from "../socket.js";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import CourseHeader from "../components/CourseView/CourseHeader";
@@ -63,6 +64,7 @@ function CourseView() {
 
   const [mySubmissions, setMySubmissions] = useState({});
   const [expandedSubs, setExpandedSubs] = useState({});
+  const expandedSubsRef = useRef({});
   const [submissionText, setSubmissionText] = useState({});
   const [gradeForm, setGradeForm] = useState({ score: "", feedback: "" });
   const [gradingSubId, setGradingSubId] = useState(null);
@@ -167,6 +169,105 @@ function CourseView() {
     loadProgress();
   }, [id]);
 
+  // Keep ref in sync so async socket handlers can read latest expanded state
+  useEffect(() => {
+    expandedSubsRef.current = expandedSubs;
+  }, [expandedSubs]);
+
+  // ── Real-time socket listeners ────────────────────────────────────────────
+  useEffect(() => {
+    const socket = getSocket(user.id);
+    socket.emit("join-course", id);
+
+    const sid = (v) => String(v);
+
+    // Materials
+    const onMatNew = (mat) =>
+      setMaterials((p) =>
+        p.some((m) => sid(m.id) === sid(mat.id)) ? p : [mat, ...p],
+      );
+    const onMatUpdated = (mat) =>
+      setMaterials((p) => p.map((m) => (sid(m.id) === sid(mat.id) ? mat : m)));
+    const onMatDeleted = ({ id: mid }) =>
+      setMaterials((p) => p.filter((m) => sid(m.id) !== sid(mid)));
+    const onMatProgress = ({ courseId: cid, progress }) => {
+      if (cid === id) setMatProgress(progress);
+    };
+
+    // Assignments
+    const onAssNew = (ass) =>
+      setAssignments((p) =>
+        p.some((a) => sid(a.id) === sid(ass.id)) ? p : [ass, ...p],
+      );
+    const onAssUpdated = (ass) =>
+      setAssignments((p) =>
+        p.map((a) => (sid(a.id) === sid(ass.id) ? ass : a)),
+      );
+    const onAssDeleted = ({ id: aid }) =>
+      setAssignments((p) => p.filter((a) => sid(a.id) !== sid(aid)));
+    const onAssSubmitted = async ({ assignmentId }) => {
+      if (!isTeacher) return;
+      if (expandedSubsRef.current[assignmentId] !== undefined) {
+        const data = await apiFetch(
+          `/api/assignments/${assignmentId}/submissions?teacherId=${user.id}`,
+        ).then((r) => r.json());
+        setExpandedSubs((p) => ({
+          ...p,
+          [assignmentId]: Array.isArray(data) ? data : [],
+        }));
+      }
+    };
+    const onAssGraded = ({ assignmentId, score, feedback }) => {
+      setMySubmissions((p) => {
+        const sub = p[assignmentId];
+        if (!sub) return p;
+        return {
+          ...p,
+          [assignmentId]: { ...sub, score, feedback, status: "graded" },
+        };
+      });
+    };
+
+    // Quizzes
+    const onQuizNew = (quiz) =>
+      setQuizzes((p) =>
+        p.some((q) => sid(q.id) === sid(quiz.id)) ? p : [quiz, ...p],
+      );
+    const onQuizUpdated = (quiz) =>
+      setQuizzes((p) => p.map((q) => (sid(q.id) === sid(quiz.id) ? quiz : q)));
+    const onQuizDeleted = ({ id: qid }) =>
+      setQuizzes((p) => p.filter((q) => sid(q.id) !== sid(qid)));
+
+    socket.on("material:new", onMatNew);
+    socket.on("material:updated", onMatUpdated);
+    socket.on("material:deleted", onMatDeleted);
+    socket.on("material:progress", onMatProgress);
+    socket.on("assignment:new", onAssNew);
+    socket.on("assignment:updated", onAssUpdated);
+    socket.on("assignment:deleted", onAssDeleted);
+    socket.on("assignment:submitted", onAssSubmitted);
+    socket.on("assignment:graded", onAssGraded);
+    socket.on("quiz:new", onQuizNew);
+    socket.on("quiz:updated", onQuizUpdated);
+    socket.on("quiz:deleted", onQuizDeleted);
+
+    return () => {
+      socket.emit("leave-course", id);
+      socket.off("material:new", onMatNew);
+      socket.off("material:updated", onMatUpdated);
+      socket.off("material:deleted", onMatDeleted);
+      socket.off("material:progress", onMatProgress);
+      socket.off("assignment:new", onAssNew);
+      socket.off("assignment:updated", onAssUpdated);
+      socket.off("assignment:deleted", onAssDeleted);
+      socket.off("assignment:submitted", onAssSubmitted);
+      socket.off("assignment:graded", onAssGraded);
+      socket.off("quiz:new", onQuizNew);
+      socket.off("quiz:updated", onQuizUpdated);
+      socket.off("quiz:deleted", onQuizDeleted);
+    };
+  }, [id, user.id]);
+
   useEffect(() => {
     if (isTeacher || assignments.length === 0) return;
     assignments.forEach((a) => {
@@ -202,6 +303,10 @@ function CourseView() {
       });
     }
     if (res.ok) {
+      const data = await res.json();
+      setMaterials((p) =>
+        p.some((m) => String(m.id) === String(data.id)) ? p : [data, ...p],
+      );
       setModal(null);
       setMatForm({
         title: "",
@@ -211,7 +316,6 @@ function CourseView() {
         uploadFile: null,
         uploadMode: "url",
       });
-      loadMaterials();
     }
     setSaving(false);
   };
@@ -252,9 +356,12 @@ function CourseView() {
       body: JSON.stringify({ ...assForm, teacherId: user.id }),
     });
     if (res.ok) {
+      const data = await res.json();
+      setAssignments((p) =>
+        p.some((a) => String(a.id) === String(data.id)) ? p : [data, ...p],
+      );
       setModal(null);
       setAssForm({ title: "", description: "", dueDate: "", maxScore: 100 });
-      loadAssignments();
     }
     setSaving(false);
   };
@@ -359,6 +466,10 @@ function CourseView() {
       }),
     });
     if (res.ok) {
+      const data = await res.json();
+      setQuizzes((p) =>
+        p.some((q) => String(q.id) === String(data.id)) ? p : [data, ...p],
+      );
       setModal(null);
       setQuizForm({
         title: "",
@@ -366,7 +477,6 @@ function CourseView() {
         timeLimit: 0,
         questions: [{ question: "", options: ["", "", "", ""], answer: 0 }],
       });
-      loadQuizzes();
     }
     setSaving(false);
   };

@@ -43,6 +43,14 @@ export function buildApp() {
     const userId = socket.handshake.query.userId;
     if (userId) socket.join(`user:${userId}`);
 
+    // ── Course room management ──────────────────────────────────────────────
+    socket.on("join-course", (courseId) => {
+      if (courseId) socket.join(`course:${courseId}`);
+    });
+    socket.on("leave-course", (courseId) => {
+      if (courseId) socket.leave(`course:${courseId}`);
+    });
+
     // ── Live class room management ──────────────────────────────────────────
     socket.on("join-liveclass", (liveClassId) => {
       if (liveClassId) socket.join(`liveclass:${liveClassId}`);
