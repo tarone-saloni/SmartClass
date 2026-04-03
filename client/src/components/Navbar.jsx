@@ -56,11 +56,7 @@ const NAV_LINKS = [
       path: `/ai-playground/${t.id}`,
     })),
   },
-  {
-    label: "Live Classes",
-    icon: "📹",
-    isLiveClass: true, // ✅ IMPORTANT FLAG
-  },
+  { label: "Live Classes", icon: "📹", path: "/live-classes" },
 ];
 
 function Navbar({ showBack }) {
@@ -176,22 +172,6 @@ function Navbar({ showBack }) {
     setThemeName(next);
   };
 
-  const goToLiveClass = async () => {
-    try {
-      const res = await fetch("/api/live-classes/active");
-      const data = await res.json();
-
-      if (data?.id) {
-        navigate(`/live-class/${data.id}`);
-      } else {
-        alert("No live class available");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error fetching live class");
-    }
-  };
-
   const handleLogout = () => {
     logout();
     navigate("/signin");
@@ -202,15 +182,11 @@ function Navbar({ showBack }) {
       data-theme={themeName}
       className={`sticky top-0 z-50 h-auto sm:h-16 px-4 sm:px-6 py-3 sm:py-0 flex items-center justify-between
                  text-[var(--text)] transition-all duration-500 ease-out
-${
-  themeName === themeMap.dark
-    ? scrolled
-      ? "bg-[#0b0f1a]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]"
-      : "bg-transparent"
-    : scrolled
-      ? "glass-heavy border-b border-[var(--border)]/60 shadow-[0_4px_30px_-8px_rgba(0,0,0,0.25)]"
-      : "bg-transparent border-b border-transparent"
-}`}
+                 ${
+                   scrolled
+                     ? "glass-heavy border-b border-[var(--border)]/60 shadow-[0_4px_30px_-8px_rgba(0,0,0,0.25)]"
+                     : "bg-transparent border-b border-transparent"
+                 }`}
     >
       {/* Left Section - Logo & Brand */}
       <div className="flex items-center gap-2 sm:gap-5 min-w-0 flex-1">
@@ -284,10 +260,7 @@ ${
                   <button
                     type="button"
                     onClick={() => {
-                      if (link.isLiveClass) {
-                        goToLiveClass();
-                        setNavDropdown(null);
-                      } else if (link.dropdown) {
+                      if (link.dropdown) {
                         setNavDropdown(isOpen ? null : link.label);
                       } else {
                         navigate(link.path);
@@ -442,13 +415,10 @@ ${
               {/* Notifications Dropdown */}
               {open && (
                 <div
-                  className={`absolute right-0 top-12 w-[360px] sm:w-96 rounded-2xl border overflow-hidden z-[200]
-animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both] origin-top-right
-${
-  themeName === themeMap.dark
-    ? "bg-[#0f172a]/90 backdrop-blur-xl border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
-    : "border-[var(--border)]/60 glass-heavy shadow-[0_20px_60px_-12px_rgba(0,0,0,0.3)]"
-}`}
+                  className="absolute right-0 top-12 w-[360px] sm:w-96 rounded-2xl border border-[var(--border)]/60
+                             glass-heavy shadow-[0_20px_60px_-12px_rgba(0,0,0,0.3)] overflow-hidden z-[200] 
+                             animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)_both]
+                             origin-top-right"
                 >
                   <div
                     className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]/40
@@ -579,11 +549,7 @@ ${
                         key={link.path}
                         type="button"
                         onClick={() => {
-                          if (link.isLiveClass) {
-                            goToLiveClass();
-                          } else {
-                            navigate(link.path);
-                          }
+                          navigate(link.path);
                           setMobileMenuOpen(false);
                         }}
                         className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5

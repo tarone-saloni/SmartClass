@@ -1,10 +1,10 @@
 const AVATAR_COLORS = [
-  "from-emerald-500/35 to-teal-500/15 text-emerald-300 border-emerald-500/18",
   "from-violet-500/35 to-purple-500/15 text-violet-300 border-violet-500/18",
-  "from-teal-500/35 to-cyan-500/15 text-teal-300 border-teal-500/18",
+  "from-blue-500/35 to-indigo-500/15 text-blue-300 border-blue-500/18",
+  "from-emerald-500/35 to-teal-500/15 text-emerald-300 border-emerald-500/18",
   "from-pink-500/35 to-rose-500/15 text-pink-300 border-pink-500/18",
   "from-amber-500/35 to-orange-500/15 text-amber-300 border-amber-500/18",
-  "from-emerald-500/35 to-lime-500/15 text-emerald-300 border-emerald-500/18",
+  "from-cyan-500/35 to-sky-500/15 text-cyan-300 border-cyan-500/18",
 ];
 
 function StudentsTab({ students }) {

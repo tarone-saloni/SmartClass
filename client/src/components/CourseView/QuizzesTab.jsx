@@ -113,7 +113,7 @@ function QuizzesTab({ quizzes, isTeacher, onDelete, onAddClick }) {
                       ⭐ {q.totalPoints} pts
                     </span>
                     {q.timeLimit > 0 && (
-                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-emerald-500/8 text-emerald-300 border border-emerald-500/12">
+                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-blue-500/8 text-blue-400 border border-blue-500/12">
                         ⏱ {q.timeLimit} min
                       </span>
                     )}

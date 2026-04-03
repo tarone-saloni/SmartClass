@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import AiPlaygroundNav from "../../components/AiPlaygroundNav";
 import { post, inp, lbl } from "../../utils/aiUtils";
 import { SendBtn, MarkdownText } from "../../utils/aiShared";
 
@@ -58,8 +57,6 @@ export default function AiChat() {
             AI Playground · Multi-turn conversation assistant
           </p>
         </div>
-
-        <AiPlaygroundNav />
 
         <div className="glass-heavy rounded-2xl border border-[var(--border)]/40 p-6 shadow-xl flex flex-col gap-4 flex-1">
           {/* Controls */}

@@ -20,14 +20,6 @@ import {
   Area,
 } from "recharts";
 
-// Shared dashboard card style
-const dashCard =
-  "border-2 border-emerald-200 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105";
-const dashCardSoft = "bg-white/95 border-emerald-200";
-const dashCardGradientCool =
-  "bg-gradient-to-br from-blue-50 via-sky-50 to-emerald-50";
-const dashCardText = "text-black";
-
 const inputCls =
   "w-full px-4 py-3 border border-[var(--border)]/50 rounded-xl text-sm outline-none focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 focus:shadow-[0_4px_16px_-4px_var(--accent)] transition-all duration-300 glass text-[var(--text)] placeholder:text-[var(--muted)]/50 hover:border-[var(--accent)]/30";
 
@@ -790,19 +782,26 @@ function TeacherDashboard() {
           {stats.map((s, i) => (
             <div
               key={s.label}
-              className="bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 border-2 border-emerald-200 rounded-2xl p-5 shadow-md hover:shadow-2xl hover:scale-105 transition-all duration-300"
+              className={`group sc-card-premium glass rounded-2xl p-5 bg-gradient-to-br ${s.bg}
+                         animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]`}
               style={{ animationDelay: `${i * 60}ms` }}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3 bg-gradient-to-br from-emerald-200 to-emerald-300 text-black shadow-lg transition-all duration-500">
-                <span className="text-sm">{s.icon}</span>
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3
+                              bg-gradient-to-br ${s.color} shadow-lg
+                              group-hover:scale-110 group-hover:rotate-[-5deg] transition-all duration-500`}
+                style={{ boxShadow: `0 4px 14px ${s.shadow}` }}
+              >
+                <span className="brightness-0 invert text-sm">{s.icon}</span>
               </div>
               <div
-                className="text-3xl font-extrabold text-black mb-1 tracking-tighter"
+                className="text-3xl font-extrabold text-[var(--text)] mb-1 tracking-tighter
+                              animate-[count-up_0.8s_cubic-bezier(0.16,1,0.3,1)_both]"
                 style={{ animationDelay: `${200 + i * 80}ms` }}
               >
                 {s.val}
               </div>
-              <p className="text-[9px] font-bold text-black/70 uppercase tracking-wider">
+              <p className="text-[9px] font-bold text-[var(--muted)] uppercase tracking-wider">
                 {s.label}
               </p>
             </div>
@@ -1168,25 +1167,33 @@ function TeacherDashboard() {
             {data.courses.map((c, i) => (
               <div
                 key={c.id}
-                className={`${dashCard} ${dashCardGradientCool} relative overflow-hidden flex flex-col cursor-pointer`}
+                className="group sc-card-premium glass rounded-2xl p-6 flex flex-col overflow-hidden cursor-pointer
+                           animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both] hover-lift"
                 style={{ animationDelay: `${i * 80}ms` }}
                 onClick={() => navigate(`/course/${c.id}`)}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/0 to-emerald-200/20 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none rounded-2xl" />
+                {/* Accent hover overlay */}
+                <div
+                  className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/0 to-transparent
+                               opacity-0 group-hover:opacity-100 group-hover:from-[var(--accent)]/5 transition-all duration-500 pointer-events-none rounded-2xl"
+                />
 
                 <div className="relative z-10 flex flex-col h-full">
                   {/* Top ribbon */}
                   <div className="flex items-start justify-between mb-4 gap-3">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-300 to-emerald-200 border border-emerald-400/40 flex items-center justify-center text-lg text-black font-bold shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 border border-[var(--accent)]/15 flex items-center justify-center text-lg shrink-0">
                         📚
                       </div>
-                      <h3 className="text-base font-extrabold text-black leading-snug group-hover:text-emerald-700 transition-colors duration-300 line-clamp-2">
+                      <h3 className="text-base font-extrabold text-[var(--text)] leading-snug group-hover:text-[var(--accent)] transition-colors duration-300 line-clamp-2">
                         {c.title}
                       </h3>
                     </div>
                     {c.subject && (
-                      <span className="px-2.5 py-1 bg-emerald-500/12 text-emerald-700 rounded-lg text-[9px] uppercase font-bold tracking-wider whitespace-nowrap border border-emerald-300/40 shrink-0">
+                      <span
+                        className="px-2.5 py-1 bg-[var(--accent)]/12 text-[var(--accent)] rounded-lg text-[9px] uppercase font-bold tracking-wider whitespace-nowrap
+                                       border border-[var(--accent)]/15 shrink-0"
+                      >
                         {c.subject}
                       </span>
                     )}
@@ -1214,13 +1221,14 @@ function TeacherDashboard() {
                     ].map((s) => (
                       <div
                         key={s.label}
-                        className="bg-white/90 border border-emerald-200 rounded-xl p-2 text-center transition-all duration-300 hover:border-emerald-300 hover:shadow-sm"
+                        className="glass border border-[var(--border)]/20 rounded-xl p-2 text-center
+                                    group-hover:border-[var(--accent)]/20 transition-all duration-300"
                       >
                         <div className="text-base mb-0.5">{s.icon}</div>
-                        <div className="text-sm font-extrabold text-black">
+                        <div className="text-sm font-extrabold text-[var(--text)]">
                           {s.val}
                         </div>
-                        <div className="text-[8px] font-bold text-black/70 uppercase tracking-wider">
+                        <div className="text-[8px] font-bold text-[var(--muted)] uppercase tracking-wider">
                           {s.label}
                         </div>
                       </div>
@@ -1331,7 +1339,7 @@ function TeacherDashboard() {
                         data.courses.find((c) => c.id === contentCourse),
                       )
                     }
-                    className="px-4 py-2.5 rounded-xl border border-[var(--border)]/40 text-[var(--accent)] text-sm font-bold hover:bg-[var(--surface)] transition-all cursor-pointer flex items-center gap-2"
+                    className="px-4 py-2.5 rounded-xl border border-indigo-500/30 text-indigo-400 text-sm font-bold hover:bg-indigo-500/10 transition-all cursor-pointer flex items-center gap-2"
                   >
                     📹 Class Agenda
                   </button>
@@ -1516,13 +1524,13 @@ function TeacherDashboard() {
                               {courseQuizzes.map((q) => (
                                 <div
                                   key={q.id}
-                                  className={`${dashCardSoft} ${dashCardText} flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-all duration-200 group`}
+                                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[var(--border)]/30 glass group"
                                 >
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-black truncate">
+                                    <p className="text-sm font-bold text-[var(--text)] truncate">
                                       {q.title}
                                     </p>
-                                    <p className="text-xs text-black/70">
+                                    <p className="text-xs text-[var(--muted)]">
                                       {q.questionCount ??
                                         q.questions?.length ??
                                         0}{" "}
@@ -1663,7 +1671,7 @@ function TeacherDashboard() {
 
                           {/* Assignment list */}
                           {courseAssignments.length === 0 ? (
-                            <p className="text-sm text-black/70 text-center py-8">
+                            <p className="text-sm text-[var(--muted)] text-center py-8">
                               No assignments yet. Create one above.
                             </p>
                           ) : (
@@ -1671,13 +1679,13 @@ function TeacherDashboard() {
                               {courseAssignments.map((a) => (
                                 <div
                                   key={a.id}
-                                  className={`${dashCardSoft} ${dashCardText} flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-all duration-200 group`}
+                                  className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-[var(--border)]/30 glass group"
                                 >
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-black truncate">
+                                    <p className="text-sm font-bold text-[var(--text)] truncate">
                                       {a.title}
                                     </p>
-                                    <p className="text-xs text-black/70">
+                                    <p className="text-xs text-[var(--muted)]">
                                       Max: {a.maxScore}pts
                                       {a.dueDate
                                         ? ` · Due: ${new Date(a.dueDate).toLocaleDateString()}`
@@ -2528,9 +2536,9 @@ function TeacherDashboard() {
                   {aiResult && (
                     <div ref={aiResultRef} className="space-y-3">
                       <div className="border border-[var(--border)]/40 rounded-xl overflow-hidden">
-                        <div className="px-4 py-2 border-b border-[var(--border)]/30 bg-[var(--surface)]/60 flex items-center justify-between">
+                        <div className="px-4 py-2 border-b border-[var(--border)]/30 bg-indigo-500/5 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
                             <span className="text-xs text-[var(--muted)] font-semibold uppercase tracking-wider">
                               Class Agenda — {agendaForm.duration_minutes} min
                             </span>

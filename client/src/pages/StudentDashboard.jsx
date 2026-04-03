@@ -23,10 +23,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Reusable dashboard styles
-const dashCard =
-  "border-2 border-emerald-200 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105";
-
 function SdAiMarkdown({ text }) {
   return (
     <ReactMarkdown
@@ -636,118 +632,152 @@ function StudentDashboard() {
       icon: "📚",
       val: dashData.totalEnrolled ?? enrolled.length,
       label: "Enrolled",
+      color: "from-blue-500 to-blue-600",
+      bg: "from-blue-500/15 to-blue-600/5",
     },
     {
       icon: "📋",
       val: dashData.pendingAssignments ?? 0,
       label: "Pending",
+      color: "from-amber-500 to-amber-600",
+      bg: "from-amber-500/15 to-amber-600/5",
     },
     {
       icon: "🧠",
       val: dashData.completedQuizzes ?? 0,
       label: "Quizzes Done",
+      color: "from-purple-500 to-purple-600",
+      bg: "from-purple-500/15 to-purple-600/5",
     },
     {
       icon: "📹",
       val: dashData.upcomingClasses?.length ?? 0,
       label: "Upcoming",
+      color: "from-emerald-500 to-emerald-600",
+      bg: "from-emerald-500/15 to-emerald-600/5",
     },
   ];
 
   const chartColors = ["#818cf8", "#a78bfa", "#f472b6", "#fbbf24", "#34d399"];
 
+  const tooltipStyle = {
+    backgroundColor: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "12px",
+    boxShadow: "0 12px 32px -8px rgba(0,0,0,0.2)",
+    fontSize: "12px",
+    fontWeight: 600,
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col relative overflow-hidden">
       <Navbar />
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-6 mb-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-2xl text-white font-bold shadow-lg">
-              🎓
+        <div className="mb-12 animate-[slide-down_0.6s_cubic-bezier(0.16,1,0.3,1)_both]">
+          <div className="flex items-center gap-5 mb-2">
+            <div className="text-5xl sm:text-6xl drop-shadow-lg animate-float">
+              👋
             </div>
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text)] mb-2">
-                Student Dashboard
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--text)] sc-title">
+                Welcome back,{" "}
+                <span className="gradient-text">
+                  {user?.name?.split(" ")[0] || "Student"}
+                </span>
+                !
               </h1>
-              <p className="text-base text-[var(--muted)] font-medium">
-                Welcome back, {user?.name?.split(" ")[0] || "Student"}! Track
-                your progress and continue learning.
+              <p className="text-sm text-[var(--muted)] mt-2 font-medium flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Your personalized learning dashboard
               </p>
             </div>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {stats.map((s) => (
-            <div key={s.label} className={`${dashCard} bg-emerald-50`}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
-                  <span className="text-2xl">{s.icon}</span>
-                </div>
-                <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">
-                  {s.label}
-                </span>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+          {stats.map((s, i) => (
+            <div
+              key={s.label}
+              className={`group sc-card-premium glass rounded-2xl p-6 bg-gradient-to-br ${s.bg}
+                         animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]`}
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <div
+                className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4
+                              bg-gradient-to-br ${s.color} shadow-lg
+                              group-hover:scale-110 group-hover:rotate-[-5deg] transition-all duration-500`}
+              >
+                <span className="brightness-0 invert">{s.icon}</span>
               </div>
-              <div className="text-3xl font-bold text-emerald-900 mb-1">
+              <div
+                className="text-4xl font-extrabold text-[var(--text)] mb-1 tracking-tighter font-[var(--font-mono)]
+                              animate-[count-up_0.8s_cubic-bezier(0.16,1,0.3,1)_both]"
+                style={{ animationDelay: `${200 + i * 100}ms` }}
+              >
                 {s.val}
               </div>
+              <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">
+                {s.label}
+              </p>
             </div>
           ))}
         </div>
 
         {/* AI Assistant Section */}
-        <div className="mb-12">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
-                🤖
-              </div>
-              Learning Tools
-            </h2>
-            <p className="text-sm text-[var(--muted)] font-medium">
-              AI-powered learning assistance
-            </p>
-          </div>
+        <div
+          className="mb-12 animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+          style={{ animationDelay: "120ms" }}
+        >
+          <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
+            <span className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center text-xl">
+              🤖
+            </span>
+            AI Assistant
+          </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               {
                 icon: "💬",
                 label: "AI Chat",
-                desc: "Get help with questions",
+                desc: "Ask anything educational",
                 type: "chat",
+                color: "from-blue-500/15 to-blue-600/5",
               },
               {
                 icon: "📅",
                 label: "Study Plan",
-                desc: "Create learning schedule",
+                desc: "Personalized weekly schedule",
                 type: "plan",
+                color: "from-emerald-500/15 to-emerald-600/5",
               },
               {
                 icon: "💡",
                 label: "Explain",
-                desc: "Understand concepts",
+                desc: "Understand any concept",
                 type: "explain",
+                color: "from-amber-500/15 to-amber-600/5",
               },
               {
                 icon: "📊",
                 label: "Performance",
-                desc: "Analyze progress",
+                desc: "Analyze your scores",
                 type: "performance",
+                color: "from-purple-500/15 to-purple-600/5",
               },
             ].map((tool) => (
               <button
                 key={tool.type}
                 onClick={() => openAiModal(tool.type)}
-                className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-left hover:shadow-lg hover:border-emerald-300 transition-all duration-200 hover:-translate-y-0.5 transform"
+                className={`group sc-card-premium glass rounded-2xl p-4 text-left bg-gradient-to-br ${tool.color} hover-lift active:scale-95 transition-all duration-300 border border-[var(--border)]/30 hover:border-[var(--accent)]/30`}
               >
-                <div className="text-xl mb-2">{tool.icon}</div>
-                <p className="text-sm font-semibold text-emerald-900 mb-1">
+                <div className="text-2xl mb-2">{tool.icon}</div>
+                <p className="text-sm font-extrabold text-[var(--text)] mb-0.5">
                   {tool.label}
                 </p>
-                <p className="text-xs text-emerald-700 leading-tight">
+                <p className="text-[10px] text-[var(--muted)] font-medium leading-snug">
                   {tool.desc}
                 </p>
               </button>
@@ -756,70 +786,61 @@ function StudentDashboard() {
         </div>
 
         {/* ── Active Quizzes ── */}
-        <div className="mb-12">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
-                🧠
-              </div>
-              Active Quizzes
-            </h2>
-            <p className="text-sm text-[var(--muted)] font-medium">
-              Test your knowledge with interactive quizzes
-            </p>
-          </div>
+        <div
+          className="mb-12 animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+          style={{ animationDelay: "140ms" }}
+        >
+          <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
+            <span className="w-10 h-10 rounded-xl bg-pink-500/15 flex items-center justify-center text-xl">
+              🧠
+            </span>
+            Active Quizzes
+          </h2>
           {quizzesLoading ? (
-            <div className="flex items-center gap-3 text-gray-600 text-sm py-6">
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
+              <span className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
               Loading quizzes…
             </div>
           ) : activeQuizzes.length === 0 ? (
-            <div className="glass-heavy rounded-xl p-12 text-center border border-[var(--border)]/40">
-              <div className="text-5xl mb-4">🎯</div>
-              <p className="text-[var(--text)] font-semibold mb-2">
-                No active quizzes
-              </p>
-              <p className="text-[var(--muted)] text-sm max-w-xs mx-auto">
-                Check back soon for new quizzes from your instructors
+            <div className="sc-card-premium glass rounded-2xl p-8 text-center">
+              <div className="text-4xl mb-3">🎯</div>
+              <p className="text-sm font-semibold text-[var(--muted)]">
+                No active quizzes right now. Check back later!
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {activeQuizzes.map((q, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeQuizzes.map((q) => (
                 <div
                   key={q.id}
-                  className="glass-card rounded-xl border border-[var(--border)]/50 p-5 hover:border-[var(--border)]/80 hover:shadow-lg transition-all duration-300 animate-[slide-up_0.4s_ease_forwards]"
-                  style={{ animationDelay: `${i * 50}ms` }}
+                  className="sc-card-premium glass rounded-2xl p-5 flex flex-col gap-3 border border-[var(--border)]/30 hover:border-[var(--accent)]/30 transition-all hover-lift"
                 >
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-[var(--text)] text-base mb-1 leading-snug">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-extrabold text-[var(--text)] truncate">
                         {q.title}
-                      </h3>
-                      <p className="text-xs text-[var(--muted)] font-medium">
+                      </p>
+                      <p className="text-xs text-[var(--muted)] mt-0.5">
                         📚 {q.courseTitle}
                       </p>
                     </div>
-                    <span className="px-2.5 py-1 bg-[var(--accent)]/15 text-[var(--accent)] rounded-lg text-[10px] font-bold whitespace-nowrap">
-                      {q.questionCount ?? q.questions?.length ?? 0} Qs
+                    <span className="px-2.5 py-1 rounded-lg bg-pink-500/15 text-pink-400 text-[10px] font-bold border border-pink-500/20 shrink-0">
+                      {q.questionCount ?? q.questions?.length ?? 0}Q
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-[12px] text-[var(--muted)] mb-4 font-medium gap-2">
-                    <span className="flex items-center gap-1">
-                      ⏱ {q.timeLimit ? `${q.timeLimit} min` : "No limit"}
+                  <div className="flex items-center justify-between text-xs text-[var(--muted)]">
+                    <span>
+                      {q.timeLimit ? `⏱ ${q.timeLimit} min` : "No time limit"}
                     </span>
                     {q.dueDate && (
-                      <span className="text-right">
-                        {new Date(q.dueDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
+                      <span>
+                        Due: {new Date(q.dueDate).toLocaleDateString()}
                       </span>
                     )}
                   </div>
                   <button
                     onClick={() => startQuiz(q)}
-                    className="w-full bg-[var(--accent)] hover:bg-[var(--accent-2)] text-[var(--accent-contrast)] font-semibold py-2.5 px-4 rounded-lg transition-all duration-250 text-sm active:scale-95"
+                    className="w-full py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
                   >
                     Take Quiz →
                   </button>
@@ -830,73 +851,66 @@ function StudentDashboard() {
         </div>
 
         {/* ── My Assignments ── */}
-        <div className="mb-12">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
-                📝
-              </div>
-              My Assignments
-            </h2>
-            <p className="text-sm text-[var(--muted)] font-medium">
-              Submit and track your work
-            </p>
-          </div>
+        <div
+          className="mb-12 animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+          style={{ animationDelay: "160ms" }}
+        >
+          <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
+            <span className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-xl">
+              📝
+            </span>
+            My Assignments
+          </h2>
           {assignmentsLoading ? (
-            <div className="flex items-center gap-3 text-gray-600 text-sm py-6">
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            <div className="flex items-center gap-3 text-[var(--muted)] text-sm py-6">
+              <span className="w-5 h-5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
               Loading assignments…
             </div>
           ) : myAssignments.length === 0 ? (
-            <div className="glass-heavy rounded-xl p-12 text-center border border-[var(--border)]/40">
-              <div className="text-5xl mb-4">📋</div>
-              <p className="text-[var(--text)] font-semibold mb-2">
-                No assignments yet
-              </p>
-              <p className="text-[var(--muted)] text-sm max-w-xs mx-auto">
-                Assignments from your courses will appear here
+            <div className="sc-card-premium glass rounded-2xl p-8 text-center">
+              <div className="text-4xl mb-3">📋</div>
+              <p className="text-sm font-semibold text-[var(--muted)]">
+                No assignments yet.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {myAssignments.map((a, i) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {myAssignments.map((a) => {
                 const isOverdue = a.dueDate && new Date(a.dueDate) < new Date();
                 return (
                   <div
                     key={a.id}
-                    className="glass-card rounded-xl border border-[var(--border)]/50 p-5 hover:border-[var(--border)]/80 hover:shadow-lg transition-all duration-300 animate-[slide-up_0.4s_ease_forwards]"
-                    style={{ animationDelay: `${i * 50}ms` }}
+                    className="sc-card-premium glass rounded-2xl p-5 flex flex-col gap-3 border border-[var(--border)]/30 hover:border-[var(--accent)]/30 transition-all hover-lift"
                   >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-[var(--text)] text-base mb-1 leading-snug">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-extrabold text-[var(--text)] truncate">
                           {a.title}
-                        </h3>
-                        <p className="text-xs text-[var(--muted)] font-medium">
+                        </p>
+                        <p className="text-xs text-[var(--muted)] mt-0.5">
                           📚 {a.courseTitle}
                         </p>
                       </div>
-                      <span className="px-2.5 py-1 bg-amber-500/15 text-amber-300 rounded-lg text-[10px] font-bold whitespace-nowrap">
-                        {a.maxScore} pts
+                      <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-400 text-[10px] font-bold border border-amber-500/20 shrink-0">
+                        {a.maxScore}pts
                       </span>
                     </div>
                     {a.description && (
-                      <p className="text-[13px] text-[var(--muted)] mb-3 line-clamp-2 leading-snug">
+                      <p className="text-xs text-[var(--muted)] line-clamp-2 leading-relaxed">
                         {a.description}
                       </p>
                     )}
-                    <div className="text-[12px] font-medium mb-4">
+                    <div className="flex items-center justify-between text-xs">
                       {a.dueDate ? (
                         <span
                           className={
-                            isOverdue ? "text-red-400" : "text-[var(--muted)]"
+                            isOverdue
+                              ? "text-red-400 font-semibold"
+                              : "text-[var(--muted)]"
                           }
                         >
-                          {isOverdue ? "⚠️ Overdue" : "📅 Due"}:{" "}
-                          {new Date(a.dueDate).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
+                          {isOverdue ? "⚠ Overdue" : "Due"}:{" "}
+                          {new Date(a.dueDate).toLocaleDateString()}
                         </span>
                       ) : (
                         <span className="text-[var(--muted)]">No due date</span>
@@ -904,7 +918,7 @@ function StudentDashboard() {
                     </div>
                     <button
                       onClick={() => openSubmitModal(a)}
-                      className="w-full bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-250 text-sm active:scale-95"
+                      className="w-full py-2.5 sc-btn-glow rounded-xl text-sm font-bold cursor-pointer active:scale-95"
                     >
                       Submit / View →
                     </button>
@@ -919,41 +933,37 @@ function StudentDashboard() {
         {dashData.performanceData?.length > 0 ||
         dashData.progressData?.length > 0 ||
         dashData.timeSpentData?.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
             {dashData.performanceData?.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-3">
-                  <div className="w-6 h-6 rounded glass-card flex items-center justify-center">
-                    <span className="text-sm">📊</span>
-                  </div>
+              <div
+                className="sc-card-premium glass rounded-2xl p-6 animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]"
+                style={{ animationDelay: "100ms" }}
+              >
+                <h3 className="text-lg font-bold text-[var(--text)] mb-5 flex items-center gap-2.5">
+                  <span className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center text-sm">
+                    📊
+                  </span>
                   Performance Trend
                 </h3>
                 <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={dashData.performanceData}>
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="#e5e7eb"
+                      stroke="var(--border)"
                       opacity={0.5}
                     />
                     <XAxis
-                      stroke="#6b7280"
+                      stroke="var(--muted)"
                       style={{ fontSize: "11px", fontWeight: 600 }}
                     />
                     <YAxis
-                      stroke="#6b7280"
+                      stroke="var(--muted)"
                       style={{ fontSize: "11px", fontWeight: 600 }}
                     />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                      }}
+                      contentStyle={tooltipStyle}
                       cursor={{
-                        stroke: "#3b82f6",
+                        stroke: "var(--accent)",
                         strokeWidth: 2,
                         strokeDasharray: "4 4",
                       }}
@@ -962,10 +972,10 @@ function StudentDashboard() {
                     <Line
                       type="monotone"
                       dataKey="score"
-                      stroke="#3b82f6"
+                      stroke="#818cf8"
                       strokeWidth={3}
                       dot={{
-                        fill: "#3b82f6",
+                        fill: "#818cf8",
                         r: 5,
                         strokeWidth: 2,
                         stroke: "#fff",
@@ -978,42 +988,37 @@ function StudentDashboard() {
             )}
 
             {dashData.progressData?.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-3">
-                  <div className="w-6 h-6 rounded bg-purple-100 flex items-center justify-center">
-                    <span className="text-sm">🎯</span>
-                  </div>
+              <div
+                className="sc-card-premium glass rounded-2xl p-6 animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]"
+                style={{ animationDelay: "200ms" }}
+              >
+                <h3 className="text-lg font-bold text-[var(--text)] mb-5 flex items-center gap-2.5">
+                  <span className="w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center text-sm">
+                    🎯
+                  </span>
                   Course Progress
                 </h3>
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={dashData.progressData}>
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="#e5e7eb"
+                      stroke="var(--border)"
                       opacity={0.5}
                     />
                     <XAxis
-                      stroke="#6b7280"
+                      stroke="var(--muted)"
                       style={{ fontSize: "11px", fontWeight: 600 }}
                     />
                     <YAxis
-                      stroke="#6b7280"
+                      stroke="var(--muted)"
                       style={{ fontSize: "11px", fontWeight: 600 }}
                     />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                        fontSize: "12px",
-                      }}
-                    />
+                    <Tooltip contentStyle={tooltipStyle} />
                     <Legend />
                     <Bar
                       dataKey="completion"
-                      fill="#8b5cf6"
-                      radius={[4, 4, 0, 0]}
+                      fill="#a78bfa"
+                      radius={[8, 8, 0, 0]}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -1021,11 +1026,14 @@ function StudentDashboard() {
             )}
 
             {dashData.timeSpentData?.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-3">
-                  <div className="w-6 h-6 rounded bg-pink-100 flex items-center justify-center">
-                    <span className="text-sm">⏱️</span>
-                  </div>
+              <div
+                className="sc-card-premium glass rounded-2xl p-6 animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]"
+                style={{ animationDelay: "300ms" }}
+              >
+                <h3 className="text-lg font-bold text-[var(--text)] mb-5 flex items-center gap-2.5">
+                  <span className="w-8 h-8 rounded-lg bg-pink-500/15 flex items-center justify-center text-sm">
+                    ⏱️
+                  </span>
                   Time Spent by Course
                 </h3>
                 <ResponsiveContainer width="100%" height={280}>
@@ -1043,7 +1051,7 @@ function StudentDashboard() {
                       fill="#8884d8"
                       dataKey="hours"
                       strokeWidth={2}
-                      stroke="white"
+                      stroke="var(--bg)"
                     >
                       {dashData.timeSpentData.map((entry, index) => (
                         <Cell
@@ -1052,15 +1060,7 @@ function StudentDashboard() {
                         />
                       ))}
                     </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                        fontSize: "12px",
-                      }}
-                    />
+                    <Tooltip contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -1070,35 +1070,35 @@ function StudentDashboard() {
 
         {/* Upcoming Live Classes */}
         {dashData.upcomingClasses?.length > 0 && (
-          <div className="mb-12">
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
-                  📹
-                </div>
-                Upcoming Live Classes
-              </h2>
-              <p className="text-sm text-[var(--muted)] font-medium">
-                Join scheduled sessions with your instructors
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {dashData.upcomingClasses.slice(0, 3).map((lc) => (
+          <div
+            className="mb-12 animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]"
+            style={{ animationDelay: "200ms" }}
+          >
+            <h2 className="text-2xl font-extrabold text-[var(--text)] mb-5 flex items-center gap-3 sc-title">
+              <span className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center text-xl">
+                📹
+              </span>
+              Upcoming Live Classes
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {dashData.upcomingClasses.slice(0, 3).map((lc, i) => (
                 <div
                   key={lc.id}
-                  className="glass-card border border-[var(--border)]/40 rounded-xl p-6 hover:shadow-xl transition-shadow duration-200"
+                  className="sc-card-premium glass rounded-2xl p-5 hover-lift
+                           animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+                  style={{ animationDelay: `${i * 80}ms` }}
                 >
-                  <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center justify-between gap-3 mb-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${
                         lc.status === "live"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-[var(--surface)] text-[var(--text)]"
+                          ? "bg-red-500/15 text-red-500 animate-pulse border border-red-500/30 shadow-[0_0_12px_rgba(239,68,68,0.2)]"
+                          : "bg-blue-500/15 text-blue-500 border border-blue-500/30"
                       }`}
                     >
                       {lc.status === "live" ? "🔴 LIVE" : "🗓️ Scheduled"}
                     </span>
-                    <span className="text-xs text-gray-600 font-medium">
+                    <span className="text-[10px] text-[var(--muted)] font-semibold">
                       {new Date(lc.scheduledAt).toLocaleDateString()} ·{" "}
                       {new Date(lc.scheduledAt).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -1106,11 +1106,11 @@ function StudentDashboard() {
                       })}
                     </span>
                   </div>
-                  <p className="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
+                  <p className="text-sm font-bold text-[var(--text)] mb-2 line-clamp-2">
                     {lc.title}
                   </p>
                   {lc.course?.title && (
-                    <p className="text-sm text-gray-600 mb-4 font-medium">
+                    <p className="text-xs text-[var(--muted)] mb-3 font-medium">
                       📚 {lc.course.title}
                     </p>
                   )}
@@ -1119,7 +1119,8 @@ function StudentDashboard() {
                       href={lc.meetingLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent)] hover:text-[var(--action)] transition-colors duration-200"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--accent)] hover:text-[var(--accent-light)] 
+                                 transition-all duration-300 hover:translate-x-0.5"
                     >
                       Join Meeting <span>→</span>
                     </a>
@@ -1132,91 +1133,114 @@ function StudentDashboard() {
 
         {/* My Courses */}
         {enrolled.length > 0 && (
-          <div className="mb-12">
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
-                      📖
-                    </div>
-                    My Learning Path
-                  </h2>
-                  <p className="text-sm text-[var(--muted)] font-medium">
-                    Continue where you left off
-                  </p>
-                </div>
-                <span className="px-4 py-2 rounded-lg glass-card text-[var(--text)] text-sm font-semibold whitespace-nowrap ml-4">
-                  {enrolled.length} active
-                </span>
+          <div
+            className="mb-12 animate-[slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_both]"
+            style={{ animationDelay: "300ms" }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-extrabold text-[var(--text)] flex items-center gap-3 sc-title">
+                  <span className="w-10 h-10 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center text-xl">
+                    📖
+                  </span>
+                  My Learning Path
+                </h2>
+                <p className="text-sm text-[var(--muted)] mt-1 font-medium ml-[52px]">
+                  Continue where you left off
+                </p>
               </div>
+              <span
+                className="px-4 py-2 rounded-full glass text-[var(--accent)] text-xs font-bold
+                               border border-[var(--accent)]/25 shadow-[0_4px_16px_-4px_var(--accent)]"
+              >
+                {enrolled.length} active
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {enrolled.map((c, i) => (
                 <div
                   key={c.id}
-                  className="glass-card rounded-xl border border-[var(--border)]/50 p-5 hover:border-[var(--border)]/80 hover:shadow-lg transition-all duration-300 flex flex-col animate-[slide-up_0.4s_ease_forwards]"
-                  style={{ animationDelay: `${i * 50}ms` }}
+                  className="group sc-card-premium glass rounded-2xl p-6 overflow-hidden
+                           animate-[slide-up_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+                  style={{ animationDelay: `${i * 80}ms` }}
                 >
-                  <div className="flex items-start justify-between mb-3 gap-3 flex-wrap">
-                    <h3 className="text-base font-semibold text-[var(--text)] flex-1 leading-snug">
-                      {c.title}
-                    </h3>
-                    {c.subject && (
-                      <span className="px-2.5 py-1 bg-[var(--border)]/40 text-[var(--muted)] rounded-lg text-[10px] font-bold whitespace-nowrap uppercase tracking-wide">
-                        {c.subject}
-                      </span>
-                    )}
-                  </div>
+                  {/* Hover gradient overlay */}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/0 to-[var(--accent)]/0
+                                 group-hover:from-[var(--accent)]/5 group-hover:to-[var(--accent)]/0 transition-all duration-500"
+                  />
+                  <div className="relative">
+                    <div className="flex items-start justify-between mb-3 gap-3">
+                      <h3 className="text-lg font-bold text-[var(--text)] flex-1 leading-snug group-hover:text-[var(--accent)] transition-colors duration-300">
+                        {c.title}
+                      </h3>
+                      {c.subject && (
+                        <span
+                          className="px-3 py-1 bg-[var(--accent)]/12 text-[var(--accent)] rounded-lg text-[10px] font-bold whitespace-nowrap
+                                         uppercase tracking-wider border border-[var(--accent)]/15"
+                        >
+                          {c.subject}
+                        </span>
+                      )}
+                    </div>
 
-                  <p className="text-[12px] text-[var(--muted)] mb-4 font-medium">
-                    👨‍🏫 {c.teacher?.name || "Unknown"}
-                  </p>
+                    <p className="text-xs text-[var(--muted)] mb-4 flex items-center gap-1.5 font-medium">
+                      👨‍🏫 {c.teacher?.name || "Unknown"}
+                    </p>
 
-                  {/* Stats grid */}
-                  <div className="grid grid-cols-3 gap-2 mb-4 flex-1">
-                    {[
-                      {
-                        val: c.materialCount || 0,
-                        label: "Materials",
-                        icon: "📄",
-                      },
-                      {
-                        val: c.assignmentCount || 0,
-                        label: "Tasks",
-                        icon: "📝",
-                      },
-                      { val: c.quizCount || 0, label: "Quizzes", icon: "🧠" },
-                    ].map((stat) => (
-                      <div
-                        key={stat.label}
-                        className="p-2.5 rounded-lg bg-[var(--border)]/20 text-center border border-[var(--border)]/30 hover:border-[var(--border)]/60 transition-colors"
+                    {/* Stats mini-grid */}
+                    <div className="grid grid-cols-3 gap-2 mb-5">
+                      {[
+                        {
+                          val: c.materialCount || 0,
+                          label: "Materials",
+                          color: "blue",
+                        },
+                        {
+                          val: c.assignmentCount || 0,
+                          label: "Tasks",
+                          color: "amber",
+                        },
+                        {
+                          val: c.quizCount || 0,
+                          label: "Quizzes",
+                          color: "purple",
+                        },
+                      ].map((stat) => (
+                        <div
+                          key={stat.label}
+                          className={`p-2.5 rounded-xl bg-gradient-to-br from-${stat.color}-500/10 to-${stat.color}-600/5 
+                                  border border-${stat.color}-500/15 text-center transition-all duration-300
+                                  group-hover:border-${stat.color}-500/30`}
+                        >
+                          <p className="font-extrabold text-[var(--text)] text-lg">
+                            {stat.val}
+                          </p>
+                          <p className="text-[9px] text-[var(--muted)] font-bold uppercase tracking-wider mt-0.5">
+                            {stat.label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => navigate(`/course/${c.id}`)}
+                        className="flex-1 py-3 rounded-xl text-sm font-bold cursor-pointer sc-btn-glow active:scale-95"
                       >
-                        <p className="font-bold text-[var(--text)] text-sm">
-                          {stat.val}
-                        </p>
-                        <p className="text-[10px] text-[var(--muted)] font-medium uppercase tracking-wider mt-0.5">
-                          {stat.label}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex gap-3 mt-auto">
-                    <button
-                      onClick={() => navigate(`/course/${c.id}`)}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-250 text-sm active:scale-95"
-                    >
-                      Open Course →
-                    </button>
-                    <button
-                      onClick={() => setConfirmUnenroll(c)}
-                      className="p-2.5 rounded-lg text-sm font-semibold border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-all duration-250 active:scale-95"
-                      title="Unenroll"
-                    >
-                      ✕
-                    </button>
+                        Open Course →
+                      </button>
+                      <button
+                        onClick={() => setConfirmUnenroll(c)}
+                        className="px-3 py-3 rounded-xl text-sm font-bold border border-red-500/25 bg-red-500/8 
+                                   hover:bg-red-500/15 text-red-500 cursor-pointer transition-all duration-300
+                                   hover:border-red-500/40 active:scale-95"
+                        title="Unenroll"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1330,14 +1354,12 @@ function StudentDashboard() {
 
         {/* Empty state */}
         {enrolled.length === 0 && available.length === 0 && !loading && (
-          <div className="text-center py-20">
-            <div className="w-24 h-24 rounded-full glass-card flex items-center justify-center mx-auto mb-6">
-              <span className="text-4xl">🎓</span>
-            </div>
-            <h3 className="text-xl font-bold text-[var(--text)] mb-2">
+          <div className="text-center py-24 animate-[scale-in_0.5s_cubic-bezier(0.16,1,0.3,1)_both]">
+            <div className="text-8xl mb-6 drop-shadow-lg animate-float">🎓</div>
+            <h3 className="text-2xl font-extrabold text-[var(--text)] mb-3 sc-title">
               No Courses Yet
             </h3>
-            <p className="text-[var(--muted)] text-sm max-w-md mx-auto leading-relaxed">
+            <p className="text-[var(--muted)] text-base max-w-md mx-auto font-medium leading-relaxed">
               Your learning journey starts here! Ask your teacher to create
               courses for you.
             </p>
@@ -1346,9 +1368,12 @@ function StudentDashboard() {
 
         {/* Loading state */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-12 h-12 border-3 border-[var(--border)] border-t-[var(--accent)] rounded-full animate-spin"></div>
-            <p className="text-sm text-[var(--muted)] font-medium">
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
+            <div
+              className="w-14 h-14 border-[3px] border-[var(--border)] border-t-[var(--accent)] rounded-full animate-spin
+                           shadow-[0_0_16px_var(--accent)]"
+            />
+            <p className="text-sm text-[var(--muted)] font-medium animate-pulse">
               Loading your dashboard...
             </p>
           </div>
@@ -1360,8 +1385,8 @@ function StudentDashboard() {
       {/* Floating AI Chat Button */}
       <button
         onClick={() => openAiModal("chat")}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-2xl
-                   shadow-lg hover:shadow-xl transition-all duration-200
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[var(--accent)] text-white text-2xl
+                   shadow-[0_8px_32px_-8px_var(--accent)] hover:scale-110 active:scale-95 transition-all duration-300
                    flex items-center justify-center"
         title="Open AI Chat"
       >

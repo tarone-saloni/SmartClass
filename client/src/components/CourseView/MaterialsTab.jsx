@@ -18,7 +18,7 @@ function MaterialsTab({
       {/* Section header + Add button */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/10 border border-emerald-500/15 flex items-center justify-center text-lg">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-600/10 border border-blue-500/15 flex items-center justify-center text-lg">
             📄
           </div>
           <div>
@@ -81,8 +81,8 @@ function MaterialsTab({
                         shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]"
         >
           <div
-            className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-3xl mx-auto mb-5
-                          shadow-[0_8px_24px_-8px_rgba(16,185,129,0.15)]"
+            className="w-16 h-16 rounded-3xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-3xl mx-auto mb-5
+                          shadow-[0_8px_24px_-8px_rgba(59,130,246,0.15)]"
           >
             📄
           </div>

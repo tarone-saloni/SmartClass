@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import AiPlaygroundNav from "../../components/AiPlaygroundNav";
 import { post, inp, lbl } from "../../utils/aiUtils";
 import { SendBtn, ResponseBox } from "../../utils/aiShared";
 
@@ -41,8 +40,6 @@ export default function AiSummarize() {
             AI Playground · Condense course material into clear summaries
           </p>
         </div>
-
-        <AiPlaygroundNav />
 
         <div className="glass-heavy rounded-2xl border border-[var(--border)]/40 p-6 shadow-xl">
           <form onSubmit={submit} className="space-y-4">

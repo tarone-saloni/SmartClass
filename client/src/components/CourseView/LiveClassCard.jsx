@@ -35,11 +35,11 @@ function LiveClassCard({
         }
       : {
           label: "Scheduled",
-          dot: "bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]",
-          bg: "bg-emerald-500/10",
-          text: "text-emerald-300",
-          border: "border-emerald-500/20",
-          bar: "from-emerald-500 to-teal-600",
+          dot: "bg-blue-400",
+          bg: "bg-blue-500/10",
+          text: "text-blue-400",
+          border: "border-blue-500/20",
+          bar: "from-blue-500 to-indigo-600",
           icon: "📅",
           cardBorder:
             "border-[var(--border)]/12 hover:border-[var(--accent)]/18",

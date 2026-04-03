@@ -12,8 +12,8 @@ function CourseHeader({
       icon: "📄",
       val: materials.length,
       label: "Materials",
-      gradient: "from-emerald-500 to-teal-500",
-      bgGlow: "bg-emerald-500/10",
+      gradient: "from-blue-500 to-indigo-600",
+      bgGlow: "bg-blue-500/10",
     },
     {
       icon: "📋",
