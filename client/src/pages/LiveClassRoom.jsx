@@ -4,7 +4,6 @@ import { useAuth } from "../context/AuthContext";
 import { getSocket } from "../socket";
 import { apiFetch } from "../utils/api.js";
 
-
 const ICE_CONFIG = {
   iceServers: (
     import.meta.env.VITE_STUN_SERVERS ||
@@ -82,7 +81,7 @@ export default function LiveClassRoom() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const isTeacher = user.role === "teacher";
   const socket = getSocket(user.id);
 

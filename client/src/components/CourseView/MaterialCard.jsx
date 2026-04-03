@@ -43,6 +43,10 @@ const defaultMeta = {
   iconBg: "bg-emerald-500/12",
 };
 
+function isYouTubeUrl(url) {
+  return /(?:youtube\.com\/watch|youtu\.be\/)/.test(url);
+}
+
 function MaterialCard({
   material,
   isTeacher,
@@ -51,6 +55,7 @@ function MaterialCard({
   onDelete,
 }) {
   const meta = TYPE_META[material.type] || defaultMeta;
+  const fileUrl = material.fileUrl || "";
 
   return (
     <div
@@ -158,35 +163,57 @@ function MaterialCard({
               })}
             </p>
 
-            {/* Video embed */}
-            {material.fileUrl && material.type === "video" && (
-              <div className="mt-3 rounded-xl overflow-hidden ring-1 ring-[var(--border)]/10">
-                <VideoEmbed url={material.fileUrl} />
-              </div>
+            {/* Video: YouTube embed OR HTML5 player (Cloudinary / direct URL) */}
+            {material.type === "video" &&
+              fileUrl &&
+              (isYouTubeUrl(fileUrl) ? (
+                <div className="mt-3 rounded-xl overflow-hidden ring-1 ring-[var(--border)]/10">
+                  <VideoEmbed url={fileUrl} />
+                </div>
+              ) : (
+                <video
+                  controls
+                  className="w-full mt-3 rounded-xl ring-1 ring-[var(--border)]/10"
+                  style={{ maxHeight: 220 }}
+                >
+                  <source src={fileUrl} />
+                  Your browser does not support the video tag.
+                </video>
+              ))}
+
+            {/* Image: inline preview */}
+            {material.type === "image" && fileUrl && (
+              <img
+                src={fileUrl}
+                alt={material.title}
+                className="w-full mt-3 rounded-xl object-cover ring-1 ring-[var(--border)]/10"
+                style={{ maxHeight: 220 }}
+              />
             )}
 
-            {/* File link */}
-            {material.fileUrl && material.type !== "video" && (
-              <a
-                href={material.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`inline-flex items-center gap-2 text-xs font-bold mt-1 px-3 py-1.5 rounded-lg
+            {/* Document / Link / Other: open link */}
+            {["document", "link", "other"].includes(material.type) &&
+              fileUrl && (
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center gap-2 text-xs font-bold mt-1 px-3 py-1.5 rounded-lg
                              ${meta.iconBg} ${meta.text} border ${meta.border}
                              hover:shadow-md transition-all duration-300 hover:scale-[1.02]`}
-              >
-                {meta.icon} Open {meta.label}
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                  className="opacity-60"
                 >
-                  <path d="M3.75 2h3.5a.75.75 0 010 1.5H4.56l7.72 7.72a.75.75 0 11-1.06 1.06L3.5 4.56v2.69a.75.75 0 01-1.5 0v-3.5A1.75 1.75 0 013.75 2z" />
-                </svg>
-              </a>
-            )}
+                  {meta.icon} Open {meta.label}
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    className="opacity-60"
+                  >
+                    <path d="M3.75 2h3.5a.75.75 0 010 1.5H4.56l7.72 7.72a.75.75 0 11-1.06 1.06L3.5 4.56v2.69a.75.75 0 01-1.5 0v-3.5A1.75 1.75 0 013.75 2z" />
+                  </svg>
+                </a>
+              )}
           </div>
         </div>
 

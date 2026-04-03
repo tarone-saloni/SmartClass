@@ -24,7 +24,8 @@ import {
 } from "recharts";
 
 // Reusable dashboard styles
-const dashCard = "border-2 border-emerald-200 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105";
+const dashCard =
+  "border-2 border-emerald-200 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105";
 
 function SdAiMarkdown({ text }) {
   return (
@@ -671,7 +672,8 @@ function StudentDashboard() {
                 Student Dashboard
               </h1>
               <p className="text-base text-[var(--muted)] font-medium">
-                Welcome back, {user?.name?.split(" ")[0] || "Student"}! Track your progress and continue learning.
+                Welcome back, {user?.name?.split(" ")[0] || "Student"}! Track
+                your progress and continue learning.
               </p>
             </div>
           </div>
@@ -680,10 +682,7 @@ function StudentDashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {stats.map((s) => (
-            <div
-              key={s.label}
-              className={`${dashCard} bg-emerald-50`}
-            >
+            <div key={s.label} className={`${dashCard} bg-emerald-50`}>
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
                   <span className="text-2xl">{s.icon}</span>
@@ -703,10 +702,14 @@ function StudentDashboard() {
         <div className="mb-12">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">🤖</div>
+              <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
+                🤖
+              </div>
               Learning Tools
             </h2>
-            <p className="text-sm text-[var(--muted)] font-medium">AI-powered learning assistance</p>
+            <p className="text-sm text-[var(--muted)] font-medium">
+              AI-powered learning assistance
+            </p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
@@ -756,10 +759,14 @@ function StudentDashboard() {
         <div className="mb-12">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">🧠</div>
+              <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
+                🧠
+              </div>
               Active Quizzes
             </h2>
-            <p className="text-sm text-[var(--muted)] font-medium">Test your knowledge with interactive quizzes</p>
+            <p className="text-sm text-[var(--muted)] font-medium">
+              Test your knowledge with interactive quizzes
+            </p>
           </div>
           {quizzesLoading ? (
             <div className="flex items-center gap-3 text-gray-600 text-sm py-6">
@@ -803,7 +810,10 @@ function StudentDashboard() {
                     </span>
                     {q.dueDate && (
                       <span className="text-right">
-                        {new Date(q.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {new Date(q.dueDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </span>
                     )}
                   </div>
@@ -823,10 +833,14 @@ function StudentDashboard() {
         <div className="mb-12">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">📝</div>
+              <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
+                📝
+              </div>
               My Assignments
             </h2>
-            <p className="text-sm text-[var(--muted)] font-medium">Submit and track your work</p>
+            <p className="text-sm text-[var(--muted)] font-medium">
+              Submit and track your work
+            </p>
           </div>
           {assignmentsLoading ? (
             <div className="flex items-center gap-3 text-gray-600 text-sm py-6">
@@ -873,8 +887,16 @@ function StudentDashboard() {
                     )}
                     <div className="text-[12px] font-medium mb-4">
                       {a.dueDate ? (
-                        <span className={isOverdue ? "text-red-400" : "text-[var(--muted)]"}>
-                          {isOverdue ? "⚠️ Overdue" : "📅 Due"}: {new Date(a.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        <span
+                          className={
+                            isOverdue ? "text-red-400" : "text-[var(--muted)]"
+                          }
+                        >
+                          {isOverdue ? "⚠️ Overdue" : "📅 Due"}:{" "}
+                          {new Date(a.dueDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </span>
                       ) : (
                         <span className="text-[var(--muted)]">No due date</span>
@@ -978,13 +1000,15 @@ function StudentDashboard() {
                       stroke="#6b7280"
                       style={{ fontSize: "11px", fontWeight: 600 }}
                     />
-                    <Tooltip contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "8px",
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                      fontSize: "12px"
-                    }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "white",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                        fontSize: "12px",
+                      }}
+                    />
                     <Legend />
                     <Bar
                       dataKey="completion"
@@ -1028,13 +1052,15 @@ function StudentDashboard() {
                         />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "8px",
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                      fontSize: "12px"
-                    }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "white",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "8px",
+                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                        fontSize: "12px",
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -1047,10 +1073,14 @@ function StudentDashboard() {
           <div className="mb-12">
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">📹</div>
+                <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
+                  📹
+                </div>
                 Upcoming Live Classes
               </h2>
-              <p className="text-sm text-[var(--muted)] font-medium">Join scheduled sessions with your instructors</p>
+              <p className="text-sm text-[var(--muted)] font-medium">
+                Join scheduled sessions with your instructors
+              </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {dashData.upcomingClasses.slice(0, 3).map((lc) => (
@@ -1107,7 +1137,9 @@ function StudentDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-3xl font-bold text-[var(--text)] mb-2 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">📖</div>
+                    <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-lg">
+                      📖
+                    </div>
                     My Learning Path
                   </h2>
                   <p className="text-sm text-[var(--muted)] font-medium">
@@ -1145,15 +1177,25 @@ function StudentDashboard() {
                   {/* Stats grid */}
                   <div className="grid grid-cols-3 gap-2 mb-4 flex-1">
                     {[
-                      { val: c.materialCount || 0, label: "Materials", icon: "📄" },
-                      { val: c.assignmentCount || 0, label: "Tasks", icon: "📝" },
+                      {
+                        val: c.materialCount || 0,
+                        label: "Materials",
+                        icon: "📄",
+                      },
+                      {
+                        val: c.assignmentCount || 0,
+                        label: "Tasks",
+                        icon: "📝",
+                      },
                       { val: c.quizCount || 0, label: "Quizzes", icon: "🧠" },
                     ].map((stat) => (
                       <div
                         key={stat.label}
                         className="p-2.5 rounded-lg bg-[var(--border)]/20 text-center border border-[var(--border)]/30 hover:border-[var(--border)]/60 transition-colors"
                       >
-                        <p className="font-bold text-[var(--text)] text-sm">{stat.val}</p>
+                        <p className="font-bold text-[var(--text)] text-sm">
+                          {stat.val}
+                        </p>
                         <p className="text-[10px] text-[var(--muted)] font-medium uppercase tracking-wider mt-0.5">
                           {stat.label}
                         </p>
@@ -1296,7 +1338,8 @@ function StudentDashboard() {
               No Courses Yet
             </h3>
             <p className="text-[var(--muted)] text-sm max-w-md mx-auto leading-relaxed">
-              Your learning journey starts here! Ask your teacher to create courses for you.
+              Your learning journey starts here! Ask your teacher to create
+              courses for you.
             </p>
           </div>
         )}

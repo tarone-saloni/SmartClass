@@ -21,9 +21,11 @@ import {
 } from "recharts";
 
 // Shared dashboard card style
-const dashCard = "border-2 border-emerald-200 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105";
+const dashCard =
+  "border-2 border-emerald-200 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105";
 const dashCardSoft = "bg-white/95 border-emerald-200";
-const dashCardGradientCool = "bg-gradient-to-br from-blue-50 via-sky-50 to-emerald-50";
+const dashCardGradientCool =
+  "bg-gradient-to-br from-blue-50 via-sky-50 to-emerald-50";
 const dashCardText = "text-black";
 
 const inputCls =
@@ -791,9 +793,7 @@ function TeacherDashboard() {
               className="bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 border-2 border-emerald-200 rounded-2xl p-5 shadow-md hover:shadow-2xl hover:scale-105 transition-all duration-300"
               style={{ animationDelay: `${i * 60}ms` }}
             >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3 bg-gradient-to-br from-emerald-200 to-emerald-300 text-black shadow-lg transition-all duration-500"
-              >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3 bg-gradient-to-br from-emerald-200 to-emerald-300 text-black shadow-lg transition-all duration-500">
                 <span className="text-sm">{s.icon}</span>
               </div>
               <div
@@ -1172,9 +1172,7 @@ function TeacherDashboard() {
                 style={{ animationDelay: `${i * 80}ms` }}
                 onClick={() => navigate(`/course/${c.id}`)}
               >
-                <div
-                  className="absolute inset-0 bg-gradient-to-br from-emerald-100/0 to-emerald-200/20 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none rounded-2xl"
-                />
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/0 to-emerald-200/20 opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none rounded-2xl" />
 
                 <div className="relative z-10 flex flex-col h-full">
                   {/* Top ribbon */}
@@ -1188,9 +1186,7 @@ function TeacherDashboard() {
                       </h3>
                     </div>
                     {c.subject && (
-                      <span
-                        className="px-2.5 py-1 bg-emerald-500/12 text-emerald-700 rounded-lg text-[9px] uppercase font-bold tracking-wider whitespace-nowrap border border-emerald-300/40 shrink-0"
-                      >
+                      <span className="px-2.5 py-1 bg-emerald-500/12 text-emerald-700 rounded-lg text-[9px] uppercase font-bold tracking-wider whitespace-nowrap border border-emerald-300/40 shrink-0">
                         {c.subject}
                       </span>
                     )}

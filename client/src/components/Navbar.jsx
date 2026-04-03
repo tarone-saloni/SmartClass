@@ -59,12 +59,9 @@ const NAV_LINKS = [
   {
     label: "Live Classes",
     icon: "📹",
-    isLiveClass: true   // ✅ IMPORTANT FLAG
-  }
+    isLiveClass: true, // ✅ IMPORTANT FLAG
+  },
 ];
-
-
-
 
 function Navbar({ showBack }) {
   const navigate = useNavigate();
@@ -180,25 +177,25 @@ function Navbar({ showBack }) {
   };
 
   const goToLiveClass = async () => {
-  try {
-    const res = await fetch("/api/live-classes/active");
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/live-classes/active");
+      const data = await res.json();
 
-    if (data?.id) {
-      navigate(`/live-class/${data.id}`);
-    } else {
-      alert("No live class available");
+      if (data?.id) {
+        navigate(`/live-class/${data.id}`);
+      } else {
+        alert("No live class available");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching live class");
     }
-  } catch (err) {
-    console.error(err);
-    alert("Error fetching live class");
-  }
-};
+  };
 
-const handleLogout = () => {
-  logout();
-  navigate("/signin");
-};
+  const handleLogout = () => {
+    logout();
+    navigate("/signin");
+  };
 
   return (
     <nav
@@ -211,8 +208,8 @@ ${
       ? "bg-[#0b0f1a]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_8px_40px_rgba(0,0,0,0.6)]"
       : "bg-transparent"
     : scrolled
-    ? "glass-heavy border-b border-[var(--border)]/60 shadow-[0_4px_30px_-8px_rgba(0,0,0,0.25)]"
-    : "bg-transparent border-b border-transparent"
+      ? "glass-heavy border-b border-[var(--border)]/60 shadow-[0_4px_30px_-8px_rgba(0,0,0,0.25)]"
+      : "bg-transparent border-b border-transparent"
 }`}
     >
       {/* Left Section - Logo & Brand */}
@@ -287,16 +284,16 @@ ${
                   <button
                     type="button"
                     onClick={() => {
-  if (link.isLiveClass) {
-    goToLiveClass();
-    setNavDropdown(null);
-  } else if (link.dropdown) {
-    setNavDropdown(isOpen ? null : link.label);
-  } else {
-    navigate(link.path);
-    setNavDropdown(null);
-  }
-}}
+                      if (link.isLiveClass) {
+                        goToLiveClass();
+                        setNavDropdown(null);
+                      } else if (link.dropdown) {
+                        setNavDropdown(isOpen ? null : link.label);
+                      } else {
+                        navigate(link.path);
+                        setNavDropdown(null);
+                      }
+                    }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-300 active:scale-95 border-none cursor-pointer
                       ${
                         active
@@ -582,13 +579,13 @@ ${
                         key={link.path}
                         type="button"
                         onClick={() => {
-  if (link.isLiveClass) {
-    goToLiveClass();
-  } else {
-    navigate(link.path);
-  }
-  setMobileMenuOpen(false);
-}}
+                          if (link.isLiveClass) {
+                            goToLiveClass();
+                          } else {
+                            navigate(link.path);
+                          }
+                          setMobileMenuOpen(false);
+                        }}
                         className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5
                           transition-all duration-300 active:scale-95 border-none cursor-pointer
                           ${

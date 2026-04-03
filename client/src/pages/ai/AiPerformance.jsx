@@ -16,8 +16,7 @@ export default function AiPerformance() {
   const [res, setRes] = useState(null);
   const [error, setError] = useState("");
 
-  const set = (k) => (e) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const submit = async (e) => {
     e.preventDefault();
@@ -37,7 +36,7 @@ export default function AiPerformance() {
             .map((s) => parseFloat(s.trim()))
             .filter((n) => !isNaN(n)),
           course_progress: Number(form.course_progress),
-        })
+        }),
       );
     } catch (err) {
       setError(err.message);
@@ -47,11 +46,10 @@ export default function AiPerformance() {
   };
 
   return (
-   <div className="min-h-screen flex flex-col bg-[var(--bg)] text-[var(--text)]">
+    <div className="min-h-screen flex flex-col bg-[var(--bg)] text-[var(--text)]">
       <Navbar />
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-10">
-
         {/* HEADER */}
         <div className="mb-8 flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center text-xl">
@@ -59,9 +57,7 @@ export default function AiPerformance() {
           </div>
 
           <div>
-            <h1 className="text-2xl font-semibold">
-              Performance Analyzer
-            </h1>
+            <h1 className="text-2xl font-semibold">Performance Analyzer</h1>
             <p className="text-[var(--muted)] text-sm">
               Analyze academic performance and get insights
             </p>
@@ -72,12 +68,9 @@ export default function AiPerformance() {
 
         {/* CARD */}
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6">
-
           <form onSubmit={submit} className="space-y-5">
-
             {/* ROW */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
               <div className="space-y-1.5">
                 <label className={lbl}>Subject *</label>
                 <input
@@ -141,7 +134,6 @@ export default function AiPerformance() {
 
             {/* RESPONSE */}
             <ResponseBox data={res} error={error} />
-
           </form>
         </div>
       </main>
