@@ -17,8 +17,7 @@ export default function AiCourseOutline() {
   const [res, setRes] = useState(null);
   const [error, setError] = useState("");
 
-  const set = (k) => (e) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const submit = async (e) => {
     e.preventDefault();
@@ -31,7 +30,7 @@ export default function AiCourseOutline() {
           ...form,
           duration_weeks: Number(form.duration_weeks),
           learning_objectives: form.learning_objectives || undefined,
-        })
+        }),
       );
     } catch (err) {
       setError(err.message);
@@ -45,7 +44,6 @@ export default function AiCourseOutline() {
       <Navbar />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">
-        
         {/* HEADER */}
         <div className="mb-10 flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-[#7CFF4F]/10 flex items-center justify-center text-2xl shadow-[0_0_20px_#7CFF4F30]">
@@ -66,16 +64,11 @@ export default function AiCourseOutline() {
 
         {/* MAIN CARD */}
         <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 shadow-2xl">
-
           <form onSubmit={submit} className="space-y-6">
-
             {/* ROW 1 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
               <div>
-                <label className={`${lbl} text-gray-300`}>
-                  Course Title *
-                </label>
+                <label className={`${lbl} text-gray-300`}>Course Title *</label>
                 <input
                   className={`${inp} bg-black border border-white/10 text-white focus:border-[#7CFF4F] focus:ring-1 focus:ring-[#7CFF4F]/40`}
                   required
@@ -86,9 +79,7 @@ export default function AiCourseOutline() {
               </div>
 
               <div>
-                <label className={`${lbl} text-gray-300`}>
-                  Subject *
-                </label>
+                <label className={`${lbl} text-gray-300`}>Subject *</label>
                 <input
                   className={`${inp} bg-black border border-white/10 text-white focus:border-[#7CFF4F] focus:ring-1 focus:ring-[#7CFF4F]/40`}
                   required
@@ -101,7 +92,6 @@ export default function AiCourseOutline() {
 
             {/* ROW 2 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
               <div>
                 <label className={`${lbl} text-gray-300`}>
                   Duration (weeks)
@@ -117,18 +107,17 @@ export default function AiCourseOutline() {
               </div>
 
               <div>
-                <label className={`${lbl} text-gray-300`}>
-                  Target Level
-                </label>
+                <label className={`${lbl} text-gray-300`}>Target Level</label>
                 <select
                   className={`${inp} bg-black border border-white/10 text-white focus:border-[#7CFF4F] focus:ring-1 focus:ring-[#7CFF4F]/40`}
                   value={form.target_level}
                   onChange={set("target_level")}
-                ><div className="text-black">
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </div>
+                >
+                  <div className="text-black">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </div>
                 </select>
               </div>
             </div>
@@ -158,7 +147,6 @@ export default function AiCourseOutline() {
 
             {/* RESPONSE */}
             <ResponseBox data={res} error={error} />
-
           </form>
         </div>
       </main>

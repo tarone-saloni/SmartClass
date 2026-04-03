@@ -5,12 +5,15 @@ const textareaCls =
   "w-full px-4 py-3.5 border border-[var(--border)]/40 rounded-2xl text-sm outline-none resize-y focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent)]/10 focus:shadow-[0_8px_24px_-8px_var(--accent)/20] transition-all duration-300 glass-heavy text-[var(--text)] placeholder:text-[var(--muted)]/40 hover:border-[var(--accent)]/25 font-medium";
 
 export const MATERIAL_TYPES = [
-  { value: "video", label: "Video (YouTube URL)" },
-  { value: "link", label: "Link / URL" },
-  { value: "document", label: "Document" },
+  { value: "video", label: "Video" },
+  { value: "document", label: "Document / PDF" },
   { value: "image", label: "Image" },
+  { value: "link", label: "Link / URL" },
   { value: "other", label: "Other" },
 ];
+
+// Types that support file upload in addition to URL
+export const FILE_UPLOAD_TYPES = ["video", "document", "image"];
 
 export const modalOverlay = (onClose, children) => (
   <div

@@ -10,6 +10,7 @@ const materialSchema = new mongoose.Schema(
       default: "other",
     },
     fileUrl: { type: String, trim: true, default: "" },
+    cloudinaryPublicId: { type: String, default: "" }, // set when uploaded via Cloudinary
     course: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     order: { type: Number, default: 0 }, // for sequencing within a course

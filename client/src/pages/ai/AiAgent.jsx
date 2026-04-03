@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";import AiPlaygroundNav from "../../components/AiPlaygroundNav";import { post, inp, lbl } from "../../utils/aiUtils";
+import Footer from "../../components/Footer";
+import AiPlaygroundNav from "../../components/AiPlaygroundNav";
+import { post, inp, lbl } from "../../utils/aiUtils";
 import { SendBtn, ResponseBox } from "../../utils/aiShared";
 
 const EXAMPLES = [

@@ -2,6 +2,49 @@ import Material from "../models/Material.js";
 import Course from "../models/Course.js";
 import CompletedMaterial from "../models/CompletedMaterial.js";
 import Enrollment from "../models/Enrollment.js";
+import { uploadToCloudinary, getResourceType } from "../utils/cloudinary.js";
+
+// ─── POST /api/courses/:courseId/materials/upload ────────────────────────────
+export async function uploadMaterialFile(req, res) {
+  try {
+    const { courseId } = req.params;
+    const { title, description, type, teacherId } = req.body;
+
+    if (!title || !teacherId)
+      return res.status(400).json({ error: "title and teacherId are required." });
+
+    if (!req.file) return res.status(400).json({ error: "No file uploaded." });
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ error: "Course not found." });
+
+    if (course.teacher.toString() !== teacherId)
+      return res.status(403).json({ error: "Only the course teacher can add materials." });
+
+    // Upload buffer to Cloudinary
+    const resourceType = getResourceType(req.file.mimetype);
+    const uploadResult = await uploadToCloudinary(req.file.buffer, {
+      folder: "smartclass/materials",
+      resource_type: resourceType,
+      use_filename: false,
+    });
+
+    const material = await Material.create({
+      title,
+      description,
+      type: type || "other",
+      fileUrl: uploadResult.secure_url,
+      cloudinaryPublicId: uploadResult.public_id,
+      course: courseId,
+      uploadedBy: teacherId,
+    });
+
+    res.status(201).json(formatMaterial(material));
+  } catch (err) {
+    console.error("uploadMaterialFile error:", err);
+    res.status(500).json({ error: "Failed to upload material." });
+  }
+}
 
 // ─── POST /api/courses/:courseId/materials ────────────────────────────────────
 export async function addMaterial(req, res) {
@@ -95,6 +138,14 @@ export async function deleteMaterial(req, res) {
 
     const material = await Material.findOneAndDelete({ _id: materialId, course: courseId });
     if (!material) return res.status(404).json({ error: "Material not found." });
+
+    // Delete from Cloudinary if uploaded
+    if (material.cloudinaryPublicId) {
+      const { default: cloudinary } = await import("../utils/cloudinary.js");
+      cloudinary.uploader
+        .destroy(material.cloudinaryPublicId, { invalidate: true })
+        .catch((err) => console.warn("Could not delete Cloudinary file:", err.message));
+    }
 
     res.json({ message: "Material deleted." });
   } catch (err) {
