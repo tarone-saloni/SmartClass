@@ -48,7 +48,12 @@ function SignIn() {
       <Navbar />
 
       <div className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
-        <div className="w-full max-w-5xl grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center animate-in fade-in duration-500">
+        <div
+          className="w-full max-w-[900px] overflow-hidden rounded-3xl
+                     flex lg:flex-row flex-col
+                     shadow-[0_32px_80px_-16px_rgba(0,0,0,0.25),0_0_0_1px_color-mix(in_srgb,var(--border)_70%,transparent)]
+                     animate-[scale-in_0.5s_cubic-bezier(0.16,1,0.3,1)_both]"
+        >
           <LeftSidebar />
           <SignInCard onSubmit={handleSubmit} loading={loading} error={error} />
         </div>
