@@ -20,10 +20,10 @@ const TYPE_META = {
   link: {
     icon: "🔗",
     label: "Link",
-    bg: "from-blue-500/20 to-blue-600/8",
-    text: "text-blue-400",
-    border: "border-blue-500/20",
-    iconBg: "bg-blue-500/12",
+    bg: "from-emerald-500/20 to-teal-600/8",
+    text: "text-emerald-400",
+    border: "border-emerald-500/20",
+    iconBg: "bg-emerald-500/12",
   },
   image: {
     icon: "🖼️",
