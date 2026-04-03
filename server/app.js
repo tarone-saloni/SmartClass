@@ -24,12 +24,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export function buildApp() {
   const app = express();
   const httpServer = createServer(app);
-  const CORS_ORIGIN = process.env.CORS_ORIGIN ;
+  const CORS_ORIGIN = process.env.CORS_ORIGIN;
   // ─── Socket.IO ─────────────────────────────────────────────────────────────
   const io = new Server(httpServer, {
-    cors: { 
-      origin: [CORS_ORIGIN, "https://smart-class-ivory.vercel.app"], 
-      credentials: true 
+    cors: {
+      origin: [CORS_ORIGIN, "https://smart-class-ivory.vercel.app"],
+      credentials: true,
     },
     maxHttpBufferSize: 1e7,
   });
@@ -143,10 +143,12 @@ export function buildApp() {
   });
 
   // ─── Middleware ─────────────────────────────────────────────────────────────
-  app.use(cors({ 
-    origin: [CORS_ORIGIN, "https://smart-class-ivory.vercel.app"], 
-    credentials: true 
-  }));
+  app.use(
+    cors({
+      origin: [CORS_ORIGIN, "https://smart-class-ivory.vercel.app"],
+      credentials: true,
+    })
+  );
   app.use(express.json());
   app.use(cookieParser());
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
