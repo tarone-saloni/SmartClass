@@ -113,8 +113,13 @@ describe("Assignments API", () => {
   // ── POST /api/assignments/:id/submit ──────────────────────────────────────
   describe("POST /api/assignments/:id/submit", () => {
     it("submits an assignment as an enrolled student", async () => {
+      // Use a fresh single-assignment course so sequential lock has no predecessors
+      const sc = await createTestCourse(request, teacherCookie, teacher.id, {
+        title: "Submit Course",
+      });
+      await enrollStudent(request, sc.id, student.id);
       const created = await request
-        .post(`/api/courses/${courseId}/assignments`)
+        .post(`/api/courses/${sc.id}/assignments`)
         .set("Cookie", teacherCookie)
         .send({ title: "Submit Me", teacherId: teacher.id });
       const aId = created.body.id;
@@ -147,8 +152,13 @@ describe("Assignments API", () => {
   // ── GET /api/assignments/:id/submissions ──────────────────────────────────
   describe("GET /api/assignments/:id/submissions", () => {
     it("returns submissions for an assignment", async () => {
+      // Fresh single-assignment course so the student can submit without sequential blocking
+      const sc = await createTestCourse(request, teacherCookie, teacher.id, {
+        title: "Subs Course",
+      });
+      await enrollStudent(request, sc.id, student.id);
       const created = await request
-        .post(`/api/courses/${courseId}/assignments`)
+        .post(`/api/courses/${sc.id}/assignments`)
         .set("Cookie", teacherCookie)
         .send({ title: "View Subs", teacherId: teacher.id });
       const aId = created.body.id;
@@ -168,8 +178,13 @@ describe("Assignments API", () => {
   // ── PATCH /api/assignments/submissions/:id/grade ──────────────────────────
   describe("PATCH /api/assignments/submissions/:submissionId/grade", () => {
     it("grades a submission as the teacher", async () => {
+      // Fresh single-assignment course so the student can submit without sequential blocking
+      const sc = await createTestCourse(request, teacherCookie, teacher.id, {
+        title: "Grade Course",
+      });
+      await enrollStudent(request, sc.id, student.id);
       const created = await request
-        .post(`/api/courses/${courseId}/assignments`)
+        .post(`/api/courses/${sc.id}/assignments`)
         .set("Cookie", teacherCookie)
         .send({ title: "Grade Me", maxScore: 50, teacherId: teacher.id });
       const aId = created.body.id;

@@ -189,6 +189,13 @@ export default function LiveClassRoom() {
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
 
+  // ── subtitle / speech-to-text state ─────────────────────────────────────────
+  const [subtitleOn, setSubtitleOn] = useState(false);
+  const [subtitle, setSubtitle] = useState("");
+  const subtitleOnRef = useRef(false); // ref so onend closure sees latest value
+  const recognitionRef = useRef(null);
+  const subtitleClearRef = useRef(null); // timeout handle to auto-clear final subtitles
+
   // ─── data fetch ───────────────────────────────────────────────────────────────
   const loadClass = useCallback(async () => {
     const res = await apiFetch(`/api/live-classes/${id}`);
@@ -413,6 +420,71 @@ export default function LiveClassRoom() {
       }
     };
   }, [id, user.id]);
+
+  // ─── teacher: live speech-to-text subtitles ──────────────────────────────
+  const toggleSubtitles = useCallback(() => {
+    if (subtitleOnRef.current) {
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+      subtitleOnRef.current = false;
+      setSubtitleOn(false);
+      setSubtitle("");
+      socket.emit("speech:stop", { liveClassId: id });
+    } else {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        alert(
+          "Speech recognition is not supported in this browser. Please use Chrome or Edge.",
+        );
+        return;
+      }
+      const r = new SR();
+      r.continuous = true;
+      r.interimResults = true;
+      r.lang = "en-US";
+
+      r.onresult = (e) => {
+        let interim = "";
+        let final = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript;
+          if (e.results[i].isFinal) final += t;
+          else interim += t;
+        }
+        if (interim) {
+          setSubtitle(interim);
+          socket.emit("speech:interim", { liveClassId: id, text: interim });
+        }
+        if (final) {
+          setSubtitle(final);
+          socket.emit("speech:final", { liveClassId: id, text: final });
+          clearTimeout(subtitleClearRef.current);
+          subtitleClearRef.current = setTimeout(() => setSubtitle(""), 6000);
+        }
+      };
+
+      r.onerror = (e) => {
+        if (e.error !== "aborted")
+          console.error("Speech recognition error:", e.error);
+      };
+
+      r.onend = () => {
+        // Auto-restart while CC is still toggled on (browser stops after silence)
+        if (subtitleOnRef.current) {
+          try {
+            r.start();
+          } catch {
+            /* ignore if already starting */
+          }
+        }
+      };
+
+      recognitionRef.current = r;
+      subtitleOnRef.current = true;
+      setSubtitleOn(true);
+      r.start();
+    }
+  }, [id, socket]); // subtitleOnRef / recognitionRef are refs — no dep needed
 
   // ─── teacher: end class ───────────────────────────────────────────────────
   const endClass = useCallback(async () => {
@@ -781,6 +853,18 @@ export default function LiveClassRoom() {
     const onRecordingAvailable = ({ recordingUrl }) =>
       setLiveClass((p) => p && { ...p, recordingUrl });
 
+    // ── speech subtitles ──────────────────────────────────────────────────
+    // Students (and teacher for Claude-corrected version) receive subtitle events
+    const onSubtitle = ({ text }) => {
+      setSubtitle(text);
+      clearTimeout(subtitleClearRef.current);
+      subtitleClearRef.current = setTimeout(() => setSubtitle(""), 6000);
+    };
+    const onSubtitleStop = () => {
+      clearTimeout(subtitleClearRef.current);
+      setSubtitle("");
+    };
+
     socket.on("new-comment", onNewComment);
     socket.on("new-reply", onNewReply);
     socket.on("new-question", onNewQuestion);
@@ -802,6 +886,8 @@ export default function LiveClassRoom() {
     socket.on("screen-share-started", onScreenStarted);
     socket.on("screen-share-stopped", onScreenStopped);
     socket.on("recording-available", onRecordingAvailable);
+    socket.on("speech:subtitle", onSubtitle);
+    socket.on("speech:stop", onSubtitleStop);
 
     return () => {
       socket.emit("leave-liveclass", id);
@@ -810,11 +896,19 @@ export default function LiveClassRoom() {
         screenStreamRef.current?.getTracks().forEach((t) => t.stop());
         peerConnsRef.current.forEach((pc) => pc.close());
         socket.emit("broadcaster-stop", { liveClassId: id });
+        // Stop speech recognition if active
+        if (subtitleOnRef.current) {
+          recognitionRef.current?.stop();
+          recognitionRef.current = null;
+          subtitleOnRef.current = false;
+          socket.emit("speech:stop", { liveClassId: id });
+        }
       } else {
         studentMicStreamRef.current?.getTracks().forEach((t) => t.stop());
         studentCamStreamRef.current?.getTracks().forEach((t) => t.stop());
         peerConnRef.current?.close();
       }
+      clearTimeout(subtitleClearRef.current);
       [
         ["new-comment", onNewComment],
         ["new-reply", onNewReply],
@@ -837,6 +931,8 @@ export default function LiveClassRoom() {
         ["screen-share-started", onScreenStarted],
         ["screen-share-stopped", onScreenStopped],
         ["recording-available", onRecordingAvailable],
+        ["speech:subtitle", onSubtitle],
+        ["speech:stop", onSubtitleStop],
       ].forEach(([ev, fn]) => socket.off(ev, fn));
     };
   }, [id, isTeacher]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1105,6 +1201,17 @@ export default function LiveClassRoom() {
                 )}
               </div>
             )}
+
+            {/* ── Live subtitle overlay ──────────────────────────────────── */}
+            {subtitle && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 w-full max-w-2xl px-6 pointer-events-none">
+                <div className="text-center px-5 py-2.5 rounded-2xl bg-black/80 backdrop-blur-sm border border-white/10 shadow-xl">
+                  <p className="text-white text-[15px] font-medium leading-snug tracking-wide">
+                    {subtitle}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ── Participant strip ───────────────────────────────────────────── */}
@@ -1272,6 +1379,16 @@ export default function LiveClassRoom() {
                     <span className="text-[10px] text-amber-400 font-bold animate-pulse">
                       Uploading…
                     </span>
+                  )}
+                  {cameraStreamRef.current && (
+                    <CtrlBtn
+                      onClick={toggleSubtitles}
+                      active={subtitleOn}
+                      label={subtitleOn ? "CC On" : "Captions"}
+                      title="Live subtitles via speech recognition"
+                    >
+                      CC
+                    </CtrlBtn>
                   )}
                 </>
               ) : (

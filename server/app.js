@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import Anthropic from "@anthropic-ai/sdk";
 import { initIO } from "./app/services/socketService.js";
 import authRoutes from "./app/routes/auth.js";
 import courseRoutes from "./app/routes/courses.js";
@@ -154,6 +155,51 @@ export function buildApp() {
     });
     socket.on("teacher-reanswer", ({ to, answer }) => {
       io.to(to).emit("teacher-reanswer", { answer });
+    });
+
+    // ── Speech-to-text subtitles ────────────────────────────────────────────
+    // Interim results: relay instantly to all students (no AI processing)
+    socket.on("speech:interim", ({ liveClassId, text }) => {
+      if (!liveClassId || !text) return;
+      socket.to(`liveclass:${liveClassId}`).emit("speech:subtitle", { text });
+    });
+
+    // Final results: relay raw immediately, then ask Claude to clean up grammar
+    socket.on("speech:final", async ({ liveClassId, text }) => {
+      if (!liveClassId || !text) return;
+      // Send raw final to students right away so there's no wait
+      socket.to(`liveclass:${liveClassId}`).emit("speech:subtitle", { text });
+
+      // Ask Claude to fix grammar/punctuation and re-broadcast the polished version
+      try {
+        const anthropic = new Anthropic();
+        const msg = await anthropic.messages.create({
+          model: process.env.AI_MODEL || "claude-sonnet-4-6",
+          max_tokens: 256,
+          messages: [
+            {
+              role: "user",
+              content:
+                `Fix only grammar and punctuation in this live classroom speech transcript. ` +
+                `Do NOT change the meaning or add/remove words. ` +
+                `Output only the corrected text with no explanation:\n\n${text}`,
+            },
+          ],
+        });
+        const corrected = msg.content[0]?.text?.trim();
+        // Only re-emit if Claude actually changed something
+        if (corrected && corrected !== text) {
+          io.to(`liveclass:${liveClassId}`).emit("speech:subtitle", { text: corrected });
+        }
+      } catch (err) {
+        console.error("Claude subtitle correction error:", err.message);
+      }
+    });
+
+    // Teacher stopped subtitles — clear subtitle bar for all students
+    socket.on("speech:stop", ({ liveClassId }) => {
+      if (!liveClassId) return;
+      socket.to(`liveclass:${liveClassId}`).emit("speech:stop");
     });
 
     socket.on("disconnect", () => {
