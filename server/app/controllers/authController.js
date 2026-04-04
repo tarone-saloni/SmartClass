@@ -37,10 +37,11 @@ function generateOtp() {
 }
 
 const COOKIE_NAME = process.env.COOKIE_NAME || "sc_token";
+const isProd = process.env.NODE_ENV === "production";
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
   maxAge: parseInt(process.env.JWT_COOKIE_MAX_AGE) || 604800000,
 };
 
