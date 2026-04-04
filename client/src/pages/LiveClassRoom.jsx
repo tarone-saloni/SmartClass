@@ -643,7 +643,7 @@ export default function LiveClassRoom() {
       const pc = new RTCPeerConnection(ICE_CONFIG);
       peerConnRef.current = pc;
 
-      pc.ontrack = ({ track, streams }) => {
+      pc.ontrack = ({ track }) => {
         if (track.kind === "audio") {
           const s = remoteCameraRef.current?.srcObject ?? new MediaStream();
           s.addTrack(track);

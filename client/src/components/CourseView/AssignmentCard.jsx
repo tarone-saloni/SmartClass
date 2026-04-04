@@ -12,6 +12,9 @@ function AssignmentCard({
   mySubmission,
   submissions,
   submissionText,
+  isLocked,
+  lockedByTitle,
+  lockedByOrder,
   onSubmit,
   onToggleSubs,
   onDelete,
@@ -22,8 +25,13 @@ function AssignmentCard({
   const hasSubmission = !!mySubmission;
   const isGraded = mySubmission?.status === "graded";
 
-  const statusConfig =
-    isOverdue && !hasSubmission
+  const statusConfig = isLocked
+    ? {
+        bar: "from-slate-500 to-slate-600",
+        iconBg: "bg-slate-500/12 border-slate-500/18",
+        icon: "🔒",
+      }
+    : isOverdue && !hasSubmission
       ? {
           bar: "from-red-500 to-red-600",
           iconBg: "bg-red-500/12 border-red-500/18",
@@ -43,17 +51,32 @@ function AssignmentCard({
 
   return (
     <div
-      className="group bg-[var(--surface)] rounded-2xl border border-[var(--border)] hover:border-[var(--accent)]/40 transition-all duration-300 overflow-hidden
-                    hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.12)]"
+      className={`group bg-[var(--surface)] rounded-2xl border transition-all duration-300 overflow-hidden
+                    ${
+                      isLocked
+                        ? "border-[var(--border)]/40 opacity-70"
+                        : "border-[var(--border)] hover:border-[var(--accent)]/40 hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.12)]"
+                    }`}
     >
+      {/* Sequential order indicator */}
+      <div
+        className={`h-0.5 w-full bg-gradient-to-r ${statusConfig.bar} opacity-60`}
+      />
+
       <div className="p-5 sm:p-6">
         <div className="flex items-start gap-4">
           {/* Status icon */}
-          <div
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 border
-                           ${statusConfig.iconBg} group-hover:scale-105 transition-transform duration-300`}
-          >
-            {statusConfig.icon}
+          <div className="flex flex-col items-center gap-1.5">
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 border
+                             ${statusConfig.iconBg} ${!isLocked ? "group-hover:scale-105 transition-transform duration-300" : ""}`}
+            >
+              {statusConfig.icon}
+            </div>
+            {/* Order badge */}
+            <span className="text-[9px] font-black text-[var(--muted)] bg-[var(--border)]/15 px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+              #{assignment.order ?? "—"}
+            </span>
           </div>
 
           <div className="flex-1 min-w-0">
@@ -67,19 +90,23 @@ function AssignmentCard({
                   <>
                     <button
                       onClick={() => onToggleSubs(assignment.id)}
-                      className="px-4 py-2 bg-[var(--accent)]/8 hover:bg-[var(--accent)]/15 text-[var(--accent)] rounded-xl text-xs font-bold 
+                      className="px-4 py-2 bg-[var(--accent)]/8 hover:bg-[var(--accent)]/15 text-[var(--accent)] rounded-xl text-xs font-bold
                                  border border-[var(--accent)]/12 cursor-pointer transition-all duration-300 active:scale-95"
                     >
                       {submissions !== undefined ? "Hide" : "Submissions"}
                     </button>
                     <button
                       onClick={() => onDelete(assignment.id)}
-                      className="px-4 py-2 bg-red-500/6 hover:bg-red-500/14 text-red-400 rounded-xl text-xs font-bold 
+                      className="px-4 py-2 bg-red-500/6 hover:bg-red-500/14 text-red-400 rounded-xl text-xs font-bold
                                  border border-red-500/15 cursor-pointer transition-all duration-300 active:scale-95"
                     >
                       Delete
                     </button>
                   </>
+                ) : isLocked ? (
+                  <span className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-500/10 text-slate-400 rounded-xl text-xs font-bold border border-slate-500/18">
+                    🔒 Locked
+                  </span>
                 ) : isGraded ? (
                   <span
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-black border ${scoreColor(scorePct(mySubmission.score, assignment.maxScore))}`}
@@ -134,8 +161,26 @@ function AssignmentCard({
           </div>
         </div>
 
+        {/* Locked notice for student */}
+        {!isTeacher && isLocked && (
+          <div className="mt-5 pt-5 border-t border-[var(--border)]/10">
+            <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-slate-500/6 border border-slate-500/15">
+              <span className="text-xl">🔒</span>
+              <div>
+                <p className="text-[13px] font-bold text-[var(--text)]">
+                  Complete Assignment #{lockedByOrder} first
+                </p>
+                <p className="text-[12px] text-[var(--muted)] mt-0.5">
+                  Submit "{lockedByTitle}" before you can work on this
+                  assignment.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Student: submission form */}
-        {!isTeacher && !hasSubmission && (
+        {!isTeacher && !hasSubmission && !isLocked && (
           <div className="mt-5 pt-5 border-t border-[var(--border)]">
             <p className="text-[11px] font-bold text-[var(--muted)] mb-2.5 uppercase tracking-[0.12em]">
               Your Answer

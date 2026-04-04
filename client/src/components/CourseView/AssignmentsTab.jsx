@@ -12,6 +12,27 @@ function AssignmentsTab({
   onGrade,
   onAddClick,
 }) {
+  // Compute which assignments are locked for the student.
+  // An assignment is locked if any previous-order assignment has not been submitted yet.
+  const lockedMap = {};
+  if (!isTeacher) {
+    // assignments are already sorted by order ascending from the backend
+    let firstUnsubmitted = null;
+    for (const a of assignments) {
+      if (firstUnsubmitted !== null) {
+        // All assignments after the first unsubmitted one are locked
+        lockedMap[a.id] = {
+          locked: true,
+          byTitle: firstUnsubmitted.title,
+          byOrder: firstUnsubmitted.order,
+        };
+      } else if (!mySubmissions[a.id]) {
+        firstUnsubmitted = a;
+        // The first unsubmitted assignment itself is NOT locked — student can work on it
+      }
+    }
+  }
+
   return (
     <div>
       {/* Section header */}
@@ -27,6 +48,9 @@ function AssignmentsTab({
             <p className="text-[11px] text-[var(--muted)] font-medium mt-0.5">
               {assignments.length}{" "}
               {assignments.length === 1 ? "assignment" : "assignments"} posted
+              {!isTeacher && assignments.length > 0 && (
+                <span className="ml-2 text-amber-400">· complete in order</span>
+              )}
             </p>
           </div>
         </div>
@@ -74,27 +98,33 @@ function AssignmentsTab({
         </div>
       ) : (
         <div className="space-y-4">
-          {assignments.map((a, i) => (
-            <div
-              key={a.id}
-              className="animate-[slide-up_0.4s_cubic-bezier(0.16,1,0.3,1)_both]"
-              style={{ animationDelay: `${i * 60}ms` }}
-            >
-              <AssignmentCard
-                assignment={a}
-                isTeacher={isTeacher}
-                mySubmission={mySubmissions[a.id]}
-                submissions={expandedSubs[a.id]}
-                submissionText={submissionText[a.id]}
-                onSubmit={(aid, text, isUpdate) =>
-                  isUpdate ? onSubmit(aid, text) : onSubmit(aid, text, false)
-                }
-                onToggleSubs={onToggleSubs}
-                onDelete={onDelete}
-                onGrade={onGrade}
-              />
-            </div>
-          ))}
+          {assignments.map((a, i) => {
+            const lockInfo = lockedMap[a.id];
+            return (
+              <div
+                key={a.id}
+                className="animate-[slide-up_0.4s_cubic-bezier(0.16,1,0.3,1)_both]"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <AssignmentCard
+                  assignment={a}
+                  isTeacher={isTeacher}
+                  mySubmission={mySubmissions[a.id]}
+                  submissions={expandedSubs[a.id]}
+                  submissionText={submissionText[a.id]}
+                  isLocked={!!lockInfo}
+                  lockedByTitle={lockInfo?.byTitle}
+                  lockedByOrder={lockInfo?.byOrder}
+                  onSubmit={(aid, text, isUpdate) =>
+                    isUpdate ? onSubmit(aid, text) : onSubmit(aid, text, false)
+                  }
+                  onToggleSubs={onToggleSubs}
+                  onDelete={onDelete}
+                  onGrade={onGrade}
+                />
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

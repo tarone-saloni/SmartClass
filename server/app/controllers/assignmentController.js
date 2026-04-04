@@ -19,11 +19,16 @@ export async function createAssignment(req, res) {
     if (course.teacher.toString() !== teacherId)
       return res.status(403).json({ error: "Only the course teacher can create assignments." });
 
+    // Auto-set order to next available position in this course
+    const lastAssignment = await Assignment.findOne({ course: courseId }).sort({ order: -1 });
+    const nextOrder = lastAssignment ? lastAssignment.order + 1 : 1;
+
     const assignment = await Assignment.create({
       title,
       description,
       dueDate: dueDate || null,
       maxScore: maxScore || 100,
+      order: nextOrder,
       course: courseId,
       createdBy: teacherId,
     });
@@ -51,7 +56,11 @@ export async function getCourseAssignments(req, res) {
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ error: "Course not found." });
 
-    const assignments = await Assignment.find({ course: courseId }).sort({ createdAt: -1 });
+    // Always return in sequential order (ascending by order, then createdAt for ties)
+    const assignments = await Assignment.find({ course: courseId }).sort({
+      order: 1,
+      createdAt: 1,
+    });
     res.json(assignments.map(formatAssignment));
   } catch (err) {
     console.error("getCourseAssignments error:", err);
@@ -109,8 +118,16 @@ export async function deleteAssignment(req, res) {
       return res.status(403).json({ error: "Only the assignment creator can delete it." });
 
     const courseId = assignment.course.toString();
+    const deletedOrder = assignment.order;
+
     await Assignment.findByIdAndDelete(req.params.id);
     await Submission.deleteMany({ assignment: req.params.id });
+
+    // Re-number remaining assignments to keep order contiguous
+    await Assignment.updateMany(
+      { course: courseId, order: { $gt: deletedOrder } },
+      { $inc: { order: -1 } }
+    );
 
     emitToCourse(courseId, "assignment:deleted", { id: req.params.id, courseId });
     res.json({ message: "Assignment deleted." });
@@ -134,6 +151,32 @@ export async function submitAssignment(req, res) {
     const course = await Course.findById(assignment.course);
     const isEnrolled = course.enrolledStudents.some((s) => s.toString() === studentId);
     if (!isEnrolled) return res.status(403).json({ error: "You are not enrolled in this course." });
+
+    // ── Sequential submission check ─────────────────────────────────────────
+    // Get all assignments in this course that come before this one (lower order)
+    const previousAssignments = await Assignment.find({
+      course: assignment.course,
+      order: { $lt: assignment.order },
+    }).select("_id title order");
+
+    if (previousAssignments.length > 0) {
+      const prevIds = previousAssignments.map((a) => a._id);
+      const completedPrevious = await Submission.find({
+        assignment: { $in: prevIds },
+        student: studentId,
+      }).select("assignment");
+
+      const completedIds = new Set(completedPrevious.map((s) => s.assignment.toString()));
+      const missing = previousAssignments.find((a) => !completedIds.has(a._id.toString()));
+
+      if (missing) {
+        return res.status(403).json({
+          error: `You must submit Assignment ${missing.order}: "${missing.title}" before submitting this one.`,
+          blockedBy: { id: missing._id, title: missing.title, order: missing.order },
+        });
+      }
+    }
+    // ── End sequential check ────────────────────────────────────────────────
 
     const now = new Date();
     const isLate = assignment.dueDate && now > assignment.dueDate;
@@ -260,6 +303,7 @@ function formatAssignment(a) {
     description: a.description,
     dueDate: a.dueDate,
     maxScore: a.maxScore,
+    order: a.order,
     course: a.course,
     createdBy: a.createdBy ? { id: a.createdBy._id || a.createdBy, name: a.createdBy.name } : null,
     createdAt: a.createdAt,

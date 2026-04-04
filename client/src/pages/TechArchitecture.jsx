@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { ThemeContext } from "../context/ThemeContext";
@@ -380,7 +379,7 @@ function ArchLayer({ label, accent, children }) {
 ───────────────────────────────────────────────────────── */
 
 function TechArchitecture() {
-  const { themeName } = useContext(ThemeContext);
+  // Removed unused themeName to satisfy no-unused-vars lint rule
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col transition-colors duration-300">

@@ -51,7 +51,6 @@ const NAV_LINKS = [
       path: `/ai-playground/${t.id}`,
     })),
   },
-  { label: "Live Classes", icon: "📹", path: "/live-classes" },
 ];
 
 function Navbar({ showBack }) {
@@ -68,7 +67,6 @@ function Navbar({ showBack }) {
   const mobileMenuRef = useRef(null);
   const navDropdownRef = useRef(null);
 
-  const themeKeys = Object.keys(themeMap || {});
   const unread = notifs.filter((n) => !n.read).length;
   const isAuthenticated = user && user.role !== "guest";
 
@@ -312,11 +310,14 @@ function Navbar({ showBack }) {
         {/* AUTHENTICATED USER SECTION */}
         {isAuthenticated ? (
           <>
-            {/* User Info - Desktop Only */}
-            <div
+            {/* User Info - Desktop Only (clickable → profile) */}
+            <button
+              type="button"
+              onClick={() => navigate(`/profile`)}
               className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-xl
                            border border-[var(--accent)]/20 bg-[var(--accent)]/6
-                           hover:bg-[var(--accent)]/10 transition-all duration-300"
+                           hover:bg-[var(--accent)]/10 transition-all duration-300 cursor-pointer active:scale-95"
+              title="View your profile"
             >
               <div className="text-right">
                 <p className="text-sm font-bold text-[var(--text)] leading-tight">
@@ -327,13 +328,13 @@ function Navbar({ showBack }) {
                 </p>
               </div>
               <div
-                className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[color-mix(in_srgb,var(--accent)_60%,#ec4899)] 
+                className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[color-mix(in_srgb,var(--accent)_60%,#ec4899)]
                              flex items-center justify-center text-[var(--accent-contrast)] text-xs font-bold
                              shadow-[0_4px_12px_-4px_var(--accent)] ring-2 ring-[var(--accent)]/20"
               >
                 {user.name?.charAt(0).toUpperCase()}
               </div>
-            </div>
+            </button>
 
             {/* Notifications */}
             <div className="relative" ref={ref}>
@@ -511,6 +512,23 @@ function Navbar({ showBack }) {
                       </button>
                     );
                   })}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigate("/profile");
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2.5
+                      transition-all duration-300 active:scale-95 border-none cursor-pointer
+                      ${
+                        location.pathname === "/profile"
+                          ? "bg-[var(--accent)]/15 text-[var(--accent)]"
+                          : "text-[var(--text)] hover:bg-[var(--accent)]/8"
+                      }`}
+                  >
+                    <span>👤</span>
+                    <span>My Profile</span>
+                  </button>
                 </div>
                 <div className="p-2">
                   <button

@@ -14,6 +14,7 @@ import AiExplain from "../pages/ai/AiExplain";
 import AiPerformance from "../pages/ai/AiPerformance";
 import AiCourseOutline from "../pages/ai/AiCourseOutline";
 import AiAgent from "../pages/ai/AiAgent";
+import ProfilePage from "../pages/ProfilePage";
 import Features from "../pages/Features";
 import Security from "../pages/Security";
 import Enterprise from "../pages/Enterprise";
@@ -43,6 +44,8 @@ function ProtectedRoutes() {
       <Route path="/quiz/:id" element={<QuizView />} />
       <Route path="/live-class/:id" element={<LiveClassRoom />} />
       <Route path="/live-classes" element={<Navigate to="/" replace />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/profile/:userId" element={<ProfilePage />} />
 
       {/* AI — each feature is its own page */}
       <Route
