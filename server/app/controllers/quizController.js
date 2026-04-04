@@ -2,6 +2,7 @@ import Quiz from "../models/Quiz.js";
 import QuizResult from "../models/QuizResult.js";
 import Course from "../models/Course.js";
 import { emitToCourse, emitToUser } from "../services/socketService.js";
+import { pushNotification } from "../services/notificationService.js";
 
 // ─── POST /api/courses/:courseId/quizzes ──────────────────────────────────────
 export async function createQuiz(req, res) {
@@ -30,6 +31,12 @@ export async function createQuiz(req, res) {
 
     const formatted = formatQuiz(quiz);
     emitToCourse(courseId, "quiz:new", formatted);
+
+    // Notify every enrolled student
+    course.enrolledStudents.forEach((studentId) => {
+      pushNotification(studentId.toString(), `📊 New quiz: "${title}"`, "course");
+    });
+
     res.status(201).json(formatted);
   } catch (err) {
     console.error("createQuiz error:", err);
@@ -151,7 +158,7 @@ export async function submitQuiz(req, res) {
 
     const formatted = formatResult(result);
 
-    // Notify teacher of new submission
+    // Notify teacher of new submission (socket) + persist notification
     emitToUser(course.teacher.toString(), "quiz:submitted", {
       quizId: id,
       quizTitle: quiz.title,
@@ -160,6 +167,11 @@ export async function submitQuiz(req, res) {
       score,
       totalPoints,
     });
+    pushNotification(
+      course.teacher.toString(),
+      `📊 A student submitted quiz "${quiz.title}" — score: ${score}/${totalPoints}`,
+      "course"
+    );
 
     res.status(201).json(formatted);
   } catch (err) {

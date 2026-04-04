@@ -2,6 +2,7 @@ import Assignment from "../models/Assignment.js";
 import Submission from "../models/Submission.js";
 import Course from "../models/Course.js";
 import { emitToCourse, emitToUser } from "../services/socketService.js";
+import { pushNotification } from "../services/notificationService.js";
 
 // ─── POST /api/courses/:courseId/assignments ──────────────────────────────────
 export async function createAssignment(req, res) {
@@ -29,6 +30,12 @@ export async function createAssignment(req, res) {
 
     const formatted = formatAssignment(assignment);
     emitToCourse(courseId, "assignment:new", formatted);
+
+    // Notify every enrolled student
+    course.enrolledStudents.forEach((studentId) => {
+      pushNotification(studentId.toString(), `📝 New assignment: "${title}"`, "course");
+    });
+
     res.status(201).json(formatted);
   } catch (err) {
     console.error("createAssignment error:", err);
@@ -144,7 +151,7 @@ export async function submitAssignment(req, res) {
       { upsert: true, new: true }
     );
 
-    // Notify teacher in real-time
+    // Notify teacher in real-time (socket) + persist notification
     emitToUser(course.teacher.toString(), "assignment:submitted", {
       assignmentId: id,
       assignmentTitle: assignment.title,
@@ -152,6 +159,11 @@ export async function submitAssignment(req, res) {
       courseId: assignment.course.toString(),
       submittedAt: now,
     });
+    pushNotification(
+      course.teacher.toString(),
+      `📤 A student submitted assignment: "${assignment.title}"`,
+      "course"
+    );
 
     res.status(201).json(formatSubmission(submission));
   } catch (err) {
@@ -218,7 +230,7 @@ export async function gradeSubmission(req, res) {
     submission.status = "graded";
     await submission.save();
 
-    // Notify the student of their grade
+    // Notify the student of their grade (socket) + persist notification
     emitToUser(submission.student.toString(), "assignment:graded", {
       assignmentId: submission.assignment._id.toString(),
       assignmentTitle: submission.assignment.title,
@@ -227,6 +239,11 @@ export async function gradeSubmission(req, res) {
       feedback: submission.feedback,
       maxScore: submission.assignment.maxScore,
     });
+    pushNotification(
+      submission.student.toString(),
+      `✅ Your assignment "${submission.assignment.title}" was graded: ${submission.score}/${submission.assignment.maxScore}`,
+      "course"
+    );
 
     res.json(formatSubmission(submission));
   } catch (err) {

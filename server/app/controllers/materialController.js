@@ -4,6 +4,7 @@ import CompletedMaterial from "../models/CompletedMaterial.js";
 import Enrollment from "../models/Enrollment.js";
 import { uploadToCloudinary, getResourceType } from "../utils/cloudinary.js";
 import { emitToCourse, emitToUser } from "../services/socketService.js";
+import { pushNotification } from "../services/notificationService.js";
 
 // ─── POST /api/courses/:courseId/materials/upload ────────────────────────────
 export async function uploadMaterialFile(req, res) {
@@ -42,6 +43,12 @@ export async function uploadMaterialFile(req, res) {
 
     const formatted = formatMaterial(material);
     emitToCourse(courseId, "material:new", formatted);
+
+    // Notify every enrolled student
+    course.enrolledStudents.forEach((studentId) => {
+      pushNotification(studentId.toString(), `📎 New material added: "${title}"`, "course");
+    });
+
     res.status(201).json(formatted);
   } catch (err) {
     console.error("uploadMaterialFile error:", err);
@@ -75,6 +82,12 @@ export async function addMaterial(req, res) {
 
     const formatted = formatMaterial(material);
     emitToCourse(courseId, "material:new", formatted);
+
+    // Notify every enrolled student
+    course.enrolledStudents.forEach((studentId) => {
+      pushNotification(studentId.toString(), `📎 New material added: "${title}"`, "course");
+    });
+
     res.status(201).json(formatted);
   } catch (err) {
     console.error("addMaterial error:", err);
@@ -124,6 +137,12 @@ export async function updateMaterial(req, res) {
 
     const formatted = formatMaterial(material);
     emitToCourse(courseId, "material:updated", formatted);
+
+    // Notify every enrolled student that content was updated
+    course.enrolledStudents.forEach((studentId) => {
+      pushNotification(studentId.toString(), `✏️ Material updated: "${material.title}"`, "course");
+    });
+
     res.json(formatted);
   } catch (err) {
     console.error("updateMaterial error:", err);

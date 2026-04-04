@@ -3,6 +3,7 @@ import ClassComment from "../models/ClassComment.js";
 import ClassQuestion from "../models/ClassQuestion.js";
 import Course from "../models/Course.js";
 import { getIO } from "../services/socketService.js";
+import { pushNotification } from "../services/notificationService.js";
 
 // ─── POST /api/courses/:courseId/live-classes ─────────────────────────────────
 export async function createLiveClass(req, res) {
@@ -32,10 +33,11 @@ export async function createLiveClass(req, res) {
       meetingLink: classType === "meetLink" ? meetingLink || "" : "",
     });
 
-    // Notify enrolled students via socket
+    // Notify enrolled students via socket + persist notification
     try {
       const io = getIO();
       course.enrolledStudents.forEach((studentId) => {
+        // Keep live-class-scheduled for StudentDashboard reload
         io.to(`user:${studentId}`).emit("live-class-scheduled", {
           liveClassId: liveClass._id,
           title: liveClass.title,
@@ -43,6 +45,12 @@ export async function createLiveClass(req, res) {
           scheduledAt: liveClass.scheduledAt,
           type: liveClass.type,
         });
+        // Persist + push notification:new
+        pushNotification(
+          studentId.toString(),
+          `📹 Live class scheduled: "${liveClass.title}"`,
+          "course"
+        );
       });
     } catch {
       /* non-critical */
@@ -170,6 +178,14 @@ export async function updateLiveClassStatus(req, res) {
           status,
           type: liveClass.type,
         });
+        // Persist notification when class goes live
+        if (status === "live") {
+          pushNotification(
+            studentId.toString(),
+            `🔴 Live class started: "${liveClass.title}"`,
+            "course"
+          );
+        }
       });
 
       // Also broadcast inside the live class room (for participants currently in it)

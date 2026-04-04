@@ -2,8 +2,8 @@ import Enrollment from "../models/Enrollment.js";
 import Course from "../models/Course.js";
 import Material from "../models/Material.js";
 import CompletedMaterial from "../models/CompletedMaterial.js";
-import Notification from "../models/Notification.js";
 import { getIO } from "../services/socketService.js";
+import { pushNotification } from "../services/notificationService.js";
 
 // ─── POST /api/enrollments ────────────────────────────────────────────────────
 export async function enroll(req, res) {
@@ -30,13 +30,17 @@ export async function enroll(req, res) {
       { upsert: true, new: true }
     );
 
-    // Notify the teacher
+    // Notify the teacher (persists to DB + emits notification:new)
+    pushNotification(
+      course.teacher.toString(),
+      `🎓 A new student enrolled in "${course.title}"`,
+      "course"
+    );
+    // Keep student-enrolled for StudentDashboard / other listeners
     try {
-      const notifMessage = `A new student enrolled in "${course.title}"`;
-      await Notification.create({ user: course.teacher, message: notifMessage, type: "course" });
       const io = getIO();
       io.to(`user:${course.teacher}`).emit("student-enrolled", {
-        message: notifMessage,
+        message: `A new student enrolled in "${course.title}"`,
         courseId,
         studentId,
       });

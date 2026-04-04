@@ -92,58 +92,14 @@ function Navbar({ showBack }) {
       .then((d) => Array.isArray(d) && setNotifs(d));
 
     const socket = getSocket(user.id);
-    socket.on("new-course", (notif) => {
-      setNotifs((prev) => [
-        {
-          id: notif.id || Date.now(),
-          message: notif.message,
-          createdAt: notif.createdAt,
-          read: false,
-        },
-        ...prev,
-      ]);
-    });
-    socket.on("live-class-scheduled", (data) => {
-      setNotifs((prev) => [
-        {
-          id: `lc_${Date.now()}`,
-          message: `📹 Live class scheduled: "${data.title}"`,
-          createdAt: new Date().toISOString(),
-          read: false,
-        },
-        ...prev,
-      ]);
-    });
-    socket.on("live-class-status", (data) => {
-      if (data.status === "live") {
-        setNotifs((prev) => [
-          {
-            id: `lcs_${Date.now()}`,
-            message: `🔴 A live class just started!`,
-            createdAt: new Date().toISOString(),
-            read: false,
-          },
-          ...prev,
-        ]);
-      }
-    });
-    socket.on("student-enrolled", (data) => {
-      setNotifs((prev) => [
-        {
-          id: `enroll_${Date.now()}`,
-          message: data.message || "A student enrolled in your course",
-          createdAt: new Date().toISOString(),
-          read: false,
-        },
-        ...prev,
-      ]);
+
+    // Single unified listener — backend persists to DB before emitting
+    socket.on("notification:new", (notif) => {
+      setNotifs((prev) => [{ ...notif, read: false }, ...prev]);
     });
 
     return () => {
-      socket.off("new-course");
-      socket.off("live-class-scheduled");
-      socket.off("live-class-status");
-      socket.off("student-enrolled");
+      socket.off("notification:new");
     };
   }, [user?.id, isAuthenticated]);
 
