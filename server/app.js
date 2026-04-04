@@ -67,7 +67,7 @@ export function buildApp() {
       socket.to(`liveclass:${liveClassId}`).emit("broadcaster-ready", { liveClassId });
     });
 
-    socket.on("viewer", ({ liveClassId }) => {
+    socket.on("viewer", ({ liveClassId, userId, userName }) => {
       if (!liveClassId) return;
       socket.join(`liveclass:${liveClassId}`);
       const broadcasterSocketId = broadcasters.get(liveClassId);
@@ -75,8 +75,24 @@ export function buildApp() {
         io.to(broadcasterSocketId).emit("new-viewer", {
           viewerSocketId: socket.id,
           liveClassId,
+          userId,
+          userName,
         });
       }
+    });
+
+    // ── Student camera presence ─────────────────────────────────────────────
+    socket.on("student-cam-on", ({ liveClassId, userId, userName }) => {
+      if (!liveClassId) return;
+      socket
+        .to(`liveclass:${liveClassId}`)
+        .emit("student-cam-on", { userId, userName, socketId: socket.id });
+    });
+    socket.on("student-cam-off", ({ liveClassId, userId }) => {
+      if (!liveClassId) return;
+      socket
+        .to(`liveclass:${liveClassId}`)
+        .emit("student-cam-off", { userId, socketId: socket.id });
     });
 
     socket.on("offer", ({ to, offer, liveClassId }) => {
