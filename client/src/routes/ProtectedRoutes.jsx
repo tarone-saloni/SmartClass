@@ -18,6 +18,7 @@ import Features from "../pages/Features";
 import Security from "../pages/Security";
 import Enterprise from "../pages/Enterprise";
 import About from "../pages/About";
+import TechArchitecture from "../pages/TechArchitecture";
 import Blog from "../pages/Blog";
 import Privacy from "../pages/Privacy";
 import Terms from "../pages/Terms";
@@ -65,6 +66,7 @@ function ProtectedRoutes() {
       <Route path="/security" element={<Security />} />
       <Route path="/enterprise" element={<Enterprise />} />
       <Route path="/about" element={<About />} />
+      <Route path="/about/architecture" element={<TechArchitecture />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
