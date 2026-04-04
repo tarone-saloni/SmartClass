@@ -36,10 +36,7 @@ function QuizzesTab({ quizzes, isTeacher, onDelete, onAddClick }) {
       </div>
 
       {quizzes.length === 0 ? (
-        <div
-          className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
-                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]"
-        >
+        <div className="text-center py-20 bg-[var(--surface)] rounded-2xl border border-[var(--border)]">
           <div
             className="w-16 h-16 rounded-3xl bg-pink-500/10 border border-pink-500/15 flex items-center justify-center text-3xl mx-auto mb-5
                           shadow-[0_8px_24px_-8px_rgba(236,72,153,0.15)]"
@@ -68,14 +65,11 @@ function QuizzesTab({ quizzes, isTeacher, onDelete, onAddClick }) {
           {quizzes.map((q, i) => (
             <div
               key={q.id}
-              className="group glass-heavy rounded-2xl border border-[var(--border)]/12 hover:border-[var(--accent)]/20
-                         overflow-hidden transition-all duration-400 animate-[slide-up_0.4s_cubic-bezier(0.16,1,0.3,1)_both]
-                         hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.12)]"
+              className="group bg-[var(--surface)] rounded-2xl border border-[var(--border)] hover:border-[var(--accent)]/40
+                         overflow-hidden transition-all duration-300 animate-[slide-up_0.4s_cubic-bezier(0.16,1,0.3,1)_both]
+                         hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.1)]"
               style={{ animationDelay: `${i * 60}ms` }}
             >
-              {/* Quiz accent bar */}
-              <div className="h-[2px] w-full bg-gradient-to-r from-pink-500 to-rose-500" />
-
               <div className="p-5 sm:p-6 flex items-start gap-4">
                 {/* Icon */}
                 <div

@@ -2,68 +2,69 @@ import { useEffect } from "react";
 
 const themeStyles = {
   light: {
-    "--bg": "#f8f9fc",
+    "--bg": "#f1f5f9",
     "--surface": "#ffffff",
     "--surface-elevated": "#ffffff",
+    "--surface-hover": "#f8fafc",
     "--text": "#0f172a",
     "--text-secondary": "#334155",
     "--muted": "#64748b",
-    "--accent": "#6366f1",
-    "--accent-light": "#818cf8",
+    "--accent": "#4f46e5",
+    "--accent-light": "#6366f1",
     "--accent-contrast": "#ffffff",
     "--border": "#e2e8f0",
     "--border-light": "#f1f5f9",
     "--shadow-color": "220 60% 2%",
     "--glow-color": "239 84% 67%",
-    className: "",
+    "--success": "#16a34a",
+    "--warning": "#d97706",
+    "--danger": "#dc2626",
+    "--info": "#0284c7",
+    className: "light",
   },
   dark: {
-    "--bg": "#030712",
-    "--surface": "#0f1729",
-    "--surface-elevated": "#1a2340",
+    "--bg": "#0f172a",
+    "--surface": "#1e293b",
+    "--surface-elevated": "#273549",
+    "--surface-hover": "#253044",
     "--text": "#f1f5f9",
     "--text-secondary": "#cbd5e1",
     "--muted": "#94a3b8",
     "--accent": "#818cf8",
     "--accent-light": "#a5b4fc",
     "--accent-contrast": "#0f172a",
-    "--border": "#1e293b",
-    "--border-light": "#1e293b",
+    "--border": "#334155",
+    "--border-light": "#293547",
     "--shadow-color": "222 47% 4%",
     "--glow-color": "239 84% 67%",
+    "--success": "#22c55e",
+    "--warning": "#f59e0b",
+    "--danger": "#f87171",
+    "--info": "#38bdf8",
     className: "dark",
-  },
-  custom: {
-    "--bg": "#0c0a1a",
-    "--surface": "#150f2d",
-    "--surface-elevated": "#1e1745",
-    "--text": "#e0e7ff",
-    "--text-secondary": "#c7d2fe",
-    "--muted": "#8b8d9e",
-    "--accent": "#a78bfa",
-    "--accent-light": "#c4b5fd",
-    "--accent-contrast": "#0c0a1a",
-    "--border": "#2e2654",
-    "--border-light": "#2e2654",
-    "--shadow-color": "260 50% 4%",
-    "--glow-color": "263 70% 70%",
-    className: "custom-theme",
   },
 };
 
 function ThemeApplier({ themeName }) {
   useEffect(() => {
     const current = themeStyles[themeName] || themeStyles.light;
+
+    // Apply all CSS custom properties to :root
     Object.entries(current).forEach(([key, value]) => {
       if (key.startsWith("--"))
         document.documentElement.style.setProperty(key, value);
     });
-    document.documentElement.classList.remove("dark", "custom-theme");
-    if (current.className)
+
+    // Toggle dark class for Tailwind dark: utilities
+    document.documentElement.classList.remove("light", "dark");
+    if (current.className) {
       document.documentElement.classList.add(current.className);
+    }
+
+    // Persist selection
     localStorage.setItem("smartclass_theme", themeName);
 
-    // Set meta theme-color for mobile browsers
+    // Set mobile browser chrome colour
     const meta =
       document.querySelector('meta[name="theme-color"]') ||
       document.createElement("meta");

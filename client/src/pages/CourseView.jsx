@@ -583,7 +583,7 @@ function CourseView() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#0f172a,_#020617)] text-white flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col transition-colors duration-300">
       <Navbar showBack />
 
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
@@ -607,13 +607,13 @@ function CourseView() {
             style={{ top: "1rem" }}
           >
             {/* Sidebar nav card */}
-            <div className="glass-dark rounded-2xl overflow-hidden border border-white/5 shadow-2xl glow">
+            <div className="rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-lg">
               {/* Sidebar header */}
-              <div className="px-4 py-4 border-b border-white/5 bg-gradient-to-r from-[#7CFF4F]/10 to-transparent">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              <div className="px-4 py-4 border-b border-[var(--border)] bg-gradient-to-r from-[var(--accent)]/8 to-transparent">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
                   Course Content
                 </p>
-                <p className="text-sm font-semibold text-white truncate">
+                <p className="text-sm font-semibold text-[var(--text)] truncate">
                   {course.title}
                 </p>
               </div>
@@ -628,34 +628,25 @@ function CourseView() {
                       key={t}
                       onClick={() => navigate(`/course/${id}/${t}`)}
                       className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl
-text-sm font-semibold transition-all duration-300 cursor-pointer mb-1 relative overflow-hidden
+text-sm font-semibold transition-all duration-200 cursor-pointer mb-1 relative overflow-hidden border-none
 ${
   isActive
-    ? "text-[#7CFF4F] bg-[#7CFF4F]/10 glow"
-    : "text-gray-400 hover:text-white hover:bg-white/5"
+    ? "bg-[var(--accent)]/12 text-[var(--accent)]"
+    : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface-elevated)]"
 }`}
                       style={
                         isActive
-                          ? {
-                              background:
-                                "linear-gradient(90deg, var(--accent)/12%, var(--accent)/4%)",
-                              boxShadow: "inset 3px 0 0 var(--accent)",
-                            }
+                          ? { boxShadow: "inset 3px 0 0 var(--accent)" }
                           : {}
                       }
                     >
-                      {/* Hover bg */}
-                      {!isActive && (
-                        <span className="absolute inset-0 rounded-xl bg-[var(--border)]/0 group-hover:bg-[var(--border)]/12 transition-all duration-200" />
-                      )}
-
                       {/* Icon */}
                       <span
                         className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all
   ${
     isActive
-      ? "bg-[#7CFF4F]/20 text-[#7CFF4F]"
-      : "bg-white/5 group-hover:bg-white/10"
+      ? "bg-[var(--accent)]/20"
+      : "bg-[var(--surface-elevated)] group-hover:bg-[var(--border)]"
   }`}
                       >
                         {meta.icon}
@@ -672,7 +663,7 @@ ${
                                         ${
                                           isActive
                                             ? "bg-[var(--accent)]/20 text-[var(--accent)]"
-                                            : "bg-[var(--border)]/20 text-[var(--muted)] group-hover:bg-[var(--border)]/30"
+                                            : "bg-[var(--border)] text-[var(--muted)]"
                                         }`}
                       >
                         {tabCount[t]}
@@ -684,7 +675,7 @@ ${
 
               {/* Progress strip for students */}
               {!isTeacher && materials.length > 0 && (
-                <div className="px-4 py-3 border-t border-[var(--border)]/15">
+                <div className="px-4 py-3 border-t border-[var(--border)]">
                   <div className="flex justify-between items-center mb-1.5">
                     <span className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">
                       Progress
@@ -693,13 +684,13 @@ ${
                       {matProgress}%
                     </span>
                   </div>
-                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-2 bg-[var(--border)] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#7CFF4F] to-lime-400 rounded-full transition-all duration-700 shadow-[0_0_10px_#7CFF4F]"
+                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-700"
                       style={{ width: `${matProgress}%` }}
                     />
                   </div>
-                  <p className="text-[10px] text-[var(--muted)]/70 mt-1.5 font-medium">
+                  <p className="text-[10px] text-[var(--muted)] mt-1.5 font-medium">
                     {completedMats.size}/{materials.length} materials done
                   </p>
                 </div>
@@ -707,7 +698,7 @@ ${
 
               {/* Quick stats for teacher */}
               {isTeacher && (
-                <div className="px-4 py-2 rounded-xl bg-[#7CFF4F] text-black font-semibold glow-hover transition-all duration-300">
+                <div className="px-4 pb-4">
                   <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-2">
                     Overview
                   </p>
@@ -716,27 +707,27 @@ ${
                       {
                         label: "Students",
                         val: course.enrollmentCount || 0,
-                        color: "text-emerald-400",
+                        color: "text-emerald-500",
                       },
                       {
                         label: "Materials",
                         val: materials.length,
-                        color: "text-emerald-400",
+                        color: "text-blue-500",
                       },
                       {
                         label: "Quizzes",
                         val: quizzes.length,
-                        color: "text-pink-400",
+                        color: "text-pink-500",
                       },
                       {
                         label: "Live",
                         val: liveClasses.length,
-                        color: "text-red-400",
+                        color: "text-red-500",
                       },
                     ].map((s) => (
                       <div
                         key={s.label}
-                        className="glass-dark rounded-2xl p-6 border border-white/10 shadow-2xl glow"
+                        className="rounded-xl p-3 border border-[var(--border)] bg-[var(--surface-elevated)]"
                       >
                         <p className={`text-sm font-black ${s.color}`}>
                           {s.val}
@@ -784,7 +775,7 @@ ${
             </div>
 
             {/* Tab content */}
-            <div className="glass-dark rounded-2xl p-5 border border-white/5 shadow-xl glow animate-fade-in">
+            <div className="rounded-2xl p-5 border border-[var(--border)] bg-[var(--surface)] shadow-sm animate-fade-in transition-colors duration-300">
               <div className="animate-[fade-in_0.3s_ease_both]" key={tab}>
                 {tab === "materials" && (
                   <MaterialsTab

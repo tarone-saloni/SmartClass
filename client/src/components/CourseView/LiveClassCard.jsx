@@ -47,14 +47,9 @@ function LiveClassCard({
 
   return (
     <div
-      className={`group glass-heavy rounded-2xl border overflow-hidden transition-all duration-400
-                   hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.12)] ${statusMeta.cardBorder}`}
+      className={`group bg-[var(--surface)] rounded-2xl border overflow-hidden transition-all duration-300
+                   hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.10)] ${statusMeta.cardBorder}`}
     >
-      {/* Status bar */}
-      <div
-        className={`h-[2px] w-full bg-gradient-to-r ${statusMeta.bar} ${isLive ? "animate-pulse" : ""}`}
-      />
-
       <div className="p-5 sm:p-6 flex items-start gap-4">
         {/* Icon */}
         <div

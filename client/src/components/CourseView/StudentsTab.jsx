@@ -31,10 +31,7 @@ function StudentsTab({ students }) {
       </div>
 
       {students.length === 0 ? (
-        <div
-          className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
-                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]"
-        >
+        <div className="text-center py-20 bg-[var(--surface)] rounded-2xl border border-[var(--border)]">
           <div
             className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-3xl mx-auto mb-5
                           shadow-[0_8px_24px_-8px_rgba(16,185,129,0.15)]"
@@ -56,9 +53,9 @@ function StudentsTab({ students }) {
               return (
                 <div
                   key={s.id}
-                  className="group glass-heavy rounded-2xl p-4.5 border border-[var(--border)]/10 hover:border-[var(--accent)]/15
-                             flex items-center gap-3.5 transition-all duration-400
-                             hover:shadow-[0_12px_36px_-8px_rgba(0,0,0,0.1)]
+                  className="group bg-[var(--surface)] rounded-xl p-4 border border-[var(--border)] hover:border-[var(--accent)]/40
+                             flex items-center gap-3.5 transition-all duration-300
+                             hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.08)]
                              animate-[slide-up_0.4s_cubic-bezier(0.16,1,0.3,1)_both]"
                   style={{ animationDelay: `${i * 40}ms` }}
                 >
@@ -102,7 +99,7 @@ function StudentsTab({ students }) {
           </div>
 
           {/* Footer info */}
-          <div className="mt-5 px-5 py-3.5 glass rounded-2xl border border-[var(--border)]/8 flex items-center gap-2.5">
+          <div className="mt-5 px-4 py-3 bg-[var(--surface-elevated)] rounded-xl border border-[var(--border)] flex items-center gap-2.5">
             <span className="text-[12px] text-[var(--muted)] font-medium">
               💡 {students.length} student{students.length !== 1 ? "s" : ""}{" "}
               enrolled in this course

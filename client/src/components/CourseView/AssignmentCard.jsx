@@ -43,12 +43,9 @@ function AssignmentCard({
 
   return (
     <div
-      className="group glass-heavy rounded-2xl border border-[var(--border)]/12 hover:border-[var(--accent)]/18 transition-all duration-400 overflow-hidden
+      className="group bg-[var(--surface)] rounded-2xl border border-[var(--border)] hover:border-[var(--accent)]/40 transition-all duration-300 overflow-hidden
                     hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.12)]"
     >
-      {/* Status accent bar */}
-      <div className={`h-[2px] w-full bg-gradient-to-r ${statusConfig.bar}`} />
-
       <div className="p-5 sm:p-6">
         <div className="flex items-start gap-4">
           {/* Status icon */}
@@ -139,14 +136,14 @@ function AssignmentCard({
 
         {/* Student: submission form */}
         {!isTeacher && !hasSubmission && (
-          <div className="mt-5 pt-5 border-t border-[var(--border)]/10">
+          <div className="mt-5 pt-5 border-t border-[var(--border)]">
             <p className="text-[11px] font-bold text-[var(--muted)] mb-2.5 uppercase tracking-[0.12em]">
               Your Answer
             </p>
             <textarea
-              className="w-full px-4 py-3.5 glass-heavy border border-[var(--border)]/25 rounded-2xl text-sm outline-none
-                         resize-y focus:border-[var(--accent)] focus:ring-3 focus:ring-[var(--accent)]/10
-                         transition-all duration-300 text-[var(--text)] placeholder:text-[var(--muted)]/35 min-h-[100px] font-medium"
+              className="w-full px-4 py-3.5 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl text-sm outline-none
+                         resize-y focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12
+                         transition-all duration-300 text-[var(--text)] placeholder:text-[var(--muted)] min-h-[100px] font-medium"
               placeholder="Write your answer here..."
               value={submissionText || ""}
               onChange={(e) => onSubmit(assignment.id, e.target.value, true)}

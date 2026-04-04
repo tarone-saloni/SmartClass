@@ -212,8 +212,8 @@ export default function LearningHero() {
           </div>
         </section>
 
-        {/* ── FEATURES BAR ── */}
-        <section className="bg-slate-900 dark:bg-slate-950">
+        {/* —— FEATURES BAR —— */}
+        <section className="bg-[var(--surface-elevated)] border-y border-[var(--border)] transition-colors duration-300">
           <div className="flex flex-col sm:flex-row sm:flex-wrap">
             {features.map((f, i) => (
               <div
@@ -222,22 +222,22 @@ export default function LearningHero() {
                   flex items-start gap-4 px-6 py-8 sm:flex-1 sm:min-w-[180px]
                   ${
                     i < features.length - 1
-                      ? "border-b border-white/10 sm:border-b-0 sm:border-r sm:border-white/15"
+                      ? "border-b border-[var(--border)] sm:border-b-0 sm:border-r sm:border-[var(--border)]"
                       : ""
                   }
                 `}
               >
                 {/* Feature icon */}
-                <div className="text-amber-400 dark:text-yellow-400 shrink-0 mt-0.5">
+                <div className="text-[var(--accent)] shrink-0 mt-0.5">
                   {f.icon}
                 </div>
 
                 {/* Feature text */}
                 <div>
-                  <p className="text-white text-sm font-bold leading-snug mb-1.5">
+                  <p className="text-[var(--text)] text-sm font-bold leading-snug mb-1.5">
                     {f.title}
                   </p>
-                  <p className="text-white/50 text-xs leading-relaxed">
+                  <p className="text-[var(--muted)] text-xs leading-relaxed">
                     {f.desc}
                   </p>
                 </div>

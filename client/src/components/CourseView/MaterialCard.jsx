@@ -1,3 +1,4 @@
+import { useState } from "react";
 import VideoEmbed from "./VideoEmbed";
 
 const TYPE_META = {
@@ -5,42 +6,48 @@ const TYPE_META = {
     icon: "▶️",
     label: "Video",
     bg: "from-red-500/20 to-red-600/8",
-    text: "text-red-400",
+    text: "text-red-500",
     border: "border-red-500/20",
     iconBg: "bg-red-500/12",
+    expandColor: "text-red-500",
   },
   document: {
     icon: "📄",
     label: "Document",
     bg: "from-amber-500/20 to-amber-600/8",
-    text: "text-amber-400",
+    text: "text-amber-500",
     border: "border-amber-500/20",
     iconBg: "bg-amber-500/12",
+    expandColor: "text-amber-500",
   },
   link: {
     icon: "🔗",
     label: "Link",
     bg: "from-emerald-500/20 to-teal-600/8",
-    text: "text-emerald-400",
+    text: "text-emerald-500",
     border: "border-emerald-500/20",
     iconBg: "bg-emerald-500/12",
+    expandColor: "text-emerald-500",
   },
   image: {
     icon: "🖼️",
     label: "Image",
     bg: "from-purple-500/20 to-purple-600/8",
-    text: "text-purple-400",
+    text: "text-purple-500",
     border: "border-purple-500/20",
     iconBg: "bg-purple-500/12",
+    expandColor: "text-purple-500",
   },
 };
+
 const defaultMeta = {
   icon: "📝",
   label: "Other",
   bg: "from-emerald-500/20 to-emerald-600/8",
-  text: "text-emerald-400",
+  text: "text-emerald-500",
   border: "border-emerald-500/20",
   iconBg: "bg-emerald-500/12",
+  expandColor: "text-emerald-500",
 };
 
 function isYouTubeUrl(url) {
@@ -57,124 +64,118 @@ function MaterialCard({
   const meta = TYPE_META[material.type] || defaultMeta;
   const fileUrl = material.fileUrl || "";
 
+  // Expanded = show full details+video; collapsed = headline only
+  const [expanded, setExpanded] = useState(false);
+
+  const hasMedia = !!fileUrl;
+
   return (
     <div
-      className={`group relative glass-heavy rounded-2xl border transition-all duration-400 overflow-hidden
+      className={`group rounded-2xl border transition-all duration-300 overflow-hidden bg-[var(--surface)]
                      ${
                        isDone
-                         ? "border-emerald-500/25 shadow-[0_0_24px_-6px_rgba(16,185,129,0.12)]"
-                         : "border-[var(--border)]/15 hover:border-[var(--accent)]/20 hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.15)]"
+                         ? "border-emerald-500/30 shadow-[0_0_20px_-6px_rgba(16,185,129,0.10)]"
+                         : "border-[var(--border)] hover:border-[var(--accent)]/40 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.10)]"
                      }`}
     >
-      {/* Subtle top gradient line */}
-      <div
-        className={`h-[2px] w-full bg-gradient-to-r ${
-          isDone
-            ? "from-emerald-500/60 via-emerald-400/40 to-transparent"
-            : `${meta.bg.replace(/\/\d+/g, "")}`
-        }`}
-        style={{
-          background: isDone
-            ? "linear-gradient(90deg, rgba(16,185,129,0.5), rgba(20,184,166,0.3), transparent)"
-            : undefined,
-        }}
-      />
+      {/* ── HEADER ROW (always visible, clickable) ── */}
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center gap-4 px-5 py-4 text-left cursor-pointer
+                   transition-colors duration-200 hover:bg-[var(--surface-elevated)]"
+      >
+        {/* Type icon */}
+        <div
+          className={`w-10 h-10 rounded-xl bg-gradient-to-br ${meta.bg} border ${meta.border}
+                         flex items-center justify-center text-lg shrink-0
+                         group-hover:scale-105 transition-all duration-300 flex-shrink-0`}
+        >
+          {meta.icon}
+        </div>
 
-      <div className="p-5 sm:p-6">
-        <div className="flex items-start gap-4">
-          {/* Type icon */}
-          <div
-            className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${meta.bg} border ${meta.border}
-                           flex items-center justify-center text-xl shrink-0
-                           group-hover:scale-110 group-hover:shadow-lg transition-all duration-400`}
-          >
-            {meta.icon}
+        {/* Title + badges */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="text-[14px] font-bold text-[var(--text)] leading-snug">
+              {material.title}
+            </h4>
+            <span
+              className={`px-2 py-[2px] rounded-md text-[10px] font-black uppercase tracking-widest
+                             bg-gradient-to-br ${meta.bg} ${meta.text} border ${meta.border}`}
+            >
+              {meta.label}
+            </span>
+            {isDone && (
+              <span className="flex items-center gap-1 px-2 py-[2px] rounded-md text-[10px] font-black uppercase tracking-widest bg-emerald-500/12 text-emerald-500 border border-emerald-500/20">
+                <svg
+                  width="9"
+                  height="9"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
+                </svg>
+                Done
+              </span>
+            )}
           </div>
 
-          <div className="flex-1 min-w-0">
-            {/* Title + badges row */}
-            <div className="flex items-start justify-between gap-3 mb-1.5">
-              <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-                <h4 className="text-[15px] font-bold text-[var(--text)] leading-snug">
-                  {material.title}
-                </h4>
-                <span
-                  className={`px-2.5 py-[3px] rounded-lg text-[10px] font-black uppercase tracking-widest
-                                 bg-gradient-to-br ${meta.bg} ${meta.text} border ${meta.border}`}
-                >
-                  {meta.label}
-                </span>
-                {isDone && (
-                  <span className="flex items-center gap-1 px-2.5 py-[3px] rounded-lg text-[10px] font-black uppercase tracking-widest bg-emerald-500/12 text-emerald-400 border border-emerald-500/20">
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 16 16"
-                      fill="currentColor"
-                    >
-                      <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
-                    </svg>
-                    Done
-                  </span>
-                )}
-              </div>
+          {/* Date line (always visible) */}
+          <p className="text-[11px] text-[var(--muted)] mt-0.5">
+            Added{" "}
+            {new Date(material.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </p>
+        </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-2 shrink-0">
-                {!isTeacher && (
-                  <button
-                    onClick={() => onToggleComplete(material.id)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-all duration-300 active:scale-95
-                                 ${
-                                   isDone
-                                     ? "bg-emerald-500/12 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20 shadow-[0_0_12px_-4px_rgba(16,185,129,0.2)]"
-                                     : "glass hover:bg-[var(--accent)]/10 text-[var(--muted)] hover:text-[var(--accent)] border-[var(--border)]/25 hover:border-[var(--accent)]/25"
-                                 }`}
-                  >
-                    {isDone ? "✓ Completed" : "Mark Done"}
-                  </button>
-                )}
-                {isTeacher && (
-                  <button
-                    onClick={() => onDelete(material.id)}
-                    className="px-4 py-2 bg-red-500/8 hover:bg-red-500/15 text-red-400 rounded-xl text-xs font-bold
-                               border border-red-500/15 hover:border-red-500/25 cursor-pointer transition-all duration-300 active:scale-95"
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            </div>
+        {/* Chevron expand/collapse indicator */}
+        <div className="shrink-0 flex items-center gap-2">
+          {hasMedia && (
+            <span
+              className={`text-[11px] font-semibold ${meta.expandColor} opacity-70`}
+            >
+              {expanded ? "Collapse" : "View"}
+            </span>
+          )}
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            className={`text-[var(--muted)] transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+          >
+            <path d="M4.22 6.22a.75.75 0 011.06 0L8 8.94l2.72-2.72a.75.75 0 111.06 1.06l-3.25 3.25a.75.75 0 01-1.06 0L4.22 7.28a.75.75 0 010-1.06z" />
+          </svg>
+        </div>
+      </button>
 
+      {/* ── EXPANDED CONTENT ── */}
+      {expanded && (
+        <div className="px-5 pb-5 border-t border-[var(--border)]">
+          <div className="pt-4 space-y-4">
             {/* Description */}
             {material.description && (
-              <p className="text-[13px] text-[var(--muted)] mb-2.5 leading-relaxed line-clamp-2">
+              <p className="text-[13px] text-[var(--muted)] leading-relaxed">
                 {material.description}
               </p>
             )}
 
-            {/* Date */}
-            <p className="text-[11px] text-[var(--muted)]/50 font-medium mb-2">
-              Added{" "}
-              {new Date(material.createdAt).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </p>
-
-            {/* Video: YouTube embed OR HTML5 player (Cloudinary / direct URL) */}
+            {/* Video: YouTube embed OR HTML5 player */}
             {material.type === "video" &&
               fileUrl &&
               (isYouTubeUrl(fileUrl) ? (
-                <div className="mt-3 rounded-xl overflow-hidden ring-1 ring-[var(--border)]/10">
+                <div className="rounded-xl overflow-hidden ring-1 ring-[var(--border)]">
                   <VideoEmbed url={fileUrl} />
                 </div>
               ) : (
                 <video
                   controls
-                  className="w-full mt-3 rounded-xl ring-1 ring-[var(--border)]/10"
-                  style={{ maxHeight: 220 }}
+                  className="w-full rounded-xl ring-1 ring-[var(--border)]"
+                  style={{ maxHeight: 260 }}
                 >
                   <source src={fileUrl} />
                   Your browser does not support the video tag.
@@ -186,8 +187,8 @@ function MaterialCard({
               <img
                 src={fileUrl}
                 alt={material.title}
-                className="w-full mt-3 rounded-xl object-cover ring-1 ring-[var(--border)]/10"
-                style={{ maxHeight: 220 }}
+                className="w-full rounded-xl object-cover ring-1 ring-[var(--border)]"
+                style={{ maxHeight: 260 }}
               />
             )}
 
@@ -198,14 +199,14 @@ function MaterialCard({
                   href={fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`inline-flex items-center gap-2 text-xs font-bold mt-1 px-3 py-1.5 rounded-lg
+                  className={`inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-lg
                              ${meta.iconBg} ${meta.text} border ${meta.border}
-                             hover:shadow-md transition-all duration-300 hover:scale-[1.02]`}
+                             hover:shadow-md transition-all duration-200 hover:scale-[1.02]`}
                 >
                   {meta.icon} Open {meta.label}
                   <svg
-                    width="12"
-                    height="12"
+                    width="11"
+                    height="11"
                     viewBox="0 0 16 16"
                     fill="currentColor"
                     className="opacity-60"
@@ -214,19 +215,45 @@ function MaterialCard({
                   </svg>
                 </a>
               )}
+
+            {/* Actions row */}
+            <div className="flex items-center gap-2 pt-1 border-t border-[var(--border)]">
+              {!isTeacher && (
+                <button
+                  onClick={() => onToggleComplete(material.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-all duration-200 active:scale-95
+                               ${
+                                 isDone
+                                   ? "bg-emerald-500/12 hover:bg-emerald-500/20 text-emerald-500 border-emerald-500/25"
+                                   : "bg-[var(--surface-elevated)] hover:bg-[var(--accent)]/10 text-[var(--muted)] hover:text-[var(--accent)] border-[var(--border)] hover:border-[var(--accent)]/30"
+                               }`}
+                >
+                  {isDone ? "✓ Completed" : "Mark as Done"}
+                </button>
+              )}
+              {isTeacher && (
+                <button
+                  onClick={() => onDelete(material.id)}
+                  className="px-4 py-2 bg-red-500/8 hover:bg-red-500/15 text-red-500 rounded-xl text-xs font-bold
+                             border border-red-500/20 hover:border-red-500/30 cursor-pointer transition-all duration-200 active:scale-95"
+                >
+                  Delete
+                </button>
+              )}
+
+              {/* Completed footer indicator */}
+              {isDone && (
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-[0.1em]">
+                    Completed
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-        {/* Completed footer */}
-        {isDone && (
-          <div className="mt-4 pt-3.5 border-t border-emerald-500/10 flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
-            <span className="text-[11px] font-bold text-emerald-400/80 uppercase tracking-[0.12em]">
-              Material completed
-            </span>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }

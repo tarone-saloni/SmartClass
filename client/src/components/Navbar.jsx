@@ -24,11 +24,6 @@ const THEME_META = {
     icon: "🌙",
     color: "from-indigo-500 to-purple-600",
   },
-  [themeMap.custom]: {
-    label: "Cosmic",
-    icon: "✨",
-    color: "from-violet-500 to-fuchsia-500",
-  },
 };
 
 const AI_TABS = [
@@ -123,9 +118,7 @@ function Navbar({ showBack }) {
   };
 
   const cycleTheme = () => {
-    const i = themeKeys.indexOf(themeName);
-    const next = themeKeys[(i + 1) % themeKeys.length];
-    setThemeName(next);
+    setThemeName((prev) => (prev === "light" ? "dark" : "light"));
   };
 
   const handleLogout = () => {
@@ -277,12 +270,9 @@ function Navbar({ showBack }) {
 
       {/* Right Section */}
       <div className="flex items-center gap-1.5 sm:gap-2.5">
-        {/* Desktop theme switch */}
-        <div
-          className="hidden lg:flex items-center gap-0.5 p-1 rounded-xl border border-[var(--border)]/50
-                     glass shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-        >
-          {themeKeys.map((key) => {
+        {/* Desktop theme toggle: Light / Dark */}
+        <div className="hidden lg:flex items-center gap-0.5 p-1 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)]">
+          {Object.keys(themeMap).map((key) => {
             const active = themeName === key;
             return (
               <button
@@ -290,13 +280,13 @@ function Navbar({ showBack }) {
                 type="button"
                 onClick={() => setThemeName(key)}
                 title={THEME_META[key]?.label || key}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-300 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 ${
                   active
-                    ? "bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[0_4px_16px_-4px_var(--accent)] scale-105"
-                    : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--accent)]/8"
+                    ? "bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[0_4px_12px_-4px_var(--accent)]"
+                    : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface)]"
                 } active:scale-95`}
               >
-                <span className="mr-1">{THEME_META[key]?.icon || "🎨"}</span>
+                <span>{THEME_META[key]?.icon || "🎨"}</span>
                 <span className="hidden xl:inline">
                   {THEME_META[key]?.label || key}
                 </span>
@@ -305,18 +295,18 @@ function Navbar({ showBack }) {
           })}
         </div>
 
-        {/* Mobile theme switch */}
+        {/* Mobile: icon-only toggle */}
         <button
           type="button"
           onClick={cycleTheme}
-          className="lg:hidden h-9 w-9 rounded-xl border border-[var(--border)]/50
-                     glass text-sm cursor-pointer hover:bg-[var(--accent)]/12 
-                     transition-all duration-300 active:scale-90 flex items-center justify-center
-                     hover:border-[var(--accent)]/40 hover:shadow-[0_4px_16px_-4px_var(--accent)]"
-          title="Change theme"
-          aria-label="Change theme"
+          className="lg:hidden h-9 w-9 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)]
+                     text-sm cursor-pointer hover:bg-[var(--accent)]/12
+                     transition-all duration-200 active:scale-90 flex items-center justify-center
+                     hover:border-[var(--accent)]/40"
+          title={`Switch to ${themeName === "light" ? "dark" : "light"} mode`}
+          aria-label="Toggle theme"
         >
-          {THEME_META[themeName]?.icon || "🎨"}
+          {themeName === "dark" ? "☀️" : "🌙"}
         </button>
 
         {/* AUTHENTICATED USER SECTION */}

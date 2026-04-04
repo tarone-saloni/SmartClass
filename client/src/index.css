@@ -501,45 +501,50 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════
-   ANIMATED BACKGROUND ORBS
+   LIGHT THEME (default)
    ═══════════════════════════════════════════════════ */
 
-.bg-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  pointer-events: none;
-  animation:
-    morph 15s ease-in-out infinite,
-    glow 4s ease-in-out infinite;
+:root,
+.light {
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-hover: #f8fafc;
+  --text: #0f172a;
+  --text-secondary: #334155;
+  --muted: #64748b;
+  --accent: #4f46e5;
+  --accent-light: #6366f1;
+  --accent-contrast: #ffffff;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #0284c7;
 }
 
-.bg-orb-1 {
-  width: 500px;
-  height: 500px;
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-  top: -10%;
-  right: -5%;
-  animation-delay: 0s;
-}
+/* ═══════════════════════════════════════════════════
+   DARK THEME
+   ═══════════════════════════════════════════════════ */
 
-.bg-orb-2 {
-  width: 600px;
-  height: 600px;
-  background: color-mix(in srgb, #8b5cf6 12%, transparent);
-  bottom: -15%;
-  left: -10%;
-  animation-delay: -5s;
-}
-
-.bg-orb-3 {
-  width: 400px;
-  height: 400px;
-  background: color-mix(in srgb, #ec4899 10%, transparent);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation-delay: -10s;
+.dark {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-elevated: #273549;
+  --surface-hover: #253044;
+  --text: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --muted: #94a3b8;
+  --accent: #818cf8;
+  --accent-light: #a5b4fc;
+  --accent-contrast: #0f172a;
+  --border: #334155;
+  --border-light: #293547;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #f87171;
+  --info: #38bdf8;
 }
 
 /* ═══════════════════════════════════════════════════

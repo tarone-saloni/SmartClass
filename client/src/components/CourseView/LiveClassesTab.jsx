@@ -62,10 +62,7 @@ function LiveClassesTab({
       </div>
 
       {liveClasses.length === 0 ? (
-        <div
-          className="text-center py-20 glass-heavy rounded-3xl border border-[var(--border)]/10
-                        shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)]"
-        >
+        <div className="text-center py-20 bg-[var(--surface)] rounded-2xl border border-[var(--border)]">
           <div
             className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/15 flex items-center justify-center text-3xl mx-auto mb-5
                           shadow-[0_8px_24px_-8px_rgba(239,68,68,0.15)]"
