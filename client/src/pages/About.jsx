@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { Link } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -105,6 +106,25 @@ function About() {
                 education — not the other way around.
               </p>
             </div>
+          </div>
+
+          {/* Tech Architecture CTA */}
+          <div className="rounded-2xl border border-[var(--border)]/40 bg-[var(--card)] p-8 mb-12 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="text-xl font-bold text-[var(--text)] mb-1">
+                How it's built
+              </h2>
+              <p className="text-sm text-[var(--muted)]">
+                Explore the full backend architecture — Express 5, MongoDB,
+                Socket.IO, Claude AI, and Cloudinary — layer by layer.
+              </p>
+            </div>
+            <Link
+              to="/about/architecture"
+              className="shrink-0 px-6 py-3 rounded-xl font-semibold text-sm bg-[var(--accent)] text-white hover:opacity-90 transition-opacity"
+            >
+              View Tech Architecture →
+            </Link>
           </div>
 
           {/* Values */}
