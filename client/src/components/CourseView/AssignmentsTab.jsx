@@ -13,22 +13,29 @@ function AssignmentsTab({
   onAddClick,
 }) {
   // Compute which assignments are locked for the student.
-  // An assignment is locked if any previous-order assignment has not been submitted yet.
+  // An assignment is locked if any previous-order assignment has not been submitted yet
+  // AND its due date has not passed. Overdue unsubmitted assignments auto-unlock the next one.
   const lockedMap = {};
   if (!isTeacher) {
     // assignments are already sorted by order ascending from the backend
+    const now = new Date();
     let firstUnsubmitted = null;
     for (const a of assignments) {
       if (firstUnsubmitted !== null) {
-        // All assignments after the first unsubmitted one are locked
+        // All assignments after the first unsubmitted (non-overdue) one are locked
         lockedMap[a.id] = {
           locked: true,
           byTitle: firstUnsubmitted.title,
           byOrder: firstUnsubmitted.order,
         };
-      } else if (!mySubmissions[a.id]) {
-        firstUnsubmitted = a;
-        // The first unsubmitted assignment itself is NOT locked — student can work on it
+      } else {
+        const isSubmitted = !!mySubmissions[a.id];
+        const isOverdue = a.dueDate && new Date(a.dueDate) < now;
+        if (!isSubmitted && !isOverdue) {
+          // First unsubmitted assignment that's still within due date — student works on this
+          firstUnsubmitted = a;
+        }
+        // If submitted OR overdue with no submission → treat as passable, don't lock next ones
       }
     }
   }

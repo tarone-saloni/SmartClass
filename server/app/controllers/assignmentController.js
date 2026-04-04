@@ -157,7 +157,7 @@ export async function submitAssignment(req, res) {
     const previousAssignments = await Assignment.find({
       course: assignment.course,
       order: { $lt: assignment.order },
-    }).select("_id title order");
+    }).select("_id title order dueDate");
 
     if (previousAssignments.length > 0) {
       const prevIds = previousAssignments.map((a) => a._id);
@@ -166,8 +166,14 @@ export async function submitAssignment(req, res) {
         student: studentId,
       }).select("assignment");
 
+      const now = new Date();
       const completedIds = new Set(completedPrevious.map((s) => s.assignment.toString()));
-      const missing = previousAssignments.find((a) => !completedIds.has(a._id.toString()));
+      // A previous assignment blocks submission only if it has no submission AND its due date hasn't passed
+      const missing = previousAssignments.find((a) => {
+        const isSubmitted = completedIds.has(a._id.toString());
+        const isOverdue = a.dueDate && now > a.dueDate;
+        return !isSubmitted && !isOverdue;
+      });
 
       if (missing) {
         return res.status(403).json({
