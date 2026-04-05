@@ -382,17 +382,26 @@ function CourseView() {
         const fd = new FormData();
         fd.append("file", assForm.attachmentFile);
         fd.append("teacherId", user.id);
-        const attRes = await apiFetch(`/api/assignments/${data.id}/attachments`, {
-          method: "POST",
-          body: fd,
-        });
+        const attRes = await apiFetch(
+          `/api/assignments/${data.id}/attachments`,
+          {
+            method: "POST",
+            body: fd,
+          },
+        );
         if (attRes.ok) data = await attRes.json();
       }
       setAssignments((p) =>
         p.some((a) => String(a.id) === String(data.id)) ? p : [data, ...p],
       );
       setModal(null);
-      setAssForm({ title: "", description: "", dueDate: "", maxScore: 100, attachmentFile: null });
+      setAssForm({
+        title: "",
+        description: "",
+        dueDate: "",
+        maxScore: 100,
+        attachmentFile: null,
+      });
     }
     setSaving(false);
   };
