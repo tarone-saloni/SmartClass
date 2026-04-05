@@ -84,24 +84,29 @@ export async function register(req, res) {
   if (!name || !email || !password)
     return res.status(400).json({ error: "Name, email and password are required." });
 
-  const existing = await User.findOne({ email });
-  if (existing?.isVerified)
-    return res.status(409).json({ error: "Email already registered. Please sign in." });
+  try {
+    const existing = await User.findOne({ email });
+    if (existing?.isVerified)
+      return res.status(409).json({ error: "Email already registered. Please sign in." });
 
-  // Create or update pending user
-  let user = existing || new User({ name, email, password, role: role || "student" });
-  if (existing) {
-    user.name = name;
-    user.password = password;
-    user.role = role || "student";
+    // Create or update pending user
+    let user = existing || new User({ name, email, password, role: role || "student" });
+    if (existing) {
+      user.name = name;
+      user.password = password;
+      user.role = role || "student";
+    }
+    await user.save();
+
+    const otp = generateOtp();
+    saveOtp(email, otp);
+    await sendOtpEmail(email, otp);
+
+    res.json({ message: "OTP sent to your email.", email });
+  } catch (err) {
+    console.error("Register error:", err.message);
+    res.status(500).json({ error: err.message });
   }
-  await user.save();
-
-  const otp = generateOtp();
-  saveOtp(email, otp);
-  await sendOtpEmail(email, otp);
-
-  res.json({ message: "OTP sent to your email.", email });
 }
 
 // POST /api/auth/verify-otp

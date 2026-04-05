@@ -66,6 +66,8 @@ function CourseView() {
   const [expandedSubs, setExpandedSubs] = useState({});
   const expandedSubsRef = useRef({});
   const [submissionText, setSubmissionText] = useState({});
+  const [submissionFile, setSubmissionFile] = useState({});
+  const [myQuizResults, setMyQuizResults] = useState({});
   const [gradeForm, setGradeForm] = useState({ score: "", feedback: "" });
   const [gradingSubId, setGradingSubId] = useState(null);
   const [matForm, setMatForm] = useState({
@@ -81,6 +83,7 @@ function CourseView() {
     description: "",
     dueDate: "",
     maxScore: 100,
+    attachmentFile: null,
   });
   const [quizForm, setQuizForm] = useState({
     title: "",
@@ -279,6 +282,17 @@ function CourseView() {
     });
   }, [assignments, isTeacher, user.id]);
 
+  useEffect(() => {
+    if (isTeacher || quizzes.length === 0) return;
+    quizzes.forEach((q) => {
+      apiFetch(`/api/quizzes/${q.id}/my-result?studentId=${user.id}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (!d.error) setMyQuizResults((p) => ({ ...p, [q.id]: d }));
+        });
+    });
+  }, [quizzes, isTeacher, user.id]);
+
   // Material actions
   const saveMaterial = async (e) => {
     e.preventDefault();
@@ -353,15 +367,32 @@ function CourseView() {
     const res = await apiFetch(`/api/courses/${id}/assignments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...assForm, teacherId: user.id }),
+      body: JSON.stringify({
+        title: assForm.title,
+        description: assForm.description,
+        dueDate: assForm.dueDate,
+        maxScore: assForm.maxScore,
+        teacherId: user.id,
+      }),
     });
     if (res.ok) {
-      const data = await res.json();
+      let data = await res.json();
+      // Upload attachment if provided
+      if (assForm.attachmentFile) {
+        const fd = new FormData();
+        fd.append("file", assForm.attachmentFile);
+        fd.append("teacherId", user.id);
+        const attRes = await apiFetch(`/api/assignments/${data.id}/attachments`, {
+          method: "POST",
+          body: fd,
+        });
+        if (attRes.ok) data = await attRes.json();
+      }
       setAssignments((p) =>
         p.some((a) => String(a.id) === String(data.id)) ? p : [data, ...p],
       );
       setModal(null);
-      setAssForm({ title: "", description: "", dueDate: "", maxScore: 100 });
+      setAssForm({ title: "", description: "", dueDate: "", maxScore: 100, attachmentFile: null });
     }
     setSaving(false);
   };
@@ -380,18 +411,34 @@ function CourseView() {
     });
   };
 
-  const submitAssignment = async (aid, content, isUpdate = false) => {
-    if (!isUpdate) {
-      if (!content?.trim()) return;
-      const res = await apiFetch(`/api/assignments/${aid}/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: user.id, content }),
-      });
-      const data = await res.json();
-      if (!data.error) setMySubmissions((p) => ({ ...p, [aid]: data }));
-    } else {
-      setSubmissionText((p) => ({ ...p, [aid]: content }));
+  const submitAssignment = async (aid, value, action = "submit") => {
+    if (action === "text") {
+      setSubmissionText((p) => ({ ...p, [aid]: value }));
+      return;
+    }
+    if (action === "file") {
+      setSubmissionFile((p) => ({ ...p, [aid]: value }));
+      return;
+    }
+    // action === "submit"
+    const text = submissionText[aid] || "";
+    const file = submissionFile[aid] || null;
+    if (!text.trim() && !file) return;
+
+    const formData = new FormData();
+    formData.append("studentId", user.id);
+    if (text.trim()) formData.append("content", text);
+    if (file) formData.append("file", file);
+
+    const res = await apiFetch(`/api/assignments/${aid}/submit`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    if (!data.error) {
+      setMySubmissions((p) => ({ ...p, [aid]: data }));
+      setSubmissionText((p) => ({ ...p, [aid]: "" }));
+      setSubmissionFile((p) => ({ ...p, [aid]: null }));
     }
   };
 
@@ -794,6 +841,7 @@ ${
                     mySubmissions={mySubmissions}
                     expandedSubs={expandedSubs}
                     submissionText={submissionText}
+                    submissionFile={submissionFile}
                     onSubmit={submitAssignment}
                     onToggleSubs={toggleSubs}
                     onDelete={deleteAssignment}
@@ -811,6 +859,7 @@ ${
                   <QuizzesTab
                     quizzes={quizzes}
                     isTeacher={isTeacher}
+                    myQuizResults={myQuizResults}
                     onDelete={deleteQuiz}
                     onAddClick={() => setModal("quiz")}
                   />

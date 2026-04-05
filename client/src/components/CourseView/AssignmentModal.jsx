@@ -10,6 +10,11 @@ function AssignmentModal({
 }) {
   if (!isOpen) return null;
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0] || null;
+    onChange({ ...form, attachmentFile: file });
+  };
+
   return modalOverlay(
     onClose,
     <>
@@ -68,6 +73,35 @@ function AssignmentModal({
             />
           </div>
         </div>
+
+        {/* Optional document attachment */}
+        <div>
+          <label className="block text-[11px] font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1 opacity-80">
+            Attach Document <span className="normal-case font-normal opacity-60">(PDF or DOCX, optional)</span>
+          </label>
+          <label className="flex items-center gap-3 px-4 py-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl cursor-pointer hover:border-[var(--accent)]/40 transition-all duration-300">
+            <span className="text-xl">📎</span>
+            <span className="text-sm text-[var(--muted)] flex-1 truncate">
+              {form.attachmentFile ? form.attachmentFile.name : "Click to choose file…"}
+            </span>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </label>
+          {form.attachmentFile && (
+            <button
+              type="button"
+              onClick={() => onChange({ ...form, attachmentFile: null })}
+              className="mt-1.5 ml-1 text-[11px] text-red-400 hover:text-red-300 cursor-pointer"
+            >
+              Remove file
+            </button>
+          )}
+        </div>
+
         <div className="flex justify-end gap-3 pt-6 mt-2 border-t border-[var(--border)]/30">
           <button
             type="button"
