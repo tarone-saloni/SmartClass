@@ -1,6 +1,12 @@
 import { useNavigate } from "react-router-dom";
 
-function QuizzesTab({ quizzes, isTeacher, myQuizResults = {}, onDelete, onAddClick }) {
+function QuizzesTab({
+  quizzes,
+  isTeacher,
+  myQuizResults = {},
+  onDelete,
+  onAddClick,
+}) {
   const navigate = useNavigate();
 
   return (
@@ -121,54 +127,71 @@ function QuizzesTab({ quizzes, isTeacher, myQuizResults = {}, onDelete, onAddCli
                       </span>
                     )}
                     {/* Score pill — shown after student completes quiz */}
-                    {!isTeacher && myQuizResults[q.id] && (() => {
-                      const r = myQuizResults[q.id];
-                      const pct = r.percentage ?? 0;
-                      const colorCls = pct >= 70
-                        ? "bg-emerald-500/12 text-emerald-400 border-emerald-500/20"
-                        : pct >= 40
-                          ? "bg-amber-500/12 text-amber-400 border-amber-500/20"
-                          : "bg-red-500/12 text-red-400 border-red-500/20";
-                      return (
-                        <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black border ${colorCls}`}>
-                          🏆 {r.score}/{r.totalPoints} pts · {pct}%
-                        </span>
-                      );
-                    })()}
+                    {!isTeacher &&
+                      myQuizResults[q.id] &&
+                      (() => {
+                        const r = myQuizResults[q.id];
+                        const pct = r.percentage ?? 0;
+                        const colorCls =
+                          pct >= 70
+                            ? "bg-emerald-500/12 text-emerald-400 border-emerald-500/20"
+                            : pct >= 40
+                              ? "bg-amber-500/12 text-amber-400 border-amber-500/20"
+                              : "bg-red-500/12 text-red-400 border-red-500/20";
+                        return (
+                          <span
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black border ${colorCls}`}
+                          >
+                            🏆 {r.score}/{r.totalPoints} pts · {pct}%
+                          </span>
+                        );
+                      })()}
                   </div>
 
                   {/* Actions */}
                   <div className="flex items-center gap-2.5">
-                    {!isTeacher && (() => {
-                      const taken = !!myQuizResults[q.id];
-                      return (
-                        <button
-                          onClick={() => !taken && navigate(`/quiz/${q.id}`)}
-                          disabled={taken}
-                          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95
-                            ${taken
-                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-not-allowed opacity-80"
-                              : "sc-btn-glow cursor-pointer"
+                    {!isTeacher &&
+                      (() => {
+                        const taken = !!myQuizResults[q.id];
+                        return (
+                          <button
+                            onClick={() => !taken && navigate(`/quiz/${q.id}`)}
+                            disabled={taken}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95
+                            ${
+                              taken
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-not-allowed opacity-80"
+                                : "sc-btn-glow cursor-pointer"
                             }`}
-                        >
-                          {taken ? (
-                            <>
-                              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
-                              </svg>
-                              Quiz Taken
-                            </>
-                          ) : (
-                            <>
-                              Take Quiz
-                              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M8.22 2.97a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06l2.97-2.97H3.75a.75.75 0 010-1.5h7.44L8.22 4.03a.75.75 0 010-1.06z" />
-                              </svg>
-                            </>
-                          )}
-                        </button>
-                      );
-                    })()}
+                          >
+                            {taken ? (
+                              <>
+                                <svg
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 16 16"
+                                  fill="currentColor"
+                                >
+                                  <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />
+                                </svg>
+                                Quiz Taken
+                              </>
+                            ) : (
+                              <>
+                                Take Quiz
+                                <svg
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 16 16"
+                                  fill="currentColor"
+                                >
+                                  <path d="M8.22 2.97a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06l2.97-2.97H3.75a.75.75 0 010-1.5h7.44L8.22 4.03a.75.75 0 010-1.06z" />
+                                </svg>
+                              </>
+                            )}
+                          </button>
+                        );
+                      })()}
                     {isTeacher && (
                       <>
                         <button

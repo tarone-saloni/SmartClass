@@ -221,13 +221,17 @@ function AssignmentCard({
               <label className="flex items-center gap-3 px-4 py-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl cursor-pointer hover:border-[var(--accent)]/40 transition-all duration-300">
                 <span className="text-lg">📎</span>
                 <span className="text-sm text-[var(--muted)] flex-1 truncate">
-                  {submissionFile ? submissionFile.name : "Attach PDF or DOCX (optional)"}
+                  {submissionFile
+                    ? submissionFile.name
+                    : "Attach PDF or DOCX (optional)"}
                 </span>
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx"
                   className="hidden"
-                  onChange={(e) => onSubmit(assignment.id, e.target.files[0] || null, "file")}
+                  onChange={(e) =>
+                    onSubmit(assignment.id, e.target.files[0] || null, "file")
+                  }
                 />
               </label>
               {submissionFile && (

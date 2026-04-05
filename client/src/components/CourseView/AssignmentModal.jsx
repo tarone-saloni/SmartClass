@@ -77,12 +77,17 @@ function AssignmentModal({
         {/* Optional document attachment */}
         <div>
           <label className="block text-[11px] font-bold text-[var(--text)] uppercase tracking-wider mb-2 ml-1 opacity-80">
-            Attach Document <span className="normal-case font-normal opacity-60">(PDF or DOCX, optional)</span>
+            Attach Document{" "}
+            <span className="normal-case font-normal opacity-60">
+              (PDF or DOCX, optional)
+            </span>
           </label>
           <label className="flex items-center gap-3 px-4 py-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl cursor-pointer hover:border-[var(--accent)]/40 transition-all duration-300">
             <span className="text-xl">📎</span>
             <span className="text-sm text-[var(--muted)] flex-1 truncate">
-              {form.attachmentFile ? form.attachmentFile.name : "Click to choose file…"}
+              {form.attachmentFile
+                ? form.attachmentFile.name
+                : "Click to choose file…"}
             </span>
             <input
               type="file"

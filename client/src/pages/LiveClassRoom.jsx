@@ -160,6 +160,7 @@ export default function LiveClassRoom() {
   const [studentCamOn, setStudentCamOn] = useState(false);
   const [streamActive, setStreamActive] = useState(false);
   const [teacherHasScreen, setTeacherHasScreen] = useState(false);
+  const [audioBlocked, setAudioBlocked] = useState(false);
 
   // ── student tiles (teacher's view of all connected students) ────────────────
   // Map<viewerSocketId, { stream: MediaStream|null, userId, userName, camOn: bool }>
@@ -171,11 +172,13 @@ export default function LiveClassRoom() {
   const studentMicStreamRef = useRef(null); // student: mic stream
   const studentCamStreamRef = useRef(null); // student: camera stream
   const pendingScreenRef = useRef(null); // student: pending screen stream before mount
+  const screenStreamIdRef = useRef(null); // student: expected screen stream.id from teacher
 
-  // ── video element refs ──────────────────────────────────────────────────────
+  // ── video / audio element refs ──────────────────────────────────────────────
   const localCameraRef = useRef(null); // teacher: self camera preview
   const localScreenRef = useRef(null); // teacher: self screen preview
-  const remoteCameraRef = useRef(null); // student: teacher's camera
+  const remoteCameraRef = useRef(null); // student: teacher's camera (video only)
+  const remoteAudioRef = useRef(null); // student: teacher's audio (dedicated element)
   const remoteScreenRef = useRef(null); // student: teacher's screen
   const studentSelfVideoRef = useRef(null); // student: self camera preview
 
@@ -355,7 +358,10 @@ export default function LiveClassRoom() {
         const sender = pc.addTrack(st, stream);
         screenSendersRef.current.set(vid, sender);
       });
-      socket.emit("screen-share-started", { liveClassId: id });
+      socket.emit("screen-share-started", {
+        liveClassId: id,
+        screenStreamId: stream.id,
+      });
       st.onended = stopScreenShare;
     } catch {
       /* user cancelled */
@@ -715,26 +721,52 @@ export default function LiveClassRoom() {
       const pc = new RTCPeerConnection(ICE_CONFIG);
       peerConnRef.current = pc;
 
-      pc.ontrack = ({ track }) => {
+      pc.ontrack = ({ track, streams }) => {
         if (track.kind === "audio") {
-          const s = remoteCameraRef.current?.srcObject ?? new MediaStream();
-          s.addTrack(track);
-          if (remoteCameraRef.current) remoteCameraRef.current.srcObject = s;
+          // Dedicated audio element — avoids autoplay blocking on the video element
+          const audioEl = remoteAudioRef.current;
+          if (audioEl) {
+            const s =
+              audioEl.srcObject instanceof MediaStream
+                ? audioEl.srcObject
+                : new MediaStream();
+            if (!s.getAudioTracks().find((t) => t.id === track.id)) {
+              s.addTrack(track);
+              audioEl.srcObject = s;
+              audioEl.play().catch(() => setAudioBlocked(true));
+            }
+          }
           return;
         }
-        if (track.contentHint === "detail") {
-          const stream = new MediaStream([track]);
-          pendingScreenRef.current = stream;
+        // Video: distinguish screen vs camera by stream ID
+        // (contentHint is a local hint and is NOT transmitted over WebRTC)
+        const incomingStreamId = streams[0]?.id;
+        const isScreenTrack =
+          incomingStreamId &&
+          screenStreamIdRef.current &&
+          incomingStreamId === screenStreamIdRef.current;
+
+        if (isScreenTrack) {
+          const screenStream = streams[0] ?? new MediaStream([track]);
+          pendingScreenRef.current = screenStream;
           setTeacherHasScreen(true);
           setStreamActive(true);
           track.onended = () => {
             setTeacherHasScreen(false);
             pendingScreenRef.current = null;
+            if (remoteScreenRef.current)
+              remoteScreenRef.current.srcObject = null;
           };
         } else {
-          const s = remoteCameraRef.current?.srcObject ?? new MediaStream();
-          s.addTrack(track);
-          if (remoteCameraRef.current) remoteCameraRef.current.srcObject = s;
+          // Camera video track
+          const s =
+            remoteCameraRef.current?.srcObject instanceof MediaStream
+              ? remoteCameraRef.current.srcObject
+              : new MediaStream();
+          if (!s.getVideoTracks().find((t) => t.id === track.id)) {
+            s.addTrack(track);
+            if (remoteCameraRef.current) remoteCameraRef.current.srcObject = s;
+          }
           setStreamActive(true);
         }
       };
@@ -839,13 +871,21 @@ export default function LiveClassRoom() {
     const onBroadcasterLeft = () => {
       setStreamActive(false);
       setTeacherHasScreen(false);
+      screenStreamIdRef.current = null;
+      pendingScreenRef.current = null;
       if (remoteCameraRef.current) remoteCameraRef.current.srcObject = null;
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+      if (remoteScreenRef.current) remoteScreenRef.current.srcObject = null;
       peerConnRef.current?.close();
       peerConnRef.current = null;
     };
 
-    const onScreenStarted = () => setTeacherHasScreen(true);
+    const onScreenStarted = ({ screenStreamId }) => {
+      if (screenStreamId) screenStreamIdRef.current = screenStreamId;
+      setTeacherHasScreen(true);
+    };
     const onScreenStopped = () => {
+      screenStreamIdRef.current = null;
       setTeacherHasScreen(false);
       if (remoteScreenRef.current) remoteScreenRef.current.srcObject = null;
       pendingScreenRef.current = null;
@@ -1086,12 +1126,23 @@ export default function LiveClassRoom() {
               />
             )}
 
+            {/* Student: dedicated hidden audio element for teacher voice */}
+            {!isTeacher && (
+              <audio
+                ref={remoteAudioRef}
+                autoPlay
+                playsInline
+                className="hidden"
+              />
+            )}
+
             {/* Student: teacher's camera */}
             {!isTeacher && (
               <video
                 ref={remoteCameraRef}
                 autoPlay
                 playsInline
+                muted
                 className={`object-cover
                   ${
                     teacherHasScreen
@@ -1099,6 +1150,21 @@ export default function LiveClassRoom() {
                       : "absolute inset-0 w-full h-full"
                   }`}
               />
+            )}
+
+            {/* Student: audio blocked prompt */}
+            {!isTeacher && audioBlocked && (
+              <button
+                onClick={() => {
+                  remoteAudioRef.current
+                    ?.play()
+                    .then(() => setAudioBlocked(false))
+                    .catch(() => {});
+                }}
+                className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold cursor-pointer hover:bg-amber-500/30 transition-colors animate-pulse"
+              >
+                🔇 Click to enable audio
+              </button>
             )}
 
             {/* Student: self-view preview (own camera on) */}
