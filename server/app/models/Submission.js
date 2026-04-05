@@ -6,6 +6,8 @@ const submissionSchema = new mongoose.Schema(
     student: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     content: { type: String, trim: true, default: "" },
     fileUrl: { type: String, trim: true, default: "" },
+    fileName: { type: String, trim: true, default: "" },
+    filePublicId: { type: String, trim: true, default: "" },
     status: {
       type: String,
       enum: ["submitted", "late", "graded"],

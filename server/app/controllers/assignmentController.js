@@ -3,6 +3,7 @@ import Submission from "../models/Submission.js";
 import Course from "../models/Course.js";
 import { emitToCourse, emitToUser } from "../services/socketService.js";
 import { pushNotification } from "../services/notificationService.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 // ─── POST /api/courses/:courseId/assignments ──────────────────────────────────
 export async function createAssignment(req, res) {
@@ -137,6 +138,76 @@ export async function deleteAssignment(req, res) {
   }
 }
 
+// ─── POST /api/assignments/:id/attachments ────────────────────────────────────
+export async function addAttachment(req, res) {
+  try {
+    const { id } = req.params;
+    const { teacherId } = req.body;
+
+    if (!req.file) return res.status(400).json({ error: "No file provided." });
+
+    const assignment = await Assignment.findById(id);
+    if (!assignment) return res.status(404).json({ error: "Assignment not found." });
+    if (assignment.createdBy.toString() !== teacherId)
+      return res.status(403).json({ error: "Only the assignment creator can add attachments." });
+
+    const result = await uploadToCloudinary(req.file.buffer, {
+      resource_type: "raw",
+      folder: "smartclass/assignment-attachments",
+      public_id: `${id}_${Date.now()}`,
+      use_filename: true,
+    });
+
+    const attachment = {
+      url: result.secure_url,
+      name: req.file.originalname,
+      publicId: result.public_id,
+      type: "raw",
+    };
+    assignment.attachments.push(attachment);
+    await assignment.save();
+
+    const formatted = formatAssignment(assignment);
+    emitToCourse(assignment.course.toString(), "assignment:updated", formatted);
+    res.status(201).json(formatted);
+  } catch (err) {
+    console.error("addAttachment error:", err);
+    res.status(500).json({ error: "Failed to upload attachment." });
+  }
+}
+
+// ─── DELETE /api/assignments/:id/attachments/:attachmentId ───────────────────
+export async function deleteAttachment(req, res) {
+  try {
+    const { id, attachmentId } = req.params;
+    const { teacherId } = req.body;
+
+    const assignment = await Assignment.findById(id);
+    if (!assignment) return res.status(404).json({ error: "Assignment not found." });
+    if (assignment.createdBy.toString() !== teacherId)
+      return res.status(403).json({ error: "Only the assignment creator can remove attachments." });
+
+    const att = assignment.attachments.id(attachmentId);
+    if (!att) return res.status(404).json({ error: "Attachment not found." });
+
+    // Delete from Cloudinary
+    try {
+      const { default: cloudinary } = await import("../utils/cloudinary.js");
+      await cloudinary.uploader.destroy(att.publicId, { resource_type: "raw" });
+    } catch (_) {}
+
+    assignment.attachments.pull(attachmentId);
+    await assignment.save();
+
+    const formatted = formatAssignment(assignment);
+    emitToCourse(assignment.course.toString(), "assignment:updated", formatted);
+    res.json(formatted);
+  } catch (err) {
+    console.error("deleteAttachment error:", err);
+    res.status(500).json({ error: "Failed to delete attachment." });
+  }
+}
+
 // ─── POST /api/assignments/:id/submit ────────────────────────────────────────
 export async function submitAssignment(req, res) {
   try {
@@ -187,11 +258,29 @@ export async function submitAssignment(req, res) {
     const now = new Date();
     const isLate = assignment.dueDate && now > assignment.dueDate;
 
+    // Handle optional file upload
+    let uploadedFileUrl = fileUrl || "";
+    let uploadedFileName = "";
+    let uploadedFilePublicId = "";
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer, {
+        resource_type: "raw",
+        folder: "smartclass/submissions",
+        public_id: `${id}_${studentId}_${Date.now()}`,
+        use_filename: true,
+      });
+      uploadedFileUrl = result.secure_url;
+      uploadedFileName = req.file.originalname;
+      uploadedFilePublicId = result.public_id;
+    }
+
     const submission = await Submission.findOneAndUpdate(
       { assignment: id, student: studentId },
       {
         content: content || "",
-        fileUrl: fileUrl || "",
+        fileUrl: uploadedFileUrl,
+        fileName: uploadedFileName,
+        filePublicId: uploadedFilePublicId,
         status: isLate ? "late" : "submitted",
         submittedAt: now,
         score: null,
@@ -312,6 +401,12 @@ function formatAssignment(a) {
     order: a.order,
     course: a.course,
     createdBy: a.createdBy ? { id: a.createdBy._id || a.createdBy, name: a.createdBy.name } : null,
+    attachments: (a.attachments || []).map((att) => ({
+      id: att._id,
+      url: att.url,
+      name: att.name,
+      publicId: att.publicId,
+    })),
     createdAt: a.createdAt,
   };
 }
@@ -325,6 +420,7 @@ function formatSubmission(s) {
       : null,
     content: s.content,
     fileUrl: s.fileUrl,
+    fileName: s.fileName,
     status: s.status,
     score: s.score,
     feedback: s.feedback,

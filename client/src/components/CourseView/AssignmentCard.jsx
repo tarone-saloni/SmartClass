@@ -12,6 +12,7 @@ function AssignmentCard({
   mySubmission,
   submissions,
   submissionText,
+  submissionFile,
   isLocked,
   lockedByTitle,
   lockedByOrder,
@@ -179,6 +180,28 @@ function AssignmentCard({
           </div>
         )}
 
+        {/* Assignment attachments (visible to all) */}
+        {assignment.attachments?.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-[var(--border)]/10">
+            <p className="text-[11px] font-bold text-[var(--muted)] uppercase tracking-[0.12em] mb-2">
+              📎 Attachments
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {assignment.attachments.map((att) => (
+                <a
+                  key={att.id}
+                  href={att.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3.5 py-2 bg-[var(--accent)]/8 hover:bg-[var(--accent)]/15 text-[var(--accent)] rounded-xl text-xs font-bold border border-[var(--accent)]/12 transition-all duration-300"
+                >
+                  {att.name.endsWith(".pdf") ? "📄" : "📝"} {att.name}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Student: submission form */}
         {!isTeacher && !hasSubmission && !isLocked && (
           <div className="mt-5 pt-5 border-t border-[var(--border)]">
@@ -189,17 +212,41 @@ function AssignmentCard({
               className="w-full px-4 py-3.5 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl text-sm outline-none
                          resize-y focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/12
                          transition-all duration-300 text-[var(--text)] placeholder:text-[var(--muted)] min-h-[100px] font-medium"
-              placeholder="Write your answer here..."
+              placeholder="Write your answer here... (optional if uploading a file)"
               value={submissionText || ""}
-              onChange={(e) => onSubmit(assignment.id, e.target.value, true)}
+              onChange={(e) => onSubmit(assignment.id, e.target.value, "text")}
             />
+            {/* File upload */}
+            <div className="mt-3">
+              <label className="flex items-center gap-3 px-4 py-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl cursor-pointer hover:border-[var(--accent)]/40 transition-all duration-300">
+                <span className="text-lg">📎</span>
+                <span className="text-sm text-[var(--muted)] flex-1 truncate">
+                  {submissionFile ? submissionFile.name : "Attach PDF or DOCX (optional)"}
+                </span>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={(e) => onSubmit(assignment.id, e.target.files[0] || null, "file")}
+                />
+              </label>
+              {submissionFile && (
+                <button
+                  type="button"
+                  onClick={() => onSubmit(assignment.id, null, "file")}
+                  className="mt-1 ml-1 text-[11px] text-red-400 hover:text-red-300 cursor-pointer"
+                >
+                  Remove file
+                </button>
+              )}
+            </div>
             <div className="flex justify-end mt-3">
               <button
-                onClick={() => onSubmit(assignment.id, submissionText, false)}
-                disabled={!submissionText?.trim()}
+                onClick={() => onSubmit(assignment.id, null, "submit")}
+                disabled={!submissionText?.trim() && !submissionFile}
                 className="px-6 py-2.5 sc-btn-glow disabled:opacity-35 rounded-xl text-xs font-bold cursor-pointer disabled:cursor-not-allowed transition-all active:scale-95"
               >
-                Submit Answer →
+                Submit →
               </button>
             </div>
           </div>
@@ -212,9 +259,21 @@ function AssignmentCard({
               Your Submission
             </p>
             <div className="glass rounded-2xl px-5 py-4 border border-[var(--border)]/12">
-              <p className="text-sm text-[var(--text)] leading-relaxed">
-                {mySubmission.content}
-              </p>
+              {mySubmission.content && (
+                <p className="text-sm text-[var(--text)] leading-relaxed">
+                  {mySubmission.content}
+                </p>
+              )}
+              {mySubmission.fileUrl && (
+                <a
+                  href={mySubmission.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 mt-2 px-3.5 py-2 bg-[var(--accent)]/8 hover:bg-[var(--accent)]/15 text-[var(--accent)] rounded-xl text-xs font-bold border border-[var(--accent)]/12 transition-all duration-300"
+                >
+                  📎 {mySubmission.fileName || "Download file"}
+                </a>
+              )}
               {mySubmission.feedback && (
                 <div className="mt-4 pt-4 border-t border-[var(--border)]/12">
                   <p className="text-[11px] font-bold text-[var(--accent)] uppercase tracking-[0.12em] mb-1.5 flex items-center gap-1.5">
@@ -286,14 +345,28 @@ function AssignmentCard({
                           </button>
                         </div>
                       </div>
-                      <p className="text-[13px] text-[var(--text)] leading-relaxed pl-[42px]">
-                        {s.content}
-                      </p>
-                      {s.feedback && (
-                        <p className="text-[11px] text-[var(--muted)] mt-1.5 pl-[42px] italic">
-                          "{s.feedback}"
-                        </p>
-                      )}
+                      <div className="pl-[42px]">
+                        {s.content && (
+                          <p className="text-[13px] text-[var(--text)] leading-relaxed">
+                            {s.content}
+                          </p>
+                        )}
+                        {s.fileUrl && (
+                          <a
+                            href={s.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 mt-1.5 px-3 py-1.5 bg-[var(--accent)]/8 hover:bg-[var(--accent)]/15 text-[var(--accent)] rounded-xl text-[11px] font-bold border border-[var(--accent)]/12 transition-all duration-300"
+                          >
+                            📎 {s.fileName || "View file"}
+                          </a>
+                        )}
+                        {s.feedback && (
+                          <p className="text-[11px] text-[var(--muted)] mt-1.5 italic">
+                            "{s.feedback}"
+                          </p>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

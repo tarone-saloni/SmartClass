@@ -6,6 +6,7 @@ function AssignmentsTab({
   mySubmissions,
   expandedSubs,
   submissionText,
+  submissionFile,
   onSubmit,
   onToggleSubs,
   onDelete,
@@ -119,12 +120,11 @@ function AssignmentsTab({
                   mySubmission={mySubmissions[a.id]}
                   submissions={expandedSubs[a.id]}
                   submissionText={submissionText[a.id]}
+                  submissionFile={submissionFile?.[a.id]}
                   isLocked={!!lockInfo}
                   lockedByTitle={lockInfo?.byTitle}
                   lockedByOrder={lockInfo?.byOrder}
-                  onSubmit={(aid, text, isUpdate) =>
-                    isUpdate ? onSubmit(aid, text) : onSubmit(aid, text, false)
-                  }
+                  onSubmit={onSubmit}
                   onToggleSubs={onToggleSubs}
                   onDelete={onDelete}
                   onGrade={onGrade}

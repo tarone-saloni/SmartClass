@@ -9,6 +9,14 @@ const assignmentSchema = new mongoose.Schema(
     order: { type: Number, default: 0 }, // sequential order within a course (1-based)
     course: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    attachments: [
+      {
+        url: { type: String, required: true },
+        name: { type: String, required: true },
+        publicId: { type: String, required: true },
+        type: { type: String, default: "raw" },
+      },
+    ],
   },
   { timestamps: true }
 );
