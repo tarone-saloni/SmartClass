@@ -116,8 +116,8 @@ export function buildApp() {
     });
 
     // ── Screen share state ──────────────────────────────────────────────────
-    socket.on("screen-share-started", ({ liveClassId }) => {
-      socket.to(`liveclass:${liveClassId}`).emit("screen-share-started", { liveClassId });
+    socket.on("screen-share-started", ({ liveClassId, screenStreamId }) => {
+      socket.to(`liveclass:${liveClassId}`).emit("screen-share-started", { liveClassId, screenStreamId });
     });
     socket.on("screen-share-stopped", ({ liveClassId }) => {
       socket.to(`liveclass:${liveClassId}`).emit("screen-share-stopped", { liveClassId });
